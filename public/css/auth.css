@@ -13,12 +13,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, 
-        #0d6b55 0%, 
-        #16a085 25%, 
-        #1abc9c 50%, 
-        #16a085 75%, 
-        #0d6b55 100%);
+    background: linear-gradient(135deg, #000000 0%, #0a1628 25%, #0d2137 50%, #1a3a5c 75%, #1e4d7b 100%);
     z-index: -2;
 }
 
@@ -29,7 +24,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(13, 107, 85, 0.65);
+    background: rgba(0, 10, 30, 0.3);
     z-index: -1;
 }
 
@@ -40,7 +35,7 @@
     background: white;
     border-radius: 20px;
     padding: 40px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
     width: 100%;
     max-width: 420px;
     animation: slideInUp 0.5s ease-out;
@@ -88,7 +83,7 @@
 .auth-title {
     font-size: 28px;
     font-weight: 700;
-    color: #16a085;
+    color: #1a3a5c;
     margin: 0 0 5px 0;
     letter-spacing: 1px;
 }
@@ -130,9 +125,9 @@
 }
 
 .auth-form-group input:focus {
-    border-color: #16a085;
-    background: #f0faf8;
-    box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.2);
+    border-color: #1a3a5c;
+    background: #eef3fa;
+    box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.2);
     outline: none;
 }
 
@@ -152,14 +147,14 @@
 
 .forgot-password-link {
     display: block;
-    color: #16a085;
+    color: #1a3a5c;
     font-size: 0.9rem;
     text-align: right;
     transition: color 0.2s;
 }
 
 .forgot-password-link:hover {
-    color: #0d6b55;
+    color: #0d2137;
 }
 
 /* ============================================
@@ -245,13 +240,13 @@
 }
 
 .auth-link {
-    color: #16a085;
+    color: #1a3a5c;
     font-weight: 600;
     transition: color 0.2s;
 }
 
 .auth-link:hover {
-    color: #0d6b55;
+    color: #0d2137;
 }
 
 /* ============================================
