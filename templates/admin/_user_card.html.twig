@@ -1,0 +1,53 @@
+<div class="user-card">
+    <!-- Avatar -->
+    <div class="user-card-avatar">
+        {% if user.profilePicturePath %}
+            <img src="/{{ user.profilePicturePath }}" alt="{{ user.nomComplet }}" class="user-avatar">
+        {% else %}
+            <div class="user-avatar-initials" style="background: linear-gradient(135deg, #16a085, #1abc9c);">
+                {{ user.initiales }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- User Info -->
+    <div class="user-card-info">
+        <h5 class="user-card-name">{{ user.nomComplet }}</h5>
+        <p class="user-card-email">{{ user.email }}</p>
+        <p class="user-card-phone">{{ user.phone|default('-') }}</p>
+
+        <!-- Badges -->
+        <div class="user-card-badges">
+            <span class="badge badge-role {% if user.role == 'ADMIN' %}badge-admin{% else %}badge-voyageur{% endif %}">
+                {{ user.role }}
+            </span>
+            <span class="badge {% if user.actif %}badge-success{% else %}badge-danger{% endif %}">
+                {% if user.actif %}✅ Actif{% else %}❌ Inactif{% endif %}
+            </span>
+        </div>
+
+        <!-- Date -->
+        <p class="user-card-date">
+            Créé: {{ user.createdAt|date('d/m/Y H:i') }}
+        </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="user-card-actions">
+        <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" 
+           class="btn btn-sm btn-outline-primary">✏️ Éditer</a>
+        
+        <form method="POST" action="{{ path('app_admin_user_delete', {id: user.id}) }}" 
+              style="display: inline;" 
+              onsubmit="return confirm('Êtes-vous sûr?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ Supprimer</button>
+        </form>
+
+        <form method="POST" action="{{ path('app_admin_user_toggle_active', {id: user.id}) }}" style="display: inline;">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                {% if user.actif %}📴 Désactiver{% else %}✅ Activer{% endif %}
+            </button>
+        </form>
+    </div>
+</div>

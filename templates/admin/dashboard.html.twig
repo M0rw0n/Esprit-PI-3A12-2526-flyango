@@ -1,0 +1,120 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Dashboard Admin - Fly & Go{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #16a085, #1abc9c);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">
+            ✈️ <span style="color: #F78D00;">FLY & GO</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_logout') }}">
+                        🚪 Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    {% include 'admin/_sidebar.html.twig' %}
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        <!-- Stats Cards -->
+        {% if currentTab == 'dashboard' %}
+            <div class="stats-container">
+                <h2 class="mb-4">Dashboard</h2>
+                
+                <div class="row">
+                    <!-- Total Users -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-teal">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value">{{ stats.totalUsers }}</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                    </div>
+
+                    <!-- Active Users -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-green">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-value">{{ stats.activeUsers }}</div>
+                            <div class="stat-label">Active Users</div>
+                        </div>
+                    </div>
+
+                    <!-- Active % -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-blue">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value">{{ stats.activePercent }}%</div>
+                            <div class="stat-label">Active %</div>
+                        </div>
+                    </div>
+
+                    <!-- Voyageurs -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-orange">
+                            <div class="stat-icon">✈️</div>
+                            <div class="stat-value">{{ stats.voyageurs }}</div>
+                            <div class="stat-label">Voyageurs</div>
+                        </div>
+                    </div>
+
+                    <!-- Admins -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-red">
+                            <div class="stat-icon">🔐</div>
+                            <div class="stat-value">{{ stats.admins }}</div>
+                            <div class="stat-label">Admins</div>
+                        </div>
+                    </div>
+
+                    <!-- New This Month -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-purple">
+                            <div class="stat-icon">🆕</div>
+                            <div class="stat-value">{{ stats.newThisMonth }}</div>
+                            <div class="stat-label">New This Month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Users Tab -->
+        {% elseif currentTab == 'users' %}
+            {% include 'admin/_users_tab.html.twig' %}
+
+        <!-- Profiles Tab -->
+        {% elseif currentTab == 'profiles' %}
+            {% include 'admin/_profiles_tab.html.twig' %}
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #F0F7FF;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ asset('js/dashboard.js') }}"></script>
+{% endblock %}

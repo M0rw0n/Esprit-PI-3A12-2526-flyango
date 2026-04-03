@@ -1,0 +1,152 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Mon Profil - Fly & Go{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/profil.css') }}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #16a085, #1abc9c);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">
+            ✈️ <span style="color: #F78D00;">FLY & GO</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_logout') }}">
+                        🚪 Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="profil-container">
+    <!-- Cover Photo -->
+    <div class="cover-photo" style="{% if user.coverPhotoPath %}background-image: url('/{{ user.coverPhotoPath }}');{% else %}background: linear-gradient(135deg, #16a085, #1abc9c);{% endif %}">
+        <form method="POST" action="{{ path('app_profil_upload_cover_photo') }}" enctype="multipart/form-data" style="position: absolute; top: 10px; right: 10px;">
+            <label for="cover-upload" class="btn btn-sm btn-light">
+                📷 Changer
+            </label>
+            <input type="file" id="cover-upload" name="cover_photo" class="d-none" accept="image/*" onchange="this.parentElement.submit();">
+        </form>
+        
+        {% if user.coverPhotoPath %}
+            <form method="POST" action="{{ path('app_profil_remove_cover_photo') }}" style="position: absolute; top: 10px; right: 120px;">
+                <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- Profile Card -->
+    <div class="profil-card">
+        <!-- Avatar Section -->
+        <div class="profil-avatar-section">
+            <div class="profil-avatar-container">
+                {% if user.profilePicturePath %}
+                    <img src="/{{ user.profilePicturePath }}" alt="{{ user.nomComplet }}" class="profil-avatar">
+                {% else %}
+                    <div class="profil-avatar-initials" style="background: linear-gradient(135deg, #16a085, #1abc9c);">
+                        {{ user.initiales }}
+                    </div>
+                {% endif %}
+                
+                <!-- Upload Buttons -->
+                <div class="profil-avatar-actions">
+                    <form method="POST" action="{{ path('app_profil_upload_profile_picture') }}" enctype="multipart/form-data" style="display: inline;">
+                        <label for="profile-upload" class="btn btn-sm btn-primary">
+                            📷
+                        </label>
+                        <input type="file" id="profile-upload" name="profile_picture" class="d-none" accept="image/*" onchange="this.parentElement.submit();">
+                    </form>
+                    
+                    {% if user.profilePicturePath %}
+                        <form method="POST" action="{{ path('app_profil_remove_profile_picture') }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- User Info Bar -->
+            <div class="profil-info-bar">
+                <div>
+                    <h2 class="profil-name">{{ user.nomComplet }}</h2>
+                    <p class="profil-contact">
+                        <span>{{ user.email }}</span>
+                        {% if user.phone %}<span>•</span><span>{{ user.phone }}</span>{% endif %}
+                    </p>
+                </div>
+                <div>
+                    <span class="badge badge-role {% if user.role == 'ADMIN' %}badge-admin{% else %}badge-voyageur{% endif %}">
+                        {{ user.role }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs profil-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-content" type="button" role="tab">
+                    👤 Informations personnelles
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="profil-voyageur-tab" data-bs-toggle="tab" data-bs-target="#profil-voyageur-content" type="button" role="tab">
+                    ✈️ Profil Voyageur
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-content" type="button" role="tab">
+                    🔐 Sécurité
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Contents -->
+        <div class="tab-content profil-tab-content">
+            <!-- Info Tab -->
+            <div class="tab-pane fade show active" id="info-content" role="tabpanel">
+                <div class="profil-form-section">
+                    <h4>Modifier vos informations</h4>
+                    <a href="{{ path('app_profil_edit_info') }}" class="btn btn-primary-flygo">✏️ Éditer</a>
+                </div>
+            </div>
+
+            <!-- Profil Voyageur Tab -->
+            <div class="tab-pane fade" id="profil-voyageur-content" role="tabpanel">
+                {% if user.profilVoyageur %}
+                    <div class="profil-form-section">
+                        <h4>Profil Voyageur</h4>
+                        <div class="profil-voyageur-info">
+                            <p><strong>📍 Destination:</strong> {{ user.profilVoyageur.destinationPreferee }}</p>
+                            <p><strong>✈️ Type:</strong> {{ user.profilVoyageur.typeVoyageIcon }} {{ user.profilVoyageur.typeVoyage }}</p>
+                            <p><strong>💰 Budget:</strong> {{ user.profilVoyageur.budgetFormate }}</p>
+                        </div>
+                        <a href="{{ path('app_profil_edit_profil_voyageur') }}" class="btn btn-primary-flygo">✏️ Éditer</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Security Tab -->
+            <div class="tab-pane fade" id="security-content" role="tabpanel">
+                <div class="profil-form-section">
+                    <h4>Changer votre mot de passe</h4>
+                    <a href="{{ path('app_profil_change_password') }}" class="btn btn-primary-flygo">🔑 Changer le mot de passe</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ asset('js/profil.js') }}"></script>
+{% endblock %}

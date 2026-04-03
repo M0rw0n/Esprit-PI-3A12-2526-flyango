@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if mode == 'create' %}Créer un utilisateur{% else %}Modifier l'utilisateur{% endif %} - Fly & Go
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <style>
+        body { background-color: #F0F7FF; }
+        .form-card {
+            max-width: 680px;
+            margin: 40px auto;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+            overflow: hidden;
+            border: none;
+        }
+        .form-card-header {
+            background: linear-gradient(to right, #16a085, #1abc9c);
+            padding: 22px 32px;
+        }
+        .form-card-body { padding: 32px; }
+        .btn-submit {
+            background: linear-gradient(to right, #16a085, #1abc9c);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            padding: 10px 32px;
+            border-radius: 8px;
+            transition: opacity 0.2s;
+        }
+        .btn-submit:hover { opacity: 0.9; color: #fff; }
+        .form-label { font-weight: 600; color: #2c3e50; }
+        .invalid-feedback { display: block; }
+    </style>
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #16a085, #1abc9c);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="{{ path('app_admin_dashboard') }}">
+            ✈️ <span style="color: #F78D00;">FLY & GO</span>
+        </a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_admin_users') }}">← Retour aux utilisateurs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_logout') }}">🚪 Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card form-card">
+        <div class="form-card-header">
+            <h4 class="text-white mb-0 fw-bold">
+                {% if mode == 'create' %}➕ Créer un utilisateur{% else %}✏️ Modifier : {{ user.nomComplet }}{% endif %}
+            </h4>
+        </div>
+
+        <div class="form-card-body">
+            {{ form_start(form, {
+                attr: {
+                    novalidate: 'novalidate',
+                    class: 'needs-validation'
+                }
+            }) }}
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    {{ form_label(form.nom, null, {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.nom, {attr: {class: 'form-control' ~ (form.nom.vars.errors|length ? ' is-invalid' : '')}}) }}
+                    {% if form.nom.vars.errors|length %}
+                        <div class="invalid-feedback">
+                            {% for error in form.nom.vars.errors %}{{ error.message }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.prenom, null, {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.prenom, {attr: {class: 'form-control' ~ (form.prenom.vars.errors|length ? ' is-invalid' : '')}}) }}
+                    {% if form.prenom.vars.errors|length %}
+                        <div class="invalid-feedback">
+                            {% for error in form.prenom.vars.errors %}{{ error.message }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.email, null, {label_attr: {class: 'form-label'}}) }}
+                {{ form_widget(form.email, {attr: {class: 'form-control' ~ (form.email.vars.errors|length ? ' is-invalid' : '')}}) }}
+                {% if form.email.vars.errors|length %}
+                    <div class="invalid-feedback">
+                        {% for error in form.email.vars.errors %}{{ error.message }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.phone, null, {label_attr: {class: 'form-label'}}) }}
+                {{ form_widget(form.phone, {attr: {class: 'form-control' ~ (form.phone.vars.errors|length ? ' is-invalid' : '')}}) }}
+                {% if form.phone.vars.errors|length %}
+                    <div class="invalid-feedback">
+                        {% for error in form.phone.vars.errors %}{{ error.message }}{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="form-text text-muted">Optionnel — ex: +21612345678</div>
+            </div>
+
+            {% if mode == 'create' %}
+                <div class="mb-3">
+                    {{ form_label(form.motDePasse.first, null, {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.motDePasse.first, {attr: {class: 'form-control' ~ (form.motDePasse.vars.errors|length ? ' is-invalid' : '')}}) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.motDePasse.second, null, {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.motDePasse.second, {attr: {class: 'form-control' ~ (form.motDePasse.vars.errors|length ? ' is-invalid' : '')}}) }}
+                    {% if form.motDePasse.vars.errors|length %}
+                        <div class="invalid-feedback">
+                            {% for error in form.motDePasse.vars.errors %}{{ error.message }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="mb-4">
+                {{ form_label(form.role, null, {label_attr: {class: 'form-label'}}) }}
+                {{ form_widget(form.role, {attr: {class: 'form-select' ~ (form.role.vars.errors|length ? ' is-invalid' : '')}}) }}
+                {% if form.role.vars.errors|length %}
+                    <div class="invalid-feedback">
+                        {% for error in form.role.vars.errors %}{{ error.message }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {{ form_rest(form) }}
+
+            <div class="d-flex gap-2 justify-content-end pt-2 border-top">
+                <a href="{{ path('app_admin_users') }}" class="btn btn-outline-secondary">← Annuler</a>
+                <button type="submit" class="btn btn-submit">
+                    {% if mode == 'create' %}✅ Créer l'utilisateur{% else %}💾 Enregistrer{% endif %}
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

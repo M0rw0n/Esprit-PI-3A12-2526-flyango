@@ -1,0 +1,374 @@
+/* ============================================
+   PROFIL PAGE STYLES
+   ============================================ */
+
+.profil-container {
+    background-color: #F0F7FF;
+    min-height: calc(100vh - 60px);
+    padding-bottom: 40px;
+}
+
+/* ============================================
+   COVER PHOTO
+   ============================================ */
+.cover-photo {
+    width: 100%;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    margin-bottom: -70px;
+}
+
+/* ============================================
+   PROFIL CARD
+   ============================================ */
+.profil-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin: 0 30px 30px 30px;
+    padding-bottom: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================
+   PROFIL AVATAR SECTION
+   ============================================ */
+.profil-avatar-section {
+    padding: 0 30px 20px 30px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.profil-avatar-container {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    margin-bottom: 15px;
+}
+
+.profil-avatar,
+.profil-avatar-initials {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 5px solid white;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    object-fit: cover;
+}
+
+.profil-avatar-initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+    margin-right: 25px;
+}
+
+.profil-avatar {
+    margin-right: 25px;
+}
+
+.profil-avatar-actions {
+    position: absolute;
+    bottom: 5px;
+    right: 0;
+    display: flex;
+    gap: 8px;
+}
+
+.profil-avatar-actions .btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profil-avatar-actions .btn:hover {
+    background: var(--primary-dark);
+    transform: scale(1.1);
+}
+
+/* ============================================
+   PROFIL INFO BAR
+   ============================================ */
+.profil-info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.profil-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.profil-contact {
+    font-size: 0.95rem;
+    color: #7f8c8d;
+    margin: 8px 0 0 0;
+}
+
+.profil-contact span {
+    margin-right: 5px;
+}
+
+.badge-role {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+/* ============================================
+   PROFIL TABS
+   ============================================ */
+.profil-tabs {
+    border-bottom: 2px solid #ecf0f1;
+    padding: 0 30px;
+    margin-bottom: 0;
+}
+
+.profil-tabs .nav-link {
+    color: #7f8c8d;
+    font-weight: 600;
+    padding: 15px 0 15px 15px;
+    margin-right: 20px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.profil-tabs .nav-link:hover {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.profil-tabs .nav-link.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: transparent;
+}
+
+/* ============================================
+   PROFIL TAB CONTENT
+   ============================================ */
+.profil-tab-content {
+    padding: 30px;
+}
+
+/* ============================================
+   PROFIL FORM SECTION
+   ============================================ */
+.profil-form-section {
+    margin-bottom: 20px;
+}
+
+.profil-form-section h4 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.profil-voyageur-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.profil-voyageur-info p {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: #2c3e50;
+}
+
+.profil-voyageur-info p:last-child {
+    margin-bottom: 0;
+}
+
+/* ============================================
+   PROFIL EDIT CONTAINER
+   ============================================ */
+.profil-edit-container {
+    padding: 40px 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    margin-top: 30px;
+}
+
+.profil-edit-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.profil-edit-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 25px;
+}
+
+.profil-edit-card .form-label {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.profil-edit-card .form-control,
+.profil-edit-card .form-select {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.95rem;
+}
+
+.profil-edit-card .form-control:focus,
+.profil-edit-card .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.1);
+}
+
+/* ============================================
+   BUTTON GROUP
+   ============================================ */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.button-group .btn {
+    flex: 1;
+    padding: 12px;
+    font-weight: 600;
+}
+
+.button-group .btn-primary-flygo {
+    flex: 2;
+}
+
+.button-group .btn-outline-secondary {
+    flex: 1;
+}
+
+/* ============================================
+   FORM ERRORS
+   ============================================ */
+.invalid-feedback {
+    display: block;
+    color: var(--danger);
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+.help-block {
+    display: block;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .cover-photo {
+        height: 200px;
+        margin-bottom: -60px;
+    }
+
+    .profil-card {
+        margin: 0 15px 20px 15px;
+    }
+
+    .profil-avatar-section {
+        padding: 0 15px 15px 15px;
+    }
+
+    .profil-avatar,
+    .profil-avatar-initials {
+        width: 100px;
+        height: 100px;
+        font-size: 36px;
+    }
+
+    .profil-info-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .profil-name {
+        font-size: 22px;
+    }
+
+    .profil-tabs {
+        padding: 0 15px;
+    }
+
+    .profil-tab-content {
+        padding: 15px;
+    }
+
+    .profil-edit-container {
+        padding: 20px;
+        max-width: 100%;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .button-group .btn {
+        flex: 1;
+    }
+
+    .profil-avatar-actions {
+        bottom: -15px;
+        right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profil-edit-card {
+        padding: 15px;
+    }
+
+    .profil-edit-container {
+        padding: 10px;
+    }
+
+    .profil-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .profil-tabs .nav-link {
+        padding: 10px 5px 10px 5px;
+        margin-right: 10px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+}

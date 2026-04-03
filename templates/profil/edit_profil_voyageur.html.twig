@@ -1,0 +1,46 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Éditer mon profil voyageur - Fly & Go{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/profil.css') }}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #16a085, #1abc9c);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">
+            ✈️ <span style="color: #F78D00;">FLY & GO</span>
+        </a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container profil-edit-container">
+    <h2 class="mb-4">Éditer mon profil voyageur</h2>
+
+    <div class="profil-edit-card">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+        <div class="mb-3">
+            {{ form_row(form.destinationPreferee, {'attr': {'class': 'form-control'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_row(form.typeVoyage, {'attr': {'class': 'form-select'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_row(form.budget, {'attr': {'class': 'form-control'}}) }}
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary-flygo">💾 Sauvegarder</button>
+            <a href="{{ path('app_profil') }}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

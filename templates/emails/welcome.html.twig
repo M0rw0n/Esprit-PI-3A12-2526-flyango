@@ -1,0 +1,100 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .email-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .email-header {
+            text-align: center;
+            border-bottom: 3px solid #16a085;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .email-header h1 {
+            color: #16a085;
+            margin: 0;
+            font-size: 28px;
+        }
+        .email-content {
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        .email-content h2 {
+            color: #16a085;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .email-footer {
+            text-align: center;
+            border-top: 1px solid #ecf0f1;
+            padding-top: 20px;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .btn-link {
+            display: inline-block;
+            background: linear-gradient(to right, #16a085, #1abc9c);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h1>✈️ FLY & GO</h1>
+        </div>
+
+        <div class="email-content">
+            <p>Bonjour <strong>{{ user.nomComplet }}</strong>,</p>
+
+            <p>Bienvenue chez Fly & Go, votre plateforme de gestion de voyages!</p>
+
+            <p>Votre compte a été créé avec succès. Vous pouvez maintenant:</p>
+            <ul>
+                <li>Créer et gérer vos profils de voyage</li>
+                <li>Découvrir des destinations exceptionnelles</li>
+                <li>Planifier vos aventures</li>
+                <li>Participer à notre communauté de voyageurs</li>
+            </ul>
+
+            <p>Pour commencer, connectez-vous à votre compte:</p>
+            <p style="text-align: center;">
+                <a href="https://flyandgo.local/login" class="btn-link">Se connecter</a>
+            </p>
+
+            <h2>Informations de votre compte:</h2>
+            <ul>
+                <li><strong>Email:</strong> {{ user.email }}</li>
+                <li><strong>Nom:</strong> {{ user.nomComplet }}</li>
+                <li><strong>Type de compte:</strong> Voyageur</li>
+            </ul>
+
+            <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+
+            <p>À bientôt dans l'univers de Fly & Go!</p>
+
+            <p><strong>L'équipe Fly & Go</strong></p>
+        </div>
+
+        <div class="email-footer">
+            <p>&copy; 2024 Fly & Go. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>

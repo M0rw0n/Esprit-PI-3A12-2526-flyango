@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le profil voyageur - Fly & Go{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #16a085, #1abc9c);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">
+            ✈️ <span style="color: #F78D00;">FLY & GO</span>
+        </a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_logout') }}">🚪 Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 600px;">
+    <div class="card shadow-sm border-0">
+        <div class="card-header py-3" style="background: linear-gradient(to right, #16a085, #1abc9c);">
+            <h4 class="text-white mb-0 fw-bold">
+                ✏️ Profil voyageur : {{ user.nomComplet }}
+            </h4>
+        </div>
+
+        <div class="card-body p-4">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+            <div class="mb-3">
+                {{ form_label(form.destinationPreferee, null, {label_attr: {class: 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.destinationPreferee) }}
+                {{ form_errors(form.destinationPreferee) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.typeVoyage, null, {label_attr: {class: 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.typeVoyage) }}
+                {{ form_errors(form.typeVoyage) }}
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.budget, null, {label_attr: {class: 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.budget) }}
+                {{ form_errors(form.budget) }}
+            </div>
+
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{{ path('app_admin_profiles') }}" class="btn btn-outline-secondary">
+                    ← Annuler
+                </a>
+                <button type="submit" class="btn text-white fw-semibold px-4"
+                        style="background: linear-gradient(to right, #16a085, #1abc9c);">
+                    💾 Enregistrer
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

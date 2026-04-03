@@ -1,0 +1,69 @@
+<div class="admin-content">
+    <h2 class="mb-4">Gestion des Utilisateurs</h2>
+
+    <!-- Filter Section -->
+    <div class="filter-section mb-3">
+        <div class="row align-items-center g-2">
+            <div class="col-md-4">
+                <div class="search-box">
+                    <input type="text"
+                           id="user-search"
+                           class="form-control"
+                           placeholder="🔍 Rechercher par nom, prénom, email..."
+                           value="{{ filters.search|default('') }}"
+                           autocomplete="off">
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <select id="status-filter" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="active"    {% if filters.status|default('') == 'active'   %}selected{% endif %}>Actifs</option>
+                    <option value="inactive"  {% if filters.status|default('') == 'inactive' %}selected{% endif %}>Inactifs</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <select id="role-filter" class="form-select">
+                    <option value="">Tous les rôles</option>
+                    <option value="VOYAGEUR" {% if filters.role|default('') == 'VOYAGEUR' %}selected{% endif %}>Voyageur</option>
+                    <option value="ADMIN"    {% if filters.role|default('') == 'ADMIN'    %}selected{% endif %}>Admin</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <select id="sort-filter" class="form-select">
+                    <option value="date_desc" {% if filters.sort|default('date_desc') == 'date_desc' %}selected{% endif %}>Date (récent)</option>
+                    <option value="date_asc"  {% if filters.sort|default('date_desc') == 'date_asc'  %}selected{% endif %}>Date (ancien)</option>
+                    <option value="name_asc"  {% if filters.sort|default('date_desc') == 'name_asc'  %}selected{% endif %}>Nom (A→Z)</option>
+                    <option value="name_desc" {% if filters.sort|default('date_desc') == 'name_desc' %}selected{% endif %}>Nom (Z→A)</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <a href="{{ path('app_admin_user_create') }}" class="btn btn-primary-flygo w-100">
+                    ➕ Ajouter
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results count -->
+    <div class="mb-3 text-muted">
+        <small id="results-count">{{ users|length }} résultat(s)</small>
+        <span id="search-spinner" class="ms-2 d-none">
+            <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+        </span>
+    </div>
+
+    <!-- Users Grid -->
+    <div class="users-grid" id="users-grid">
+        {% for user in users %}
+            {% include 'admin/_user_card.html.twig' with {'user': user} %}
+        {% else %}
+            <div class="alert alert-info w-100" id="no-results">
+                Aucun utilisateur trouvé
+            </div>
+        {% endfor %}
+    </div>
+</div>

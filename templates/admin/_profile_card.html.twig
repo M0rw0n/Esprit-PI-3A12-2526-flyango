@@ -1,0 +1,45 @@
+<div class="profile-card">
+    <!-- Avatar -->
+    <div class="profile-card-avatar">
+        {% if user.profilePicturePath %}
+            <img src="/{{ user.profilePicturePath }}" alt="{{ user.nomComplet }}" class="profile-avatar">
+        {% else %}
+            <div class="profile-avatar-initials" style="background: linear-gradient(135deg, #16a085, #1abc9c);">
+                {{ user.initiales }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Profile Info -->
+    <div class="profile-card-info">
+        <h5 class="profile-card-name">{{ user.nomComplet }}</h5>
+        <p class="profile-card-email">{{ user.email }}</p>
+        
+        <!-- Destination -->
+        <p class="profile-card-destination">
+            📍 {{ profil.destinationPreferee }}
+        </p>
+
+        <!-- Type Badge -->
+        <span class="badge {{ profil.typeVoyageClass }}">
+            {{ profil.typeVoyageIcon }} {{ profil.typeVoyage }}
+        </span>
+
+        <!-- Budget -->
+        <p class="profile-card-budget">
+            💰 {{ profil.budgetFormate }}
+        </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="profile-card-actions">
+        <a href="{{ path('app_admin_profile_edit', {userId: user.id}) }}" 
+           class="btn btn-sm btn-outline-primary">✏️ Éditer</a>
+        
+        <form method="POST" action="{{ path('app_admin_profile_delete', {userId: user.id}) }}" 
+              style="display: inline;" 
+              onsubmit="return confirm('Êtes-vous sûr?');">
+            <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ Supprimer</button>
+        </form>
+    </div>
+</div>

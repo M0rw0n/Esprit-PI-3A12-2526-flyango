@@ -1,0 +1,55 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Éditer mes informations - Fly & Go{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/profil.css') }}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #16a085, #1abc9c);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">
+            ✈️ <span style="color: #F78D00;">FLY & GO</span>
+        </a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container profil-edit-container">
+    <h2 class="mb-4">Éditer mes informations personnelles</h2>
+
+    <div class="profil-edit-card">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form_row(form.nom, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form_row(form.prenom, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form_row(form.email, {'attr': {'class': 'form-control'}}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_row(form.phone, {'attr': {'class': 'form-control'}, 'required': false}) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_row(form.role, {'attr': {'class': 'form-select'}}) }}
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary-flygo">💾 Sauvegarder</button>
+            <a href="{{ path('app_profil') }}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

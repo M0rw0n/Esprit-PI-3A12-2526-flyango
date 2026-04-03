@@ -1,0 +1,42 @@
+# See the following page for more details:
+# https://symfony.com/doc/current/security.html
+
+security:
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        # used to reload user from session & other features (e.g. switch-user)
+        app_user_provider:
+            id: App\Repository\UserRepository
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\AppAuthenticator
+            logout:
+                path: app_logout
+
+
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#the-logout-path
+
+            # https://symfony.com/doc/current/security/form_login_setup.html
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        # Admin access
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        # User profile access
+        - { path: ^/profil, roles: ROLE_USER }
+        # Login and Register are public
+        - { path: ^/(login|register|forgot-password|reset-password), roles: PUBLIC_ACCESS }
+
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER]
+
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
