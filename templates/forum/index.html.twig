@@ -1,0 +1,366 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Forum — Fly&Go{% endblock %}
+
+{% block body %}
+
+{# ── Page Hero ── #}
+<div class="fg-page-hero fg-page-hero--forum">
+    <div class="fg-page-hero__overlay"></div>
+    <div class="fg-page-hero__content">
+        <p class="fg-page-hero__eyebrow">💬 Communauté</p>
+        <h1>Forum <em>Voyageurs</em></h1>
+        <p>Partagez vos expériences, posez vos questions, inspirez les autres</p>
+    </div>
+</div>
+
+<div class="fg-forum-layout">
+
+    {# ── Toolbar ── #}
+    <div class="fg-forum-toolbar">
+        <div class="fg-forum-toolbar__left">
+            <div class="fg-filters__search-wrap" style="max-width:400px">
+                <i class="fa fa-search"></i>
+                <input type="text" id="forumSearch" placeholder="Rechercher une discussion…" autocomplete="off">
+                <div class="fg-spinner" id="forumSpinner"></div>
+            </div>
+            <span class="fg-activities-count" id="forumCount">{{ posts|length }} discussion(s)</span>
+        </div>
+        <div class="fg-forum-toolbar__right">
+            <select id="forumSort" class="fg-filters__select" onchange="sortForum()">
+                <option value="recent">Plus récents</option>
+                <option value="popular">Plus populaires</option>
+                <option value="alpha">A → Z</option>
+            </select>
+            <button class="fg-btn fg-btn--orange" onclick="openModal('newPostModal')">
+                <i class="fa fa-plus"></i> Nouveau sujet
+            </button>
+        </div>
+    </div>
+
+    {# ── Forum Grid ── #}
+    <div class="fg-forum-cards" id="forumGrid">
+        {% for post in posts %}
+        <div class="fg-forum-card--full fg-anim-in"
+             id="post-{{ post.id }}"
+             data-title="{{ post.title|lower }}"
+             data-date="{{ post.createdAt|date('Y-m-d') }}"
+             data-comments="{{ post.comments|length }}"
+             style="animation-delay: {{ loop.index0 * 0.07 }}s">
+
+            {# Status color bar #}
+            <div class="fg-forum-card--full__bar fg-forum-card--full__bar--{{ post.status|lower }}"></div>
+
+            <div class="fg-forum-card--full__content">
+                <div class="fg-forum-card--full__left">
+                    <div class="fg-forum-card--full__avatar">
+                        {{ post.author|slice(0,1)|upper }}
+                    </div>
+                    <div class="fg-forum-card--full__meta">
+                        <strong>{{ post.author }}</strong>
+                        <span><i class="fa fa-clock"></i> {{ post.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                </div>
+
+                <div class="fg-forum-card--full__body">
+                    <div class="fg-forum-card--full__title-row">
+                        <h3 class="fg-forum-card--full__title">{{ post.title }}</h3>
+                        <span class="fg-forum-card--full__status fg-forum-card--full__status--{{ post.status|lower }}">
+                            {{ post.status == 'APPROVED' ? '✅ Approuvé' : (post.status == 'PENDING' ? '⏳ En attente' : '❌ Rejeté') }}
+                        </span>
+                    </div>
+                    <p class="fg-forum-card--full__excerpt">
+                        {{ post.content|slice(0, 180) }}{% if post.content|length > 180 %}…{% endif %}
+                    </p>
+                    <div class="fg-forum-card--full__footer">
+                        <div class="fg-forum-card--full__stats">
+                            <span><i class="fa fa-comments"></i> {{ post.comments|length }} commentaire(s)</span>
+                            <span><i class="fa fa-thumbs-up"></i> {{ post.reactions|length }} réaction(s)</span>
+                        </div>
+                        <div class="fg-forum-card--full__actions">
+                            {# Reactions #}
+                            <button class="fg-reaction-btn" onclick="reactPost({{ post.id }}, 'LIKE')"
+                                    title="J'aime">👍</button>
+                            <button class="fg-reaction-btn" onclick="reactPost({{ post.id }}, 'LOVE')"
+                                    title="J'adore">❤️</button>
+                            <button class="fg-reaction-btn" onclick="reactPost({{ post.id }}, 'WOW')"
+                                    title="Wow">😮</button>
+                            <a href="{{ path('forum_show', {id: post.id}) }}"
+                               class="fg-btn fg-btn--blue fg-btn--sm">
+                                <i class="fa fa-comments"></i> Voir la discussion
+                            </a>
+                            <button class="fg-btn fg-btn--danger fg-btn--sm"
+                                    onclick="deletePost({{ post.id }})">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="fg-empty-state" id="forumEmpty">
+            <i class="fa fa-comments"></i>
+            <h3>Aucun sujet pour l'instant</h3>
+            <p>Soyez le premier à lancer une discussion !</p>
+            <button class="fg-btn fg-btn--orange" onclick="openModal('newPostModal')">Créer un sujet</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# No results #}
+    <div class="fg-empty-state" id="noResults" style="display:none">
+        <i class="fa fa-search"></i>
+        <h3>Aucun résultat trouvé</h3>
+        <p>Essayez un autre mot-clé</p>
+    </div>
+</div>
+
+{# ══ New Post Modal ══ #}
+<div class="fg-modal-overlay" id="newPostModal">
+    <div class="fg-modal fg-modal--lg">
+        <div class="fg-modal__header">
+            <h3><i class="fa fa-pen"></i> Nouveau sujet</h3>
+            <button onclick="closeModal('newPostModal')"><i class="fa fa-times"></i></button>
+        </div>
+        <div class="fg-modal__body">
+            <div class="fg-booking-form__field">
+                <label>Votre nom / pseudo</label>
+                <input type="text" id="postAuthor" placeholder="Votre prénom" maxlength="100">
+            </div>
+            <div class="fg-booking-form__field">
+                <label>Titre du sujet</label>
+                <input type="text" id="postTitle" placeholder="Ex: Conseils pour visiter Djerba…" maxlength="255">
+            </div>
+            <div class="fg-booking-form__field">
+                <label>Contenu</label>
+                <textarea id="postContent" rows="6" placeholder="Décrivez votre question ou expérience en détail…"></textarea>
+            </div>
+            <div id="postErrors"></div>
+        </div>
+        <div class="fg-modal__footer">
+            <button class="fg-btn fg-btn--ghost" onclick="closeModal('newPostModal')">Annuler</button>
+            <button class="fg-btn fg-btn--orange" id="submitPostBtn" onclick="submitPost()">
+                <span id="submitPostLabel"><i class="fa fa-paper-plane"></i> Publier</span>
+                <div class="fg-spinner" id="submitPostSpinner" style="display:none"></div>
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// ══════════════════════════════════════
+//  FORUM PAGE — AJAX + Filters
+// ══════════════════════════════════════
+
+let allPosts = Array.from(document.querySelectorAll('.fg-forum-card--full'));
+let forumSearchTimer = null;
+
+/* ── Live Search ── */
+$('#forumSearch').on('input', function () {
+    clearTimeout(forumSearchTimer);
+    const q = $(this).val().trim();
+    $('#forumSpinner').show();
+
+    forumSearchTimer = setTimeout(() => {
+        $.ajax({
+            url: '{{ path("forum_search") }}',
+            type: 'GET',
+            data: { q: q },
+            dataType: 'json',
+            success: res => {
+                if (res.success) renderForumResults(res.posts);
+            },
+            complete: () => $('#forumSpinner').hide()
+        });
+    }, 350);
+});
+
+function renderForumResults(posts) {
+    const grid = document.getElementById('forumGrid');
+    const noRes = document.getElementById('noResults');
+    grid.innerHTML = '';
+
+    if (!posts.length) {
+        noRes.style.display = 'block';
+        updateForumCount(0);
+        return;
+    }
+
+    noRes.style.display = 'none';
+    posts.forEach((p, i) => {
+        grid.innerHTML += `
+        <div class="fg-forum-card--full fg-anim-in" id="post-${p.id}"
+             data-title="${esc(p.title)}" data-comments="${p.commentsCount}"
+             style="animation-delay:${i*0.07}s">
+            <div class="fg-forum-card--full__bar fg-forum-card--full__bar--approved"></div>
+            <div class="fg-forum-card--full__content">
+                <div class="fg-forum-card--full__left">
+                    <div class="fg-forum-card--full__avatar">${esc(p.author)[0].toUpperCase()}</div>
+                    <div class="fg-forum-card--full__meta"><strong>${esc(p.author)}</strong><span><i class="fa fa-clock"></i> ${p.createdAt}</span></div>
+                </div>
+                <div class="fg-forum-card--full__body">
+                    <div class="fg-forum-card--full__title-row">
+                        <h3 class="fg-forum-card--full__title">${esc(p.title)}</h3>
+                    </div>
+                    <p class="fg-forum-card--full__excerpt">${esc(p.content.slice(0,180))}${p.content.length>180?'…':''}</p>
+                    <div class="fg-forum-card--full__footer">
+                        <div class="fg-forum-card--full__stats">
+                            <span><i class="fa fa-comments"></i> ${p.commentsCount} commentaire(s)</span>
+                        </div>
+                        <div class="fg-forum-card--full__actions">
+                            <button class="fg-reaction-btn" onclick="reactPost(${p.id},'LIKE')">👍</button>
+                            <button class="fg-reaction-btn" onclick="reactPost(${p.id},'LOVE')">❤️</button>
+                            <a href="/forum/${p.id}" class="fg-btn fg-btn--blue fg-btn--sm"><i class="fa fa-comments"></i> Voir</a>
+                            <button class="fg-btn fg-btn--danger fg-btn--sm" onclick="deletePost(${p.id})"><i class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    });
+
+    allPosts = Array.from(document.querySelectorAll('.fg-forum-card--full'));
+    updateForumCount(posts.length);
+}
+
+/* ── Sort ── */
+function sortForum() {
+    const mode = document.getElementById('forumSort').value;
+    const grid = document.getElementById('forumGrid');
+    const cards = Array.from(grid.querySelectorAll('.fg-forum-card--full'));
+
+    cards.sort((a, b) => {
+        if (mode === 'popular')return parseInt(b.dataset.comments||0) - parseInt(a.dataset.comments||0);
+        if (mode === 'alpha')  return (a.dataset.title||'').localeCompare(b.dataset.title||'');
+        return (b.dataset.date||'').localeCompare(a.dataset.date||''); // recent
+    });
+    cards.forEach(c => grid.appendChild(c));
+}
+
+/* ── Submit new post ── */
+function submitPost() {
+    const author  = document.getElementById('postAuthor').value.trim();
+    const title   = document.getElementById('postTitle').value.trim();
+    const content = document.getElementById('postContent').value.trim();
+    const errDiv  = document.getElementById('postErrors');
+    errDiv.innerHTML = '';
+
+    if (!author || !title || !content) {
+        errDiv.innerHTML = '<p class="fg-form-error">Veuillez remplir tous les champs.</p>';
+        return;
+    }
+
+    document.getElementById('submitPostLabel').innerHTML = 'Publication…';
+    document.getElementById('submitPostSpinner').style.display = 'inline-block';
+    document.getElementById('submitPostBtn').disabled = true;
+
+    $.ajax({
+        url: '{{ path("forum_add") }}',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ author, title, content }),
+        dataType: 'json',
+        success: res => {
+            if (res.success) {
+                const p = res.post;
+                const grid = document.getElementById('forumGrid');
+                document.getElementById('forumEmpty')?.remove();
+
+                const card = `
+                <div class="fg-forum-card--full fg-anim-in" id="post-${p.id}" data-title="${esc(p.title)}" data-comments="0">
+                    <div class="fg-forum-card--full__bar fg-forum-card--full__bar--pending"></div>
+                    <div class="fg-forum-card--full__content">
+                        <div class="fg-forum-card--full__left">
+                            <div class="fg-forum-card--full__avatar">${esc(p.author)[0].toUpperCase()}</div>
+                            <div class="fg-forum-card--full__meta"><strong>${esc(p.author)}</strong><span>${p.createdAt}</span></div>
+                        </div>
+                        <div class="fg-forum-card--full__body">
+                            <h3 class="fg-forum-card--full__title">${esc(p.title)}</h3>
+                            <p class="fg-forum-card--full__excerpt">${esc(p.content.slice(0,180))}</p>
+                            <div class="fg-forum-card--full__footer">
+                                <span><i class="fa fa-comments"></i> 0 commentaire</span>
+                                <div class="fg-forum-card--full__actions">
+                                    <a href="/forum/${p.id}" class="fg-btn fg-btn--blue fg-btn--sm">Voir</a>
+                                    <button class="fg-btn fg-btn--danger fg-btn--sm" onclick="deletePost(${p.id})"><i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                grid.insertAdjacentHTML('afterbegin', card);
+                updateForumCount(parseInt(document.getElementById('forumCount').textContent) + 1);
+                closeModal('newPostModal');
+                document.getElementById('postAuthor').value = '';
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postContent').value = '';
+                showToast('Sujet publié avec succès ! 🎉');
+            }
+        },
+        error: xhr => {
+            const r = xhr.responseJSON;
+            errDiv.innerHTML = `<p class="fg-form-error">${r?.message || 'Erreur lors de la publication.'}</p>`;
+        },
+        complete: () => {
+            document.getElementById('submitPostLabel').innerHTML = '<i class="fa fa-paper-plane"></i> Publier';
+            document.getElementById('submitPostSpinner').style.display = 'none';
+            document.getElementById('submitPostBtn').disabled = false;
+        }
+    });
+}
+
+/* ── Delete post ── */
+function deletePost(id) {
+    if (!confirm('Supprimer cette discussion ?')) return;
+    const card = document.getElementById('post-' + id);
+    card.style.opacity = '.4';
+    $.ajax({
+        url: '/forum/delete/' + id,
+        type: 'DELETE',
+        dataType: 'json',
+        success: res => {
+            if (res.success) {
+                card.style.transition = 'all .3s ease';
+                card.style.opacity = '0';
+                card.style.maxHeight = '0';
+                setTimeout(() => { card.remove(); updateForumCount(-1, true); }, 300);
+                showToast('Discussion supprimée.');
+            }
+        },
+        error: () => { card.style.opacity = '1'; showToast('Erreur lors de la suppression.', 'error'); }
+    });
+}
+
+/* ── Reactions ── */
+function reactPost(id, type) {
+    $.ajax({
+        url: '/forum/' + id + '/react',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ type }),
+        dataType: 'json',
+        success: () => showToast('Réaction ajoutée !')
+    });
+}
+
+function updateForumCount(n, relative = false) {
+    const el = document.getElementById('forumCount');
+    const cur = parseInt(el.textContent) || 0;
+    el.textContent = (relative ? cur + n : n) + ' discussion(s)';
+}
+
+function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+document.querySelectorAll('.fg-modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) closeModal(o.id); }));
+
+$('#postContent').on('keydown', e => { if (e.ctrlKey && e.key==='Enter') submitPost(); });
+</script>
+{% endblock %}

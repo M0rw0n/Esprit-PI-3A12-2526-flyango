@@ -1,0 +1,87 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Modifier — {{ activity.title }} — Fly&Go{% endblock %}
+
+{% block body %}
+<div class="fg-page-hero">
+    <div class="fg-page-hero__overlay"></div>
+    <div class="fg-page-hero__content">
+        <p class="fg-page-hero__eyebrow">
+            <a href="{{ path('activity_show', {id: activity.id}) }}" style="color:rgba(255,255,255,.7)"><i class="fa fa-arrow-left"></i> {{ activity.title }}</a> › Modifier
+        </p>
+        <h1>Modifier <em>l'activité</em></h1>
+    </div>
+</div>
+
+<div style="max-width:700px;margin:2.5rem auto;padding:0 1.5rem">
+    <div style="background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:2.5rem;border:1px solid var(--border)">
+        <form action="{{ path('activity_edit', {id: activity.id}) }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{{ csrf_token('activity_edit') }}">
+
+            <div class="fg-booking-form__field">
+                <label>Titre *</label>
+                <input type="text" name="title" value="{{ activity.title }}" required maxlength="255">
+            </div>
+
+            <div class="fg-booking-form__field">
+                <label>Description</label>
+                <textarea name="description" rows="5">{{ activity.description }}</textarea>
+            </div>
+
+            <div class="fg-booking-form__row">
+                <div class="fg-booking-form__field">
+                    <label>Prix (DT) *</label>
+                    <input type="number" name="price" min="0" step="0.01" value="{{ activity.price }}" required>
+                </div>
+                <div class="fg-booking-form__field">
+                    <label>Durée</label>
+                    <input type="text" name="duration" value="{{ activity.duration }}">
+                </div>
+            </div>
+
+            <div class="fg-booking-form__row">
+                <div class="fg-booking-form__field">
+                    <label>Capacité *</label>
+                    <input type="number" name="capacity" min="1" value="{{ activity.capacity }}" required>
+                </div>
+                <div class="fg-booking-form__field">
+                    <label>Date</label>
+                    <input type="date" name="date" value="{{ activity.date ? activity.date|date('Y-m-d') : '' }}">
+                </div>
+            </div>
+
+            {% if activity.image %}
+            <div class="fg-booking-form__field">
+                <label>Image actuelle</label>
+                <img src="{{ asset(activity.image) }}" alt="{{ activity.title }}"
+                     style="height:120px;object-fit:cover;border-radius:10px;margin-bottom:.5rem"
+                     onerror="this.style.display='none'">
+            </div>
+            {% endif %}
+
+            <div class="fg-booking-form__field">
+                <label>Nouvelle image (optionnel)</label>
+                <input type="file" name="image" accept="image/*" style="padding:.5rem">
+            </div>
+
+            <div style="display:flex;gap:1rem;margin-top:1.5rem">
+                <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--ghost" style="flex:1;justify-content:center">Annuler</a>
+                <button type="submit" class="fg-btn fg-btn--orange" style="flex:2;justify-content:center">
+                    <i class="fa fa-save"></i> Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+
+        {# Danger zone #}
+        <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+            <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem">Zone de danger</p>
+            <form action="{{ path('activity_delete', {id: activity.id}) }}" method="POST"
+                  onsubmit="return confirm('Supprimer définitivement cette activité ?')">
+                <input type="hidden" name="_token" value="{{ csrf_token('activity_delete') }}">
+                <button type="submit" class="fg-btn fg-btn--danger" style="width:100%;justify-content:center">
+                    <i class="fa fa-trash"></i> Supprimer cette activité
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
