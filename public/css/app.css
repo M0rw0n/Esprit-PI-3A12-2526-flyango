@@ -2,24 +2,26 @@
    VARIABLES CSS - Palette Fly & Go
    ============================================ */
 :root {
-    --primary: #16a085;
-    --primary-dark: #117a65;
-    --primary-darker: #0d6b55;
-    --primary-light: #1abc9c;
+    --primary: #1e4d7b;
+    --primary-dark: #0d2137;
+    --primary-darker: #0a1628;
+    --primary-light: #2a6bb0;
+    --gradient-main: linear-gradient(135deg, #000000 0%, #0a1628 25%, #0d2137 50%, #1a3a5c 75%, #1e4d7b 100%);
+    --gradient-btn: linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #1e4d7b 100%);
     --orange: #F78D00;
     --danger: #e74c3c;
     --success: #27ae60;
     --warning: #e67e22;
-    --sidebar-dark: #0F2E3A;
-    --sidebar-mid: #122F3D;
-    --sidebar-light: #152E3C;
-    --sidebar-border: #1E4C59;
-    --bg-page: #F0F7FF;
+    --sidebar-dark: #000000;
+    --sidebar-mid: #0a1628;
+    --sidebar-light: #0d2137;
+    --sidebar-border: #1a3a5c;
+    --bg-page: #e8eef5;
     --bg-auth: #ecf0f1;
     --text-dark: #2c3e50;
     --text-gray: #7f8c8d;
-    --card-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.15);
+    --card-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.2);
 }
 
 /* ============================================
@@ -82,8 +84,8 @@ a:hover {
 
 .input-field:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.2);
-    background: #f0faf8;
+    box-shadow: 0 0 0 3px rgba(30, 77, 123, 0.2);
+    background: #eef3fa;
     outline: none;
 }
 
@@ -109,7 +111,7 @@ a:hover {
 .form-control:focus,
 .form-select:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 0.2rem rgba(22, 160, 133, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(30, 77, 123, 0.25);
 }
 
 .form-select {
@@ -120,14 +122,14 @@ a:hover {
    BUTTONS
    ============================================ */
 .btn-primary-flygo {
-    background: linear-gradient(to right, var(--primary), var(--primary-light));
+    background: var(--gradient-btn);
     color: white;
     font-weight: 600;
     border: none;
     border-radius: 10px;
     padding: 12px 20px;
     height: 46px;
-    box-shadow: 0 4px 12px rgba(22, 160, 133, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     transition: all 0.2s;
     cursor: pointer;
     display: inline-flex;
@@ -136,8 +138,8 @@ a:hover {
 }
 
 .btn-primary-flygo:hover {
-    background: linear-gradient(to right, var(--primary-dark), var(--primary));
-    box-shadow: 0 6px 16px rgba(22, 160, 133, 0.6);
+    background: linear-gradient(135deg, #1a3a5c 0%, #1e4d7b 50%, #2a6bb0 100%);
+    box-shadow: 0 6px 16px rgba(30, 77, 123, 0.5);
     transform: translateY(-2px);
 }
 
@@ -203,8 +205,8 @@ a:hover {
 }
 
 .badge-info {
-    background-color: #d1ecf1;
-    color: #0c5460;
+    background-color: #d5e8f7;
+    color: #0a2e52;
 }
 
 .badge-role {
@@ -220,7 +222,7 @@ a:hover {
 }
 
 .badge-voyageur {
-    background-color: var(--primary);
+    background: linear-gradient(135deg, #1a3a5c, #1e4d7b);
     color: white;
 }
 
@@ -231,7 +233,7 @@ a:hover {
 }
 
 .badge-relaxation {
-    background: #3498db;
+    background: #1e4d7b;
     color: white;
 }
 
@@ -241,7 +243,7 @@ a:hover {
 }
 
 .badge-business {
-    background: #2c3e50;
+    background: #0a1628;
     color: white;
 }
 
@@ -260,7 +262,7 @@ a:hover {
    ============================================ */
 .card {
     border-radius: 12px;
-    border: 1px solid #ecf0f1;
+    border: 1px solid #d0d9e4;
     box-shadow: var(--card-shadow);
     transition: all 0.2s;
 }
@@ -291,8 +293,8 @@ a:hover {
 }
 
 .alert-info {
-    background-color: #d1ecf1;
-    color: #0c5460;
+    background-color: #d5e8f7;
+    color: #0a2e52;
 }
 
 /* ============================================

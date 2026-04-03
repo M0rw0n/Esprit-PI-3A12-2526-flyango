@@ -4,7 +4,7 @@
     <!-- Filter Section -->
     <div class="filter-section mb-3">
         <div class="row align-items-center g-2">
-            <div class="col-md-4">
+            <div class="col-md-10">
                 <div class="search-box">
                     <input type="text"
                            id="user-search"
@@ -15,7 +15,7 @@
                 </div>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-10">
                 <select id="status-filter" class="form-select">
                     <option value="">Tous les statuts</option>
                     <option value="active"    {% if filters.status|default('') == 'active'   %}selected{% endif %}>Actifs</option>
@@ -23,7 +23,7 @@
                 </select>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-10">
                 <select id="role-filter" class="form-select">
                     <option value="">Tous les rôles</option>
                     <option value="VOYAGEUR" {% if filters.role|default('') == 'VOYAGEUR' %}selected{% endif %}>Voyageur</option>
@@ -31,7 +31,7 @@
                 </select>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-10">
                 <select id="sort-filter" class="form-select">
                     <option value="date_desc" {% if filters.sort|default('date_desc') == 'date_desc' %}selected{% endif %}>Date (récent)</option>
                     <option value="date_asc"  {% if filters.sort|default('date_desc') == 'date_asc'  %}selected{% endif %}>Date (ancien)</option>
@@ -40,7 +40,7 @@
                 </select>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-10">
                 <a href="{{ path('app_admin_user_create') }}" class="btn btn-primary-flygo w-100">
                     ➕ Ajouter
                 </a>

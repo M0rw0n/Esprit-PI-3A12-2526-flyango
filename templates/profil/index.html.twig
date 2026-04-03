@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block navbar %}
-<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #16a085, #1abc9c);">
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #1e4d7b, #0d2137);">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">
             ✈️ <span style="color: #F78D00;">FLY & GO</span>
@@ -31,7 +31,7 @@
 {% block content %}
 <div class="profil-container">
     <!-- Cover Photo -->
-    <div class="cover-photo" style="{% if user.coverPhotoPath %}background-image: url('/{{ user.coverPhotoPath }}');{% else %}background: linear-gradient(135deg, #16a085, #1abc9c);{% endif %}">
+    <div class="cover-photo" style="{% if user.coverPhotoPath %}background-image: url('/{{ user.coverPhotoPath }}');{% else %}background: linear-gradient(135deg, #1e4d7b, #0d2137);{% endif %}">
         <form method="POST" action="{{ path('app_profil_upload_cover_photo') }}" enctype="multipart/form-data" style="position: absolute; top: 10px; right: 10px;">
             <label for="cover-upload" class="btn btn-sm btn-light">
                 📷 Changer
@@ -54,7 +54,7 @@
                 {% if user.profilePicturePath %}
                     <img src="/{{ user.profilePicturePath }}" alt="{{ user.nomComplet }}" class="profil-avatar">
                 {% else %}
-                    <div class="profil-avatar-initials" style="background: linear-gradient(135deg, #16a085, #1abc9c);">
+                    <div class="profil-avatar-initials" style="background: linear-gradient(135deg, #1e4d7b, #0d2137);">
                         {{ user.initiales }}
                     </div>
                 {% endif %}

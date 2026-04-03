@@ -3,7 +3,7 @@
    ============================================ */
 
 .profil-container {
-    background-color: #F0F7FF;
+    background-color: #e8eef5;
     min-height: calc(100vh - 60px);
     padding-bottom: 40px;
 }
@@ -14,6 +14,7 @@
 .cover-photo {
     width: 100%;
     height: 300px;
+    background: linear-gradient(135deg, #000000 0%, #0a1628 25%, #0d2137 50%, #1a3a5c 75%, #1e4d7b 100%);
     background-size: cover;
     background-position: center;
     position: relative;
@@ -26,7 +27,7 @@
 .profil-card {
     background: white;
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
     margin: 0 30px 30px 30px;
     padding-bottom: 0;
     position: relative;
@@ -55,7 +56,7 @@
     height: 140px;
     border-radius: 50%;
     border: 5px solid white;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
     object-fit: cover;
 }
 
@@ -66,6 +67,7 @@
     font-size: 48px;
     font-weight: 700;
     color: white;
+    background: linear-gradient(135deg, #000000, #0d2137, #1e4d7b);
     margin-right: 25px;
 }
 
@@ -90,7 +92,7 @@
     align-items: center;
     justify-content: center;
     font-size: 16px;
-    background: var(--primary);
+    background: linear-gradient(135deg, #1a3a5c, #1e4d7b);
     color: white;
     border: none;
     cursor: pointer;
@@ -98,7 +100,7 @@
 }
 
 .profil-avatar-actions .btn:hover {
-    background: var(--primary-dark);
+    background: linear-gradient(135deg, #0d2137, #1a3a5c);
     transform: scale(1.1);
 }
 
@@ -157,13 +159,13 @@
 }
 
 .profil-tabs .nav-link:hover {
-    color: var(--primary);
-    border-bottom-color: var(--primary);
+    color: #1a3a5c;
+    border-bottom-color: #1a3a5c;
 }
 
 .profil-tabs .nav-link.active {
-    color: var(--primary);
-    border-bottom-color: var(--primary);
+    color: #1a3a5c;
+    border-bottom-color: #1a3a5c;
     background: transparent;
 }
 
@@ -219,7 +221,7 @@
     background: white;
     border-radius: 16px;
     padding: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 .profil-edit-card h2 {
@@ -246,8 +248,8 @@
 
 .profil-edit-card .form-control:focus,
 .profil-edit-card .form-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.1);
+    border-color: #1a3a5c;
+    box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.15);
 }
 
 /* ============================================
