@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\client;
 
 use App\Entity\ProfilVoyageur;
 use App\Form\ChangePasswordType;
@@ -50,7 +50,7 @@ class ProfilController extends AbstractController
             $this->entityManager->flush();
         }
 
-        return $this->render('profil/index.html.twig', [
+        return $this->render('client/index.html.twig', [
             'user' => $user,
             'currentTab' => 'info',
         ]);
@@ -70,7 +70,7 @@ class ProfilController extends AbstractController
             return $this->redirectToRoute('app_profil');
         }
 
-        return $this->render('profil/edit_info.html.twig', [
+        return $this->render('client/edit_info.html.twig', [
             'form' => $form,
             'user' => $user,
         ]);
@@ -97,7 +97,7 @@ class ProfilController extends AbstractController
             return $this->redirectToRoute('app_profil');
         }
 
-        return $this->render('profil/edit_profil_voyageur.html.twig', [
+        return $this->render('client/edit_profil_voyageur.html.twig', [
             'form' => $form,
             'user' => $user,
         ]);
@@ -127,7 +127,7 @@ class ProfilController extends AbstractController
             return $this->redirectToRoute('app_profil');
         }
 
-        return $this->render('profil/change_password.html.twig', [
+        return $this->render('client/change_password.html.twig', [
             'form' => $form,
             'user' => $user,
         ]);
