@@ -1,0 +1,155 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block title %}Réservations admin | Fly &amp; Go{% endblock %}
+
+{% block body %}
+    <section class="admin-page-head">
+        <div>
+            <span class="eyebrow">Réservations</span>
+            <h1>CRUD complet des réservations</h1>
+            <p>Ajout, mise à jour, suppression et recherche dynamique sur les réservations connectées à la base.</p>
+        </div>
+    </section>
+
+    <section class="stats-strip stats-strip-admin compact-stats">
+        <article class="stats-card"><div class="label">Total</div><div class="value">{{ stats.total }}</div></article>
+        <article class="stats-card"><div class="label">Confirmées</div><div class="value">{{ stats.confirmed }}</div></article>
+        <article class="stats-card"><div class="label">En attente</div><div class="value">{{ stats.pending }}</div></article>
+        <article class="stats-card"><div class="label">Annulées</div><div class="value">{{ stats.cancelled }}</div></article>
+        <article class="stats-card"><div class="label">Revenus</div><div class="value">{{ stats.revenue|number_format(0, ',', ' ') }} TND</div></article>
+    </section>
+
+    <section class="sticky-toolbar panel admin-toolbar">
+        <div class="filters filters-admin filters-admin-wide">
+            <div>
+                <label class="small">Recherche</label>
+                <input id="admin-reservation-q" class="input" type="text" value="{{ filters.q }}" placeholder="Client, circuit, destination...">
+            </div>
+            <div>
+                <label class="small">Statut</label>
+                <select id="admin-reservation-status">
+                    {% for item in ['Tous', 'CONFIRME', 'EN_ATTENTE', 'ANNULE'] %}
+                        <option value="{{ item }}" {{ filters.status == item ? 'selected' : '' }}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="toolbar-end-note" id="admin-reservation-count">{{ reservations|length }} résultat(s)</div>
+        </div>
+    </section>
+
+    <section class="admin-two-columns">
+        <aside class="panel admin-form-panel">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">{{ editReservation ? 'Mise à jour' : 'Nouvelle réservation' }}</span>
+                    <h2>{{ editReservation ? 'Modifier la réservation sélectionnée' : 'Ajouter une réservation' }}</h2>
+                </div>
+                {% if editReservation %}
+                    <a class="btn btn-light btn-sm" href="{{ path('admin_reservations') }}">Réinitialiser</a>
+                {% endif %}
+            </div>
+
+            {% if formErrors %}
+                <ul class="error-list">
+                    {% for error in formErrors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+
+            <form class="inline-form enhanced-form" method="post" action="{{ editReservation ? path('admin_reservation_update', {id: editReservation.id}) : path('admin_reservation_create') }}" novalidate data-validate-form data-submit-loading="Sauvegarde en cours...">
+                <input type="hidden" name="_token" value="{{ editReservation ? csrf_token('admin_reservation_update_' ~ editReservation.id) : csrf_token('admin_reservation_create') }}">
+
+                <div>
+                    <label class="small">Pack / circuit</label>
+                    <select name="id_circuit" required>
+                        <option value="">Sélectionner</option>
+                        {% for circuit in circuits %}
+                            <option value="{{ circuit.id_circuit }}" {{ formValues.circuitId == circuit.id_circuit ? 'selected' : '' }}>{{ circuit.title }} · {{ circuit.destination }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="small">Client</label>
+                    <select name="user_id" required>
+                        <option value="">Sélectionner</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {{ formValues.userId == user.id ? 'selected' : '' }}>{{ user.prenom }} {{ user.nom }} · {{ user.email }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="three-cols">
+                    <div>
+                        <label class="small">Voyageurs</label>
+                        <input class="input" type="number" name="nb_travelers" min="1" max="12" required value="{{ formValues.nbTravelers }}">
+                    </div>
+                    <div>
+                        <label class="small">Date de départ</label>
+                        <input class="input" type="date" name="date_depart" required value="{{ formValues.dateDepart }}">
+                    </div>
+                    <div>
+                        <label class="small">Statut</label>
+                        <select name="status">
+                            {% for item in ['CONFIRME', 'EN_ATTENTE', 'ANNULE'] %}
+                                <option value="{{ item }}" {{ formValues.status == item ? 'selected' : '' }}>{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="small">Réservée le</label>
+                    <input class="input" type="datetime-local" name="reserved_at" value="{{ formValues.reservedAt }}">
+                </div>
+
+                <button class="btn {{ editReservation ? 'btn-accent' : 'btn-primary' }}" type="submit">{{ editReservation ? 'Mettre à jour la réservation' : 'Ajouter la réservation' }}</button>
+            </form>
+        </aside>
+
+        <div class="panel">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">Réservations existantes</span>
+                    <h2>Liste des réservations</h2>
+                </div>
+            </div>
+            <div id="adminReservationList" data-live-region>
+                {% include 'admin/reservations/_list.html.twig' with {reservations: reservations} %}
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const q = document.getElementById('admin-reservation-q');
+            const status = document.getElementById('admin-reservation-status');
+            const wrapper = document.getElementById('adminReservationList');
+            const count = document.getElementById('admin-reservation-count');
+            let timer;
+
+            const refresh = async () => {
+                const params = new URLSearchParams();
+                if (q.value) params.set('q', q.value);
+                if (status.value) params.set('status', status.value);
+                window.FlyAndGo?.setLoading(wrapper, true, 'Actualisation des réservations...');
+                try {
+                    const response = await fetch('{{ path('admin_reservations_search_api') }}?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!response.ok) throw new Error('Impossible de charger les réservations');
+                    const data = await response.json();
+                    wrapper.innerHTML = data.html;
+                    count.textContent = `${data.count} résultat(s)`;
+                } catch (error) {
+                    window.FlyAndGo?.notify(error.message || 'Erreur de chargement', 'error');
+                } finally {
+                    window.FlyAndGo?.setLoading(wrapper, false);
+                }
+            };
+
+            q?.addEventListener('input', () => {
+                clearTimeout(timer);
+                timer = setTimeout(refresh, 220);
+            });
+            status?.addEventListener('change', refresh);
+        })();
+    </script>
+{% endblock %}

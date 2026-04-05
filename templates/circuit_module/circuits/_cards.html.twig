@@ -1,0 +1,29 @@
+{% if circuits is empty %}
+    <div class="empty-state">Aucun circuit ne correspond aux filtres choisis.</div>
+{% else %}
+    <div class="cards-grid">
+        {% for circuit in circuits %}
+            <article class="card circuit-card" data-card-item data-card-title="{{ circuit.title|lower }}" data-card-destination="{{ circuit.destination|lower }}" data-card-type="{{ circuit.type|lower }}" data-card-price="{{ circuit.prix_par_personne }}" data-card-rating="{{ circuit.note_moyenne ?: 0 }}" data-card-duration="{{ circuit.duree }}">
+                <img src="{{ circuit.image_url ?: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200' }}" alt="{{ circuit.title }}">
+                <div class="body">
+                    <div class="badges">
+                        <span class="badge badge-blue">{{ circuit.type }}</span>
+                        <span class="badge badge-orange">{{ circuit.duree }} jours</span>
+                        <span class="badge badge-green">★ {{ circuit.note_moyenne ?: '0.0' }}</span>
+                    </div>
+                    <h3>{{ circuit.title }}</h3>
+                    <p class="meta">📍 {{ circuit.destination }}</p>
+                    <p>{{ (circuit.description|default('Circuit prêt à la vente.'))|slice(0, 115) }}{{ (circuit.description|default('Circuit prêt à la vente.'))|length > 115 ? '…' : '' }}</p>
+                    <div class="toolbar">
+                        <div>
+                            <div class="price">{{ circuit.prix_par_personne|number_format(0, ',', ' ') }} TND</div>
+                            <div class="small-note">{{ circuit.nb_avis|default(0) }} avis • popularité {{ circuit.popularite_score|default(0) }}</div>
+                        </div>
+                        <div class="spacer"></div>
+                        <a class="btn btn-primary" href="{{ path('circuit_show', {id: circuit.id_circuit, user: userId}) }}">Voir le détail</a>
+                    </div>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endif %}

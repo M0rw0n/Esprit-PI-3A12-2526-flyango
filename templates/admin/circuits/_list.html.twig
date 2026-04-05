@@ -1,0 +1,33 @@
+{% if circuits is empty %}
+    <div class="empty-state">Aucun pack ne correspond aux filtres saisis.</div>
+{% else %}
+    <div class="cards-grid admin-cards-grid">
+        {% for circuit in circuits %}
+            <article class="card circuit-card" data-card-item data-card-title="{{ circuit.title|lower }}" data-card-destination="{{ circuit.destination|lower }}" data-card-type="{{ circuit.type|lower }}" data-card-price="{{ circuit.prix_par_personne }}" data-card-rating="{{ circuit.note_moyenne ?: 0 }}" data-card-duration="{{ circuit.duree }}" admin-pack-card">
+                <img src="{{ circuit.image_url ?: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200' }}" alt="{{ circuit.title }}">
+                <div class="body">
+                    <div class="badges">
+                        <span class="badge {{ circuit.status == 'actif' ? 'badge-green' : 'badge-orange' }}">{{ circuit.status|upper }}</span>
+                        <span class="badge badge-blue">{{ circuit.type }}</span>
+                        <span class="badge badge-purple">{{ circuit.duree }} jours</span>
+                    </div>
+                    <h3>{{ circuit.title }}</h3>
+                    <p class="meta">📍 {{ circuit.destination }}</p>
+                    <p>{{ circuit.description|slice(0, 120) }}{{ circuit.description|length > 120 ? '…' : '' }}</p>
+                    <div class="admin-pack-metrics">
+                        <span>{{ circuit.prix_par_personne|number_format(0, ',', ' ') }} TND</span>
+                        <span>{{ circuit.reservation_count }} réservation(s)</span>
+                        <span>★ {{ circuit.note_moyenne ?: '0.0' }}</span>
+                    </div>
+                    <div class="card-actions">
+                        <a class="btn btn-light btn-sm" href="{{ path('admin_circuits', {edit: circuit.id_circuit}) }}">Modifier</a>
+                        <form method="post" action="{{ path('admin_circuit_delete', {id: circuit.id_circuit}) }}" onsubmit="return confirm('Supprimer ce pack ? Cette action sera bloquée si des réservations ou avis existent.');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_circuit_delete_' ~ circuit.id_circuit) }}">
+                            <button class="btn btn-danger btn-sm" type="submit">Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endif %}

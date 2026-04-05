@@ -1,0 +1,26 @@
+{% if reviews is empty %}
+    <div class="empty-state">Aucun avis ne correspond aux filtres saisis.</div>
+{% else %}
+    <div class="review-list">
+        {% for review in reviews %}
+            <article class="review-item">
+                <div class="review-head">
+                    <div>
+                        <strong>{{ review.title }}</strong>
+                        <div class="small-note">{{ review.destination }} · {{ review.prenom ?: 'Client' }} {{ review.nom ?: '' }}</div>
+                    </div>
+                    <span class="price-pill">{{ review.rating }}/5</span>
+                </div>
+                <p>{{ review.comment }}</p>
+                <div class="small-note">{{ review.created_at|slice(0, 16) }} · {{ review.helpful_count }} vote(s) utile(s) · {{ review.verified_purchase ? 'achat vérifié' : 'non vérifié' }}</div>
+                <div class="card-actions" style="margin-top: 14px;">
+                    <a class="btn btn-light btn-sm" href="{{ path('admin_reviews', {edit: review.id}) }}">Modifier</a>
+                    <form method="post" action="{{ path('admin_review_delete', {id: review.id}) }}" onsubmit="return confirm('Supprimer cet avis ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_review_delete_' ~ review.id) }}">
+                        <button class="btn btn-danger btn-sm" type="submit">Supprimer</button>
+                    </form>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endif %}

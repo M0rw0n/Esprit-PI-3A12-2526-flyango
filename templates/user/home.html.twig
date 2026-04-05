@@ -1,0 +1,169 @@
+{% extends 'layouts/user_base.html.twig' %}
+
+{% block title %}Accueil utilisateur | Fly &amp; Go{% endblock %}
+
+{% block body %}
+    <section class="travel-hero-card">
+        <div class="travel-hero-content">
+            <span class="hero-plane">✈</span>
+            <h1>Trouvez votre prochain voyage</h1>
+            <p>Des offres de transport, taxi et location de voiture à portée de clic, avec une expérience premium inspirée de votre maquette.</p>
+            <form class="hero-search travel-search-inline" method="get" action="{{ path('circuit_index') }}">
+                <input type="hidden" name="user" value="{{ userId }}">
+                <input class="input" type="text" name="q" placeholder="Destination, type d'offre..." aria-label="Rechercher une destination ou un type d'offre">
+                <button class="btn btn-accent" type="submit">Rechercher</button>
+            </form>
+            <div class="travel-hero-highlights">
+                <div><strong>{{ homeData.highlights.offres }}+</strong><span>Offres disponibles</span></div>
+                <div><strong>{{ homeData.highlights.categories }}</strong><span>Catégories</span></div>
+                <div><strong>{{ homeData.highlights.support }}</strong><span>Support</span></div>
+                <div><strong>{{ homeData.highlights.satisfaction }}%</strong><span>Satisfaction</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="travel-welcome-strip">
+        <div>
+            <h2>Bonjour, Utilisateur 👋</h2>
+            <p>Votre espace personnel Fly &amp; Go : voyagez mieux, voyagez plus.</p>
+        </div>
+        <div class="travel-welcome-badges">
+            <span class="loyalty-pill loyalty-pill-bronze">{{ homeData.loyalty.tier }}<small>{{ homeData.loyalty.points }} points</small></span>
+            <span class="loyalty-pill loyalty-pill-connected">● {{ homeData.loyalty.status }}</span>
+        </div>
+    </section>
+
+    <section class="travel-stats-grid">
+        <article class="travel-stat-card">
+            <div class="travel-stat-icon">✈</div>
+            <strong>{{ homeData.stats.reservations }}</strong>
+            <span>Mes Réservations</span>
+            <small>{{ homeData.recentReservations|length }} en suivi rapide</small>
+        </article>
+        <article class="travel-stat-card">
+            <div class="travel-stat-icon">💰</div>
+            <strong>{{ homeData.stats.spent|number_format(0, ',', ' ') }} TND</strong>
+            <span>Total dépensé</span>
+            <small>Transactions confirmées et en attente</small>
+        </article>
+        <article class="travel-stat-card">
+            <div class="travel-stat-icon">☆</div>
+            <strong>{{ homeData.stats.reviews }}</strong>
+            <span>Avis publiés</span>
+            <small>Vos retours aident la communauté</small>
+        </article>
+        <article class="travel-stat-card">
+            <div class="travel-stat-icon">🧭</div>
+            <strong>{{ homeData.stats.custom }}</strong>
+            <span>Circuits sur mesure</span>
+            <small>Demandes personnalisées enregistrées</small>
+        </article>
+        <article class="travel-stat-card travel-stat-card-score">
+            <div class="travel-stat-icon">🏆</div>
+            <strong>{{ homeData.stats.score }}</strong>
+            <span>Score voyageur</span>
+            <small>Niveau fidélité et activité récente</small>
+        </article>
+    </section>
+
+    <section class="travel-home-grid">
+        <div class="travel-panel travel-offers-panel">
+            <div class="section-head travel-panel-head">
+                <div>
+                    <span class="eyebrow">Sélection premium</span>
+                    <h2>Circuits recommandés</h2>
+                </div>
+                <a class="btn btn-light btn-sm" href="{{ path('circuit_index', {user: userId}) }}">Voir toutes les offres</a>
+            </div>
+            <div class="travel-card-list">
+                {% for circuit in homeData.featuredCircuits %}
+                    <article class="travel-offer-card">
+                        <img src="{{ circuit.image_url ?: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200' }}" alt="{{ circuit.title }}">
+                        <div class="body">
+                            <div class="badges">
+                                <span class="badge badge-blue">{{ circuit.type }}</span>
+                                <span class="badge badge-green">★ {{ circuit.note_moyenne ?: '0.0' }}</span>
+                            </div>
+                            <h3>{{ circuit.title }}</h3>
+                            <p class="meta">📍 {{ circuit.destination }} · {{ circuit.duree }} jours</p>
+                            <div class="toolbar">
+                                <strong class="price">{{ circuit.prix_par_personne|number_format(0, ',', ' ') }} TND</strong>
+                                <a class="btn btn-primary btn-sm" href="{{ path('circuit_show', {id: circuit.id_circuit, user: userId}) }}">Découvrir</a>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+
+        <aside class="travel-side-column">
+            <div class="travel-panel upcoming-panel">
+                <div class="section-head travel-panel-head">
+                    <div>
+                        <span class="eyebrow">Prochain départ</span>
+                        <h2>Rappel voyage</h2>
+                    </div>
+                    <a class="btn btn-light btn-sm" href="{{ path('reservation_index', {user: userId}) }}">Ouvrir</a>
+                </div>
+                {% if homeData.upcomingReservation %}
+                    <div class="travel-reminder-main">
+                        <strong>{{ homeData.upcomingReservation.title }}</strong>
+                        <p>{{ homeData.upcomingReservation.destination }}</p>
+                        <span class="travel-reminder-date">Départ le {{ homeData.upcomingReservation.date_depart }}</span>
+                    </div>
+                {% else %}
+                    <div class="empty-state">Aucun départ à venir pour le moment.</div>
+                {% endif %}
+                <a class="btn btn-primary travel-full-btn" href="{{ path('reservation_index', {user: userId}) }}">Voir mes réservations</a>
+            </div>
+
+            <div class="travel-panel">
+                <div class="section-head travel-panel-head">
+                    <div>
+                        <span class="eyebrow">Réservations récentes</span>
+                        <h2>Suivi rapide</h2>
+                    </div>
+                </div>
+                <div class="review-list">
+                    {% for reservation in homeData.recentReservations %}
+                        <article class="review-item">
+                            <div class="review-head">
+                                <div>
+                                    <strong>{{ reservation.title }}</strong>
+                                    <div class="small-note">{{ reservation.destination }} · départ {{ reservation.date_depart }}</div>
+                                </div>
+                                <span class="price-pill">{{ reservation.total_price|number_format(0, ',', ' ') }} TND</span>
+                            </div>
+                            <p class="muted">Statut : {{ reservation.status }}</p>
+                        </article>
+                    {% else %}
+                        <div class="empty-state">Aucune réservation récente à afficher.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="travel-panel">
+                <div class="section-head travel-panel-head">
+                    <div>
+                        <span class="eyebrow">Derniers avis</span>
+                        <h2>Votre feedback</h2>
+                    </div>
+                    <a class="btn btn-light btn-sm" href="{{ path('review_index', {user: userId}) }}">Mes avis</a>
+                </div>
+                <div class="review-list">
+                    {% for review in homeData.recentReviews %}
+                        <article class="review-item">
+                            <div class="review-head">
+                                <strong>{{ review.title }}</strong>
+                                <span class="price-pill">{{ review.rating }}/5</span>
+                            </div>
+                            <p>{{ review.comment|slice(0, 120) }}{{ review.comment|length > 120 ? '…' : '' }}</p>
+                        </article>
+                    {% else %}
+                        <div class="empty-state">Aucun avis récent.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </aside>
+    </section>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block title %}Packs admin | Fly &amp; Go{% endblock %}
+
+{% block body %}
+    <section class="admin-page-head">
+        <div>
+            <span class="eyebrow">Gestion des packs</span>
+            <h1>Circuits existants + ajout / mise à jour / suppression</h1>
+            <p>Barre de recherche fixée, filtres dynamiques pendant la saisie et validation de formulaire sur chaque opération sensible.</p>
+        </div>
+        <a class="btn btn-light" href="{{ path('admin_dashboard') }}">Retour dashboard</a>
+    </section>
+
+    <section class="stats-strip stats-strip-admin compact-stats">
+        <article class="stats-card"><div class="label">Total packs</div><div class="value">{{ stats.total }}</div></article>
+        <article class="stats-card"><div class="label">Actifs</div><div class="value">{{ stats.active }}</div></article>
+        <article class="stats-card"><div class="label">Inactifs</div><div class="value">{{ stats.inactive }}</div></article>
+        <article class="stats-card"><div class="label">Prix moyen</div><div class="value">{{ stats.avgPrice|number_format(0, ',', ' ') }} TND</div></article>
+    </section>
+
+    <section class="sticky-toolbar panel admin-toolbar">
+        <div class="filters filters-admin">
+            <div>
+                <label class="small">Recherche</label>
+                <input id="admin-circuit-q" class="input" type="text" value="{{ filters.q }}" placeholder="Titre, destination, type...">
+            </div>
+            <div>
+                <label class="small">Type</label>
+                <select id="admin-circuit-type">
+                    <option value="Tous">Tous</option>
+                    {% for type in types %}
+                        <option value="{{ type }}" {{ filters.type == type ? 'selected' : '' }}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="small">Statut</label>
+                <select id="admin-circuit-status">
+                    {% for item in ['Tous', 'actif', 'inactif'] %}
+                        <option value="{{ item }}" {{ filters.status == item ? 'selected' : '' }}>{{ item|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="small">Tri</label>
+                <select id="admin-circuit-sort">
+                    <option value="recent" {{ filters.sort == 'recent' ? 'selected' : '' }}>Plus récents</option>
+                    <option value="popularite" {{ filters.sort == 'popularite' ? 'selected' : '' }}>Popularité</option>
+                    <option value="note_desc" {{ filters.sort == 'note_desc' ? 'selected' : '' }}>Note</option>
+                    <option value="prix_asc" {{ filters.sort == 'prix_asc' ? 'selected' : '' }}>Prix croissant</option>
+                    <option value="prix_desc" {{ filters.sort == 'prix_desc' ? 'selected' : '' }}>Prix décroissant</option>
+                </select>
+            </div>
+            <div class="toolbar-end-note" id="admin-circuit-count">{{ circuits|length }} résultat(s)</div>
+        </div>
+    </section>
+
+    <section class="admin-two-columns">
+        <aside class="panel admin-form-panel">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">{{ editCircuit ? 'Mise à jour' : 'Nouveau pack' }}</span>
+                    <h2>{{ editCircuit ? 'Modifier le pack sélectionné' : 'Ajouter un pack' }}</h2>
+                </div>
+                {% if editCircuit %}
+                    <a class="btn btn-light btn-sm" href="{{ path('admin_circuits') }}">Réinitialiser</a>
+                {% endif %}
+            </div>
+
+            {% if formErrors %}
+                <ul class="error-list">
+                    {% for error in formErrors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+
+            <form class="inline-form enhanced-form" method="post" action="{{ editCircuit ? path('admin_circuit_update', {id: editCircuit.id_circuit}) : path('admin_circuit_create') }}" novalidate data-validate-form data-submit-loading="Sauvegarde en cours...">
+                <input type="hidden" name="_token" value="{{ editCircuit ? csrf_token('admin_circuit_update_' ~ editCircuit.id_circuit) : csrf_token('admin_circuit_create') }}">
+                <div>
+                    <label class="small">Titre</label>
+                    <input class="input" type="text" name="title" required minlength="3" maxlength="150" value="{{ formValues.title }}">
+                </div>
+                <div class="two-cols">
+                    <div>
+                        <label class="small">Destination</label>
+                        <input class="input" type="text" name="destination" required minlength="2" maxlength="120" value="{{ formValues.destination }}">
+                    </div>
+                    <div>
+                        <label class="small">Type</label>
+                        <input class="input" type="text" name="type" required minlength="2" maxlength="60" value="{{ formValues.type }}" list="admin-type-options">
+                        <datalist id="admin-type-options">
+                            {% for type in types %}<option value="{{ type }}">{% endfor %}
+                        </datalist>
+                    </div>
+                </div>
+                <div>
+                    <label class="small">Description</label>
+                    <textarea name="description" rows="5" required minlength="20" maxlength="2000">{{ formValues.description }}</textarea>
+                </div>
+                <div class="three-cols">
+                    <div>
+                        <label class="small">Durée (jours)</label>
+                        <input class="input" type="number" name="duree" min="1" max="30" required value="{{ formValues.duree }}">
+                    </div>
+                    <div>
+                        <label class="small">Prix / personne</label>
+                        <input id="admin-price-per-person" class="input" type="number" name="prix_par_personne" min="1" step="1" required value="{{ formValues.prixParPersonne }}">
+                    </div>
+                    <div>
+                        <label class="small">Budget</label>
+                        <input class="input" type="number" name="budget" min="0" step="1" required value="{{ formValues.budget }}" data-min-value-of="#admin-price-per-person" data-validate-message="Le budget doit être supérieur ou égal au prix par personne.">
+                    </div>
+                </div>
+                <div class="three-cols">
+                    <div>
+                        <label class="small">Date de départ</label>
+                        <input class="input" type="date" name="start_date" value="{{ formValues.startDate }}">
+                    </div>
+                    <div>
+                        <label class="small">Popularité</label>
+                        <input class="input" type="number" name="popularite_score" min="0" max="100" value="{{ formValues.populariteScore }}">
+                    </div>
+                    <div>
+                        <label class="small">Statut</label>
+                        <select name="status">
+                            <option value="actif" {{ formValues.status == 'actif' ? 'selected' : '' }}>Actif</option>
+                            <option value="inactif" {{ formValues.status == 'inactif' ? 'selected' : '' }}>Inactif</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="small">Image URL</label>
+                    <input class="input" type="url" name="image_url" maxlength="500" value="{{ formValues.imageUrl }}" placeholder="https://...">
+                </div>
+                <button class="btn {{ editCircuit ? 'btn-accent' : 'btn-primary' }}" type="submit" data-loading-label="Traitement...">{{ editCircuit ? 'Mettre à jour le pack' : 'Ajouter le pack' }}</button>
+            </form>
+        </aside>
+
+        <div class="panel">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">Catalogue admin</span>
+                    <h2>Liste des packs</h2>
+                </div>
+            </div>
+            <div id="adminCircuitList" data-live-region>
+                {% include 'admin/circuits/_list.html.twig' with {circuits: circuits} %}
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const q = document.getElementById('admin-circuit-q');
+            const type = document.getElementById('admin-circuit-type');
+            const status = document.getElementById('admin-circuit-status');
+            const sort = document.getElementById('admin-circuit-sort');
+            const wrapper = document.getElementById('adminCircuitList');
+            const count = document.getElementById('admin-circuit-count');
+            let timer;
+
+            const refresh = async () => {
+                const params = new URLSearchParams();
+                if (q.value) params.set('q', q.value);
+                if (type.value) params.set('type', type.value);
+                if (status.value) params.set('status', status.value);
+                if (sort.value) params.set('sort', sort.value);
+                window.FlyAndGo?.setLoading(wrapper, true, 'Mise à jour des packs...');
+                try {
+                    const response = await fetch('{{ path('admin_circuits_search_api') }}?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!response.ok) throw new Error('Impossible de charger les packs');
+                    const data = await response.json();
+                    wrapper.innerHTML = data.html;
+                    count.textContent = `${data.count} résultat(s)`;
+                } catch (error) {
+                    window.FlyAndGo?.notify(error.message || 'Erreur de chargement', 'error');
+                } finally {
+                    window.FlyAndGo?.setLoading(wrapper, false);
+                }
+            };
+
+            [q, type, status, sort].forEach((field) => {
+                field?.addEventListener('input', () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(refresh, 220);
+                });
+                field?.addEventListener('change', refresh);
+            });
+        })();
+    </script>
+{% endblock %}

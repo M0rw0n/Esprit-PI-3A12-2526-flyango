@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Portail Fly &amp; Go{% endblock %}
+{% block body_class %}theme-portal{% endblock %}
+
+{% block body %}
+    <section class="portal-hero">
+        <div>
+            <span class="eyebrow">Fly &amp; Go · navigation rapide</span>
+            <h1>Choisissez votre espace de travail</h1>
+            <p>Une entrée claire pour basculer entre l'expérience utilisateur moderne en bleu et le back-office admin avec sidebar fixe.</p>
+        </div>
+        <div class="portal-badges">
+            <span class="badge badge-blue">User</span>
+            <span class="badge badge-orange">Admin</span>
+            <span class="badge badge-green">Filtres live</span>
+        </div>
+    </section>
+
+    <section class="portal-grid">
+        <article class="portal-card portal-card-user">
+            <div class="portal-card-head">
+                <span class="role-badge">Espace user</span>
+                <h2>Accueil moderne bleu avec navbar fixée</h2>
+            </div>
+            <p>Accédez à une home utilisateur avec hero, indicateurs personnels, packs recommandés, réservations récentes et raccourcis vers les modules existants.</p>
+            <div class="mini-stats">
+                <div><strong>{{ homeData.stats.reservations }}</strong><span>Réservations</span></div>
+                <div><strong>{{ homeData.stats.reviews }}</strong><span>Avis</span></div>
+                <div><strong>{{ homeData.highlights.satisfaction }}%</strong><span>Satisfaction</span></div>
+            </div>
+            <a class="btn btn-primary" href="{{ path('user_home', {user: userId}) }}">Entrer dans l'espace user</a>
+        </article>
+
+        <article class="portal-card portal-card-admin">
+            <div class="portal-card-head">
+                <span class="role-badge role-badge-admin">Espace admin</span>
+                <h2>Sidebar fixe, dashboard, réservations, avis et packs CRUD</h2>
+            </div>
+            <p>Gérez les circuits existants avec ajout, mise à jour, suppression contrôlée, filtres dynamiques et formulaires validés côté serveur.</p>
+            <div class="mini-stats">
+                <div><strong>{{ adminDashboard.global.circuits }}</strong><span>Packs</span></div>
+                <div><strong>{{ adminDashboard.global.reservations }}</strong><span>Réservations</span></div>
+                <div><strong>{{ adminDashboard.global.reviews }}</strong><span>Avis</span></div>
+            </div>
+            <a class="btn btn-accent" href="{{ path('admin_dashboard') }}">Entrer dans l'espace admin</a>
+        </article>
+    </section>
+{% endblock %}

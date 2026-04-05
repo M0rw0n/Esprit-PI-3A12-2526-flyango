@@ -1,0 +1,59 @@
+{% extends 'layouts/user_base.html.twig' %}
+
+{% block title %}Ratings | Fly & Go{% endblock %}
+
+{% block body %}
+    <section class="hero">
+        <h1>Système de ratings avancé</h1>
+        <p style="margin-top:10px">Vue analytique alimentée par <strong>circuit_review</strong> et <strong>circuit</strong>.</p>
+        <div class="stats-strip">
+            <div class="stats-card"><div class="label">Note globale</div><div class="value">{{ dashboard.globalAvg|number_format(1, ',', ' ') }}</div></div>
+            <div class="stats-card"><div class="label">Total avis</div><div class="value">{{ dashboard.totalReviews }}</div></div>
+            <div class="stats-card"><div class="label">Avis positifs</div><div class="value">{{ dashboard.positiveRate|number_format(1, ',', ' ') }}%</div></div>
+            <div class="stats-card"><div class="label">Tendance 30j</div><div class="value">{{ dashboard.trend > 0 ? '+' : '' }}{{ dashboard.trend|number_format(1, ',', ' ') }}</div></div>
+        </div>
+    </section>
+
+    <section class="grid-2" style="margin-top:22px;">
+        <div class="panel">
+            <h3>Distribution des notes</h3>
+            <div style="margin-top:14px;">
+                {% for note, total in dashboard.distribution %}
+                    {% set percent = dashboard.totalReviews > 0 ? (total / dashboard.totalReviews * 100) : 0 %}
+                    <div class="progress-row">
+                        <strong>{{ note }}★</strong>
+                        <div class="progress"><span style="width: {{ percent }}%"></span></div>
+                        <span>{{ total }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            <hr class="soft">
+            <div class="three-cols">
+                <div class="kpi"><div class="muted">Positifs</div><div class="big">{{ dashboard.sentiments.positifs }}</div></div>
+                <div class="kpi"><div class="muted">Neutres</div><div class="big">{{ dashboard.sentiments.neutres }}</div></div>
+                <div class="kpi"><div class="muted">Négatifs</div><div class="big">{{ dashboard.sentiments.negatifs }}</div></div>
+            </div>
+        </div>
+
+        <aside class="panel">
+            <h3>Top circuits</h3>
+            <div class="review-list" style="margin-top:14px;">
+                {% for circuit in dashboard.topCircuits %}
+                    <article class="review-item">
+                        <div class="review-head">
+                            <div>
+                                <strong>{{ circuit.title }}</strong>
+                                <div class="small-note">{{ circuit.destination }}</div>
+                            </div>
+                            <div class="price-pill">{{ circuit.avg_rating }}/5</div>
+                        </div>
+                        <p class="small-note">{{ circuit.review_count }} avis</p>
+                        <a class="btn btn-light" href="{{ path('circuit_show', {id: circuit.id_circuit, user: userId}) }}">Consulter</a>
+                    </article>
+                {% else %}
+                    <div class="empty-state">Pas assez de données.</div>
+                {% endfor %}
+            </div>
+        </aside>
+    </section>
+{% endblock %}

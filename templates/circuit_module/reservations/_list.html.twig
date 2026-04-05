@@ -1,0 +1,28 @@
+{% if reservations is empty %}
+    <div class="empty-state">Aucune réservation trouvée pour ce filtre.</div>
+{% else %}
+    <div class="reservation-list">
+        {% for reservation in reservations %}
+            <article class="reservation-item">
+                <div class="reservation-head">
+                    <div>
+                        <strong>{{ reservation.title }}</strong>
+                        <div class="small-note">📍 {{ reservation.destination }} • Départ {{ reservation.date_depart }}</div>
+                    </div>
+                    <div class="price-pill">{{ reservation.total_price|number_format(2, ',', ' ') }} TND</div>
+                </div>
+                <p class="muted">Voyageurs: {{ reservation.nb_travelers }} • Statut: {{ reservation.status }} • Réservé le {{ reservation.reserved_at|slice(0, 16) }}</p>
+                <p class="small-note">{{ reservation.meteo_info }}</p>
+                <div class="toolbar">
+                    <a class="btn btn-light" href="{{ path('circuit_show', {id: reservation.id_circuit, user: userId}) }}">Voir le circuit</a>
+                    {% if reservation.status != 'ANNULE' %}
+                        <form method="post" action="{{ path('reservation_cancel', {id: reservation.id, user: userId}) }}" onsubmit="return confirm('Annuler cette réservation ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('cancel_reservation_' ~ reservation.id) }}">
+                            <button class="btn btn-danger" type="submit">Annuler</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endif %}

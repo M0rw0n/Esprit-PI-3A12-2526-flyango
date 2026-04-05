@@ -1,0 +1,37 @@
+{% set current = app.request.attributes.get('_route') %}
+<header class="travel-topbar">
+    <div class="travel-topbar-inner">
+        <a class="travel-brand" href="{{ path('user_home', {user: userId|default(app.request.query.get('user', 2))}) }}">
+            <span class="travel-brand-logo">✈</span>
+            <span>
+                <strong>FLY &amp; GO</strong>
+                <small>Vol, taxi, circuits &amp; séjours</small>
+            </span>
+        </a>
+
+        <nav class="travel-nav">
+            <a class="{{ current == 'user_home' ? 'active' : '' }}" href="{{ path('user_home', {user: userId|default(app.request.query.get('user', 2))}) }}">Accueil</a>
+            <a class="{{ current starts with 'circuit_' ? 'active' : '' }}" href="{{ path('circuit_index', {user: userId|default(app.request.query.get('user', 2))}) }}">Offres</a>
+            <a class="{{ current == 'custom_circuit_index' ? 'active' : '' }}" href="{{ path('custom_circuit_index', {user: userId|default(app.request.query.get('user', 2))}) }}">Circuits</a>
+            <a class="{{ current starts with 'reservation_' ? 'active' : '' }}" href="{{ path('reservation_index', {user: userId|default(app.request.query.get('user', 2))}) }}">Mes réservations</a>
+            <a class="{{ current starts with 'review_' ? 'active' : '' }}" href="{{ path('review_index', {user: userId|default(app.request.query.get('user', 2))}) }}">Mes avis</a>
+            <a class="{{ current starts with 'comparator_' ? 'active' : '' }}" href="{{ path('comparator_index', {user: userId|default(app.request.query.get('user', 2))}) }}">Comparateur Prix</a>
+            <a class="{{ current starts with 'rating_' ? 'active' : '' }}" href="{{ path('rating_index', {user: userId|default(app.request.query.get('user', 2))}) }}">Ratings</a>
+        </nav>
+
+        <div class="travel-topbar-actions">
+            <div class="lang-switch">
+                <span class="is-active">FR</span>
+                <span>EN</span>
+            </div>
+            <button class="theme-toggle travel-theme-toggle" type="button" data-theme-toggle aria-label="Basculer le thème"></button>
+            <a class="travel-user-pill" href="{{ path('app_home', {user: userId|default(app.request.query.get('user', 2))}) }}">
+                <span class="avatar">👤</span>
+                <span>
+                    <strong>Bonjour, voyageur</strong>
+                    <small>Basculer d'espace</small>
+                </span>
+            </a>
+        </div>
+    </div>
+</header>
