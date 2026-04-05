@@ -1,0 +1,87 @@
+<div class="sidebar">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <div class="sidebar-logo">✈️ <span style="color: #F78D00;">FLY & GO</span></div>
+        <div class="sidebar-subtitle">ADMIN · DASHBOARD</div>
+    </div>
+
+    <!-- Navigation Section -->
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">NAVIGATION</div>
+        
+        <a href="{{ path('app_admin_dashboard') }}" class="sidebar-item {% if currentTab == 'dashboard' %}active{% endif %}">
+            <span class="sidebar-icon">📊</span>
+            <span class="sidebar-text">Dashboard</span>
+        </a>
+
+        <a href="{{ path('app_admin_users') }}" class="sidebar-item {% if currentTab == 'users' %}active{% endif %}">
+            <span class="sidebar-icon">👥</span>
+            <span class="sidebar-text">Users</span>
+        </a>
+
+        <a href="{{ path('app_admin_profiles') }}" class="sidebar-item {% if currentTab == 'profiles' %}active{% endif %}">
+            <span class="sidebar-icon">✈️</span>
+            <span class="sidebar-text">Traveler Profiles</span>
+        </a>
+    </div>
+
+    <!-- Modules Section -->
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">MODULES</div>
+        
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">🎭</span>
+            <span class="sidebar-text">Activities</span>
+        </div>
+
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">🗺️</span>
+            <span class="sidebar-text">Circuits</span>
+        </div>
+
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">🏨</span>
+            <span class="sidebar-text">Hébergement</span>
+        </div>
+
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">🚗</span>
+            <span class="sidebar-text">Transport</span>
+        </div>
+
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">💬</span>
+            <span class="sidebar-text">Forums</span>
+        </div>
+
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">🎫</span>
+            <span class="sidebar-text">Réservations</span>
+        </div>
+
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">💳</span>
+            <span class="sidebar-text">Paiements</span>
+        </div>
+
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">⭐</span>
+            <span class="sidebar-text">Avis</span>
+        </div>
+    </div>
+
+    <!-- System Section -->
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">SYSTEM</div>
+        
+        <div class="sidebar-item disabled">
+            <span class="sidebar-icon">⚙️</span>
+            <span class="sidebar-text">Settings</span>
+        </div>
+
+        <a href="{{ path('app_logout') }}" class="sidebar-item">
+            <span class="sidebar-icon">🚪</span>
+            <span class="sidebar-text">Logout</span>
+        </a>
+    </div>
+</div>

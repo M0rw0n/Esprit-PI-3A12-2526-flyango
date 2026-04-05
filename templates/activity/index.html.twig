@@ -1,0 +1,300 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Activités — Fly&Go{% endblock %}
+
+{% block body %}
+
+{# ── Page Hero ── #}
+<div class="fg-page-hero">
+    <div class="fg-page-hero__overlay"></div>
+    <div class="fg-page-hero__content">
+        <p class="fg-page-hero__eyebrow">🎯 Nos Activités</p>
+        <h1>Découvrez nos <em>expériences</em></h1>
+        <p>{{ activities|length }} activité(s) disponible(s) en Tunisie et dans le monde</p>
+    </div>
+</div>
+
+<div class="fg-activities-layout">
+
+    {# ── Sidebar Filters ── #}
+    <aside class="fg-filters" id="filtersPanel">
+        <div class="fg-filters__header">
+            <h3><i class="fa fa-sliders-h"></i> Filtres</h3>
+            <button class="fg-filters__reset" onclick="resetFilters()">Réinitialiser</button>
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Recherche</label>
+            <div class="fg-filters__search-wrap">
+                <i class="fa fa-search"></i>
+                <input type="text" id="activitySearch" placeholder="Titre de l'activité..." autocomplete="off">
+                <div class="fg-spinner" id="searchSpinner"></div>
+            </div>
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Budget max : <strong id="priceLabel">500 DT</strong></label>
+            <input type="range" id="priceFilter" min="0" max="500" value="500" step="5"
+                   oninput="document.getElementById('priceLabel').textContent = this.value + ' DT'; applyFilters()">
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Date</label>
+            <input type="date" id="dateFilter" onchange="applyFilters()" class="fg-filters__input">
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Durée</label>
+            <div class="fg-filters__checkboxes">
+                <label><input type="checkbox" value="h" onchange="applyFilters()"> Moins de 1 jour</label>
+                <label><input type="checkbox" value="jour" onchange="applyFilters()"> 1 jour</label>
+                <label><input type="checkbox" value="jours" onchange="applyFilters()"> Plusieurs jours</label>
+            </div>
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Trier par</label>
+            <select id="sortFilter" onchange="applyFilters()" class="fg-filters__select">
+                <option value="default">Par défaut</option>
+                <option value="price-asc">Prix croissant</option>
+                <option value="price-desc">Prix décroissant</option>
+                <option value="title">Titre A→Z</option>
+            </select>
+        </div>
+
+        <button class="fg-btn fg-btn--orange" style="width:100%;margin-top:.5rem" onclick="applyFilters()">
+            <i class="fa fa-filter"></i> Appliquer
+        </button>
+    </aside>
+
+    {# ── Main Content ── #}
+    <div class="fg-activities-main">
+
+        <div class="fg-activities-toolbar">
+            <div class="fg-activities-toolbar__left">
+                <span class="fg-activities-count" id="activityCount">{{ activities|length }} résultat(s)</span>
+            </div>
+            <div class="fg-activities-toolbar__right">
+                <button class="fg-view-btn active" id="viewGrid" onclick="setView('grid')" title="Vue grille"><i class="fa fa-th"></i></button>
+                <button class="fg-view-btn" id="viewList" onclick="setView('list')" title="Vue liste"><i class="fa fa-list"></i></button>
+                <button class="fg-btn fg-btn--ghost fg-btn--sm" onclick="toggleFilters()"><i class="fa fa-sliders-h"></i> Filtres</button>
+            </div>
+        </div>
+
+        <div class="fg-cards-grid fg-cards-grid--activities" id="activitiesGrid">
+            {% for activity in activities %}
+            <div class="fg-card fg-card--activity fg-anim-in"
+                 data-id="{{ activity.id }}"
+                 data-title="{{ activity.title|lower }}"
+                 data-price="{{ activity.price }}"
+                 data-duration="{{ activity.duration|lower }}"
+                 data-date="{{ activity.date ? activity.date|date('Y-m-d') : '' }}"
+                 style="animation-delay: {{ loop.index0 * 0.06 }}s">
+
+                <div class="fg-card__image">
+                    {% if activity.image %}
+                        <img src="{{ asset(activity.image) }}"
+                             alt="{{ activity.title }}"
+                             loading="lazy"
+                             onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80'">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80"
+                             alt="{{ activity.title }}" loading="lazy">
+                    {% endif %}
+
+                    {% if loop.index <= 2 %}
+                        <span class="fg-card__badge fg-card__badge--popular">🔥 Populaire</span>
+                    {% elseif activity.price < 50 %}
+                        <span class="fg-card__badge fg-card__badge--deal">💰 Bon plan</span>
+                    {% endif %}
+
+                    <button class="fg-card__wishlist"
+                            onclick="toggleWishlistItem({{ activity.id }}, '{{ activity.title|e('js') }}', {{ activity.price }}, '{{ activity.image|e('js') }}')"
+                            title="Ajouter à la wishlist">
+                        <i class="fa fa-heart"></i>
+                    </button>
+
+                    {% if activity.date %}
+                    <span class="fg-card__date-badge">
+                        <i class="fa fa-calendar"></i> {{ activity.date|date('d/m/Y') }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="fg-card__body">
+                    {% if activity.place %}
+                        <span class="fg-card__location"><i class="fa fa-map-marker-alt"></i> {{ activity.place.name }}</span>
+                    {% endif %}
+                    <h3 class="fg-card__title">{{ activity.title }}</h3>
+                    <p class="fg-card__desc">{{ activity.description|length > 90 ? activity.description|slice(0,90) ~ '...' : activity.description }}</p>
+
+                    <div class="fg-card__meta">
+                        {% if activity.duration %}<span><i class="fa fa-clock"></i> {{ activity.duration }}</span>{% endif %}
+                        {% if activity.capacity %}<span><i class="fa fa-users"></i> {{ activity.capacity }} places</span>{% endif %}
+                    </div>
+
+                    <div class="fg-card__rating">
+                        <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i><i class="fa fa-star-half-alt"></i>
+                        <span>(4.5)</span>
+                    </div>
+
+                    <div class="fg-card__footer">
+                        <div class="fg-card__price">
+                            <span class="fg-card__price-amount">{{ activity.price }} DT</span>
+                            <span class="fg-card__price-label">/pers.</span>
+                        </div>
+                        <div class="fg-card__actions">
+                            <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--blue fg-btn--sm">Détails</a>
+                            <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--orange fg-btn--sm">Réserver <i class="fa fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-empty-state" style="grid-column:1/-1">
+                <i class="fa fa-search"></i>
+                <h3>Aucune activité trouvée</h3>
+                <p>Essayez de modifier vos filtres</p>
+                <button onclick="resetFilters()" class="fg-btn fg-btn--orange">Réinitialiser</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="fg-empty-state" id="filteredEmpty" style="display:none;grid-column:1/-1">
+            <i class="fa fa-filter"></i>
+            <h3>Aucun résultat pour ces filtres</h3>
+            <p>Modifiez vos critères de recherche</p>
+            <button onclick="resetFilters()" class="fg-btn fg-btn--orange">Voir tout</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+let allCards = Array.from(document.querySelectorAll('.fg-card--activity'));
+let searchTimer = null;
+let currentView = 'grid';
+
+$('#activitySearch').on('input', function () {
+    clearTimeout(searchTimer);
+    const q = $(this).val().trim();
+    $('#searchSpinner').show();
+    searchTimer = setTimeout(function () {
+        if (q.length < 2) { $('#searchSpinner').hide(); applyFilters(); return; }
+        $.ajax({
+            url: '{{ path("activity_search") }}',
+            type: 'GET', data: { q: q }, dataType: 'json',
+            success: function (res) { if (res.success) renderActivitiesAjax(res.activities); },
+            error: function () { applyFilters(); },
+            complete: function () { $('#searchSpinner').hide(); }
+        });
+    }, 350);
+});
+
+function renderActivitiesAjax(activities) {
+    const grid = document.getElementById('activitiesGrid');
+    grid.innerHTML = '';
+    if (!activities.length) {
+        grid.innerHTML = '<div class="fg-empty-state" style="grid-column:1/-1"><i class="fa fa-search"></i><h3>Aucun résultat</h3></div>';
+        updateCount(0); return;
+    }
+    activities.forEach((a, i) => {
+        const img = a.image
+            ? `<img src="/${a.image}" alt="${escHtml(a.title)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80'">`
+            : `<img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80" alt="${escHtml(a.title)}">`;
+        grid.innerHTML += `
+        <div class="fg-card fg-card--activity fg-anim-in" style="animation-delay:${i*0.06}s"
+             data-id="${a.id}" data-price="${a.price}" data-title="${a.title.toLowerCase()}">
+            <div class="fg-card__image">
+                ${img}
+                ${i < 2 ? '<span class="fg-card__badge fg-card__badge--popular">🔥 Populaire</span>' : ''}
+                <button class="fg-card__wishlist" onclick="toggleWishlistItem(${a.id},'${escHtml(a.title)}',${a.price},'${a.image||''}')"><i class="fa fa-heart"></i></button>
+            </div>
+            <div class="fg-card__body">
+                <h3 class="fg-card__title">${escHtml(a.title)}</h3>
+                <p class="fg-card__desc">${escHtml((a.description||'').slice(0,90))}${(a.description||'').length>90?'...':''}</p>
+                <div class="fg-card__meta">
+                    ${a.duration ? `<span><i class="fa fa-clock"></i> ${escHtml(a.duration)}</span>` : ''}
+                    ${a.capacity ? `<span><i class="fa fa-users"></i> ${a.capacity} places</span>` : ''}
+                </div>
+                <div class="fg-card__footer">
+                    <div class="fg-card__price"><span class="fg-card__price-amount">${a.price} DT</span><span class="fg-card__price-label">/pers.</span></div>
+                    <div class="fg-card__actions">
+                        <a href="/activity/${a.id}" class="fg-btn fg-btn--blue fg-btn--sm">Détails</a>
+                        <a href="/activity/${a.id}" class="fg-btn fg-btn--orange fg-btn--sm">Réserver <i class="fa fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    });
+    updateCount(activities.length);
+    allCards = Array.from(document.querySelectorAll('.fg-card--activity'));
+}
+
+function applyFilters() {
+    const q        = document.getElementById('activitySearch').value.toLowerCase().trim();
+    const maxPrice = parseInt(document.getElementById('priceFilter').value);
+    const date     = document.getElementById('dateFilter').value;
+    const sort     = document.getElementById('sortFilter').value;
+    const durs     = Array.from(document.querySelectorAll('.fg-filters__checkboxes input:checked')).map(c=>c.value);
+
+    let visible = allCards.filter(card => {
+        const title    = card.dataset.title || '';
+        const price    = parseFloat(card.dataset.price) || 0;
+        const duration = card.dataset.duration || '';
+        const cardDate = card.dataset.date || '';
+        if (q && !title.includes(q)) return false;
+        if (price > maxPrice) return false;
+        if (date && cardDate && cardDate < date) return false;
+        if (durs.length && !durs.some(d => duration.includes(d))) return false;
+        return true;
+    });
+
+    if (sort === 'price-asc')  visible.sort((a,b) => parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
+    if (sort === 'price-desc') visible.sort((a,b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
+    if (sort === 'title')      visible.sort((a,b) => a.dataset.title.localeCompare(b.dataset.title));
+
+    allCards.forEach(c => c.style.display = 'none');
+    visible.forEach((c,i) => { c.style.display=''; c.style.animationDelay = i*0.05+'s'; });
+
+    document.getElementById('filteredEmpty').style.display = visible.length ? 'none' : 'block';
+    updateCount(visible.length);
+}
+
+function resetFilters() {
+    document.getElementById('activitySearch').value = '';
+    document.getElementById('priceFilter').value = 500;
+    document.getElementById('priceLabel').textContent = '500 DT';
+    document.getElementById('dateFilter').value = '';
+    document.getElementById('sortFilter').value = 'default';
+    document.querySelectorAll('.fg-filters__checkboxes input').forEach(c => c.checked = false);
+    allCards.forEach(c => c.style.display = '');
+    document.getElementById('filteredEmpty').style.display = 'none';
+    updateCount(allCards.length);
+}
+
+function updateCount(n) { document.getElementById('activityCount').textContent = n + ' résultat(s)'; }
+
+function setView(mode) {
+    const grid = document.getElementById('activitiesGrid');
+    if (mode === 'list') {
+        grid.classList.add('fg-cards-grid--list');
+        document.getElementById('viewList').classList.add('active');
+        document.getElementById('viewGrid').classList.remove('active');
+    } else {
+        grid.classList.remove('fg-cards-grid--list');
+        document.getElementById('viewGrid').classList.add('active');
+        document.getElementById('viewList').classList.remove('active');
+    }
+}
+
+function toggleFilters() { document.getElementById('filtersPanel').classList.toggle('fg-filters--open'); }
+
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+{% endblock %}

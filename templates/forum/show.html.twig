@@ -1,0 +1,304 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ post.title }} — Forum Fly&Go{% endblock %}
+
+{% block body %}
+
+{# ── Breadcrumb / Page hero ── #}
+<div class="fg-page-hero fg-page-hero--forum">
+    <div class="fg-page-hero__overlay"></div>
+    <div class="fg-page-hero__content">
+        <p class="fg-page-hero__eyebrow">
+            <a href="{{ path('forum_index') }}" style="color:rgba(255,255,255,.7)"><i class="fa fa-arrow-left"></i> Forum</a>
+            &nbsp;›&nbsp; Discussion
+        </p>
+        <h1>{{ post.title|length > 60 ? post.title|slice(0,60) ~ '…' : post.title }}</h1>
+        <p>par <strong>{{ post.author }}</strong> · {{ post.createdAt|date('d/m/Y') }}</p>
+    </div>
+</div>
+
+<div class="fg-forum-show-layout">
+
+    {# ════ MAIN POST ════ #}
+    <div class="fg-forum-show__post">
+        <div class="fg-forum-show__post-header">
+            <div class="fg-forum-card--full__avatar fg-forum-card--full__avatar--lg">
+                {{ post.author|slice(0,1)|upper }}
+            </div>
+            <div class="fg-forum-show__post-meta">
+                <strong>{{ post.author }}</strong>
+                <span><i class="fa fa-calendar"></i> {{ post.createdAt|date('d/m/Y') }}</span>
+                <span class="fg-forum-card--full__status fg-forum-card--full__status--{{ post.status|lower }}">
+                    {{ post.status == 'APPROVED' ? '✅ Approuvé' : (post.status == 'PENDING' ? '⏳ En attente' : '❌ Rejeté') }}
+                </span>
+            </div>
+            <div class="fg-forum-show__post-actions">
+                <button class="fg-reaction-btn fg-reaction-btn--lg" onclick="reactPost({{ post.id }}, 'LIKE')" title="J'aime">👍</button>
+                <button class="fg-reaction-btn fg-reaction-btn--lg" onclick="reactPost({{ post.id }}, 'LOVE')" title="J'adore">❤️</button>
+                <button class="fg-reaction-btn fg-reaction-btn--lg" onclick="reactPost({{ post.id }}, 'WOW')" title="Wow">😮</button>
+                <button class="fg-btn fg-btn--danger fg-btn--sm" onclick="if(confirm('Supprimer ?')) deletePost({{ post.id }})">
+                    <i class="fa fa-trash"></i> Supprimer
+                </button>
+            </div>
+        </div>
+
+        <div class="fg-forum-show__post-body">
+            {{ post.content|nl2br }}
+        </div>
+
+        <div class="fg-forum-show__post-stats">
+            <span><i class="fa fa-comments"></i> {{ post.comments|length }} commentaire(s)</span>
+            <span><i class="fa fa-thumbs-up"></i> {{ post.reactions|length }} réaction(s)</span>
+        </div>
+    </div>
+
+    {# ════ COMMENTS ════ #}
+    <div class="fg-forum-show__comments">
+        <h3 class="fg-forum-show__comments-title">
+            <i class="fa fa-comments"></i>
+            Commentaires ({{ post.comments|length }})
+        </h3>
+
+        {# Comment list #}
+        <div id="commentsList">
+            {% for comment in post.comments %}
+            <div class="fg-forum-comment">
+                <div class="fg-forum-card--full__avatar">
+                    {{ comment.author|slice(0,1)|upper }}
+                </div>
+                <div class="fg-forum-comment__body">
+                    <div class="fg-forum-comment__header">
+                        <strong>{{ comment.author }}</strong>
+                        <span>{{ comment.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                    <p>{{ comment.content|nl2br }}</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-empty-state" id="noComments" style="padding:2rem">
+                <i class="fa fa-comments"></i>
+                <p>Aucun commentaire. Soyez le premier !</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {# Add comment form #}
+        <div class="fg-forum-show__add-comment">
+            <h4><i class="fa fa-pen"></i> Ajouter un commentaire</h4>
+            <div class="fg-booking-form__field">
+                <label>Votre nom / pseudo</label>
+                <input type="text" id="commentAuthor" placeholder="Votre prénom" maxlength="100">
+            </div>
+            <div class="fg-booking-form__field">
+                <label>Commentaire</label>
+                <textarea id="commentContent" rows="4" placeholder="Partagez votre avis, votre expérience…"></textarea>
+            </div>
+            <div id="commentErrors"></div>
+            <button class="fg-btn fg-btn--orange" id="submitCommentBtn" onclick="submitComment()">
+                <i class="fa fa-paper-plane"></i> Publier le commentaire
+            </button>
+        </div>
+    </div>
+
+    {# ════ SIDEBAR ════ #}
+    <aside class="fg-forum-show__sidebar">
+        <div class="fg-forum-show__sidebar-card">
+            <h4>À propos</h4>
+            <ul>
+                <li><i class="fa fa-user"></i> Auteur : <strong>{{ post.author }}</strong></li>
+                <li><i class="fa fa-calendar"></i> Publié le : {{ post.createdAt|date('d/m/Y') }}</li>
+                <li><i class="fa fa-comments"></i> Commentaires : <strong>{{ post.comments|length }}</strong></li>
+                <li><i class="fa fa-thumbs-up"></i> Réactions : <strong>{{ post.reactions|length }}</strong></li>
+            </ul>
+        </div>
+
+        <div class="fg-forum-show__sidebar-card">
+            <h4>Navigation</h4>
+            <a href="{{ path('forum_index') }}" class="fg-btn fg-btn--ghost" style="width:100%;justify-content:center;margin-bottom:.5rem">
+                <i class="fa fa-list"></i> Toutes les discussions
+            </a>
+            <button class="fg-btn fg-btn--orange" style="width:100%;justify-content:center" onclick="openModal('newPostModal')">
+                <i class="fa fa-plus"></i> Nouveau sujet
+            </button>
+        </div>
+    </aside>
+</div>
+
+{# New post modal (same as index) #}
+<div class="fg-modal-overlay" id="newPostModal">
+    <div class="fg-modal fg-modal--lg">
+        <div class="fg-modal__header">
+            <h3><i class="fa fa-pen"></i> Nouveau sujet</h3>
+            <button onclick="closeModal('newPostModal')"><i class="fa fa-times"></i></button>
+        </div>
+        <div class="fg-modal__body">
+            <div class="fg-booking-form__field"><label>Votre nom</label><input type="text" id="postAuthor" placeholder="Prénom"></div>
+            <div class="fg-booking-form__field"><label>Titre</label><input type="text" id="postTitle" placeholder="Titre de votre sujet…"></div>
+            <div class="fg-booking-form__field"><label>Contenu</label><textarea id="postContent" rows="5" placeholder="Votre message…"></textarea></div>
+            <div id="postErrors"></div>
+        </div>
+        <div class="fg-modal__footer">
+            <button class="fg-btn fg-btn--ghost" onclick="closeModal('newPostModal')">Annuler</button>
+            <button class="fg-btn fg-btn--orange" onclick="submitPost()"><i class="fa fa-paper-plane"></i> Publier</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-forum-show-layout {
+    max-width: 1200px; margin: 0 auto; padding: 2rem;
+    display: grid; grid-template-columns: 1fr 340px; grid-template-rows: auto auto;
+    gap: 1.5rem;
+}
+.fg-forum-show__post {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 2rem; grid-column: 1; border: 1px solid var(--border);
+}
+.fg-forum-show__post-header {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.fg-forum-card--full__avatar--lg {
+    width: 56px; height: 56px; font-size: 1.4rem; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--blue), var(--orange));
+    border-radius: 50%; color: #fff; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+}
+.fg-forum-show__post-meta { flex: 1; display: flex; flex-direction: column; gap: .25rem; }
+.fg-forum-show__post-meta strong { font-size: 1.1rem; }
+.fg-forum-show__post-meta span   { font-size: .82rem; color: var(--text-muted); }
+.fg-forum-show__post-actions { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.fg-reaction-btn--lg { width: 42px; height: 42px; font-size: 1.1rem; }
+.fg-forum-show__post-body {
+    font-size: .975rem; line-height: 1.8; color: var(--text);
+    border-top: 1px solid var(--border); padding-top: 1.25rem; margin-bottom: 1.25rem;
+}
+.fg-forum-show__post-stats {
+    border-top: 1px solid var(--border); padding-top: 1rem;
+    display: flex; gap: 1.5rem; font-size: .82rem; color: var(--text-muted);
+}
+.fg-forum-show__post-stats span { display: flex; align-items: center; gap: .4rem; }
+
+.fg-forum-show__comments { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 2rem; grid-column: 1; border: 1px solid var(--border); }
+.fg-forum-show__comments-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: .5rem; }
+.fg-forum-comment { display: flex; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+.fg-forum-comment:last-child { border-bottom: none; margin-bottom: 0; }
+.fg-forum-comment .fg-forum-card--full__avatar { flex-shrink: 0; }
+.fg-forum-comment__body { flex: 1; }
+.fg-forum-comment__header { display: flex; align-items: center; gap: .75rem; margin-bottom: .4rem; }
+.fg-forum-comment__header strong { font-size: .9rem; font-weight: 700; }
+.fg-forum-comment__header span   { font-size: .75rem; color: var(--text-muted); }
+.fg-forum-comment__body p { font-size: .875rem; line-height: 1.65; color: var(--text); }
+
+.fg-forum-show__add-comment { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.fg-forum-show__add-comment h4 { font-size: 1rem; font-weight: 700; margin-bottom: 1.1rem; display: flex; align-items: center; gap: .5rem; }
+
+.fg-forum-show__sidebar { grid-column: 2; grid-row: 1 / 3; }
+.fg-forum-show__sidebar-card {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 1.5rem; margin-bottom: 1.25rem; border: 1px solid var(--border);
+}
+.fg-forum-show__sidebar-card h4 { font-size: .9rem; font-weight: 700; margin-bottom: 1rem; letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); }
+.fg-forum-show__sidebar-card ul { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+.fg-forum-show__sidebar-card li { font-size: .85rem; display: flex; align-items: center; gap: .5rem; }
+.fg-forum-show__sidebar-card i  { width: 16px; color: var(--blue); }
+@media(max-width:900px) {
+    .fg-forum-show-layout { grid-template-columns: 1fr; }
+    .fg-forum-show__sidebar { grid-column: 1; grid-row: auto; }
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const POST_ID = {{ post.id }};
+
+function submitComment() {
+    const author  = document.getElementById('commentAuthor').value.trim();
+    const content = document.getElementById('commentContent').value.trim();
+    const errDiv  = document.getElementById('commentErrors');
+    errDiv.innerHTML = '';
+
+    if (!author || !content) {
+        errDiv.innerHTML = '<p class="fg-form-error">Veuillez remplir tous les champs.</p>';
+        return;
+    }
+
+    const btn = document.getElementById('submitCommentBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Publication…';
+
+    $.ajax({
+        url: '/forum/' + POST_ID + '/comment',
+        type: 'POST',
+        data: { author, content },
+        dataType: 'json',
+        success: res => {
+            if (res.success) {
+                document.getElementById('noComments')?.remove();
+                const c = res.comment;
+                const html = `
+                <div class="fg-forum-comment fg-anim-in">
+                    <div class="fg-forum-card--full__avatar">${c.author[0].toUpperCase()}</div>
+                    <div class="fg-forum-comment__body">
+                        <div class="fg-forum-comment__header">
+                            <strong>${c.author}</strong><span>${c.createdAt}</span>
+                        </div>
+                        <p>${c.content.replace(/\n/g,'<br>')}</p>
+                    </div>
+                </div>`;
+                document.getElementById('commentsList').insertAdjacentHTML('beforeend', html);
+                document.getElementById('commentAuthor').value = '';
+                document.getElementById('commentContent').value = '';
+                showToast('💬 Commentaire publié !');
+            }
+        },
+        error: () => showToast('Erreur lors de la publication.', 'error'),
+        complete: () => { btn.disabled = false; btn.innerHTML = '<i class="fa fa-paper-plane"></i> Publier le commentaire'; }
+    });
+}
+
+function reactPost(id, type) {
+    $.ajax({
+        url: '/forum/' + id + '/react',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ type }),
+        dataType: 'json',
+        success: () => showToast('Réaction ajoutée !')
+    });
+}
+
+function deletePost(id) {
+    $.ajax({
+        url: '/forum/delete/' + id,
+        type: 'DELETE',
+        dataType: 'json',
+        success: res => {
+            if (res.success) {
+                showToast('Discussion supprimée.', 'info');
+                setTimeout(() => window.location.href = '/forum', 1200);
+            }
+        }
+    });
+}
+
+function submitPost() {
+    const author  = document.getElementById('postAuthor').value.trim();
+    const title   = document.getElementById('postTitle').value.trim();
+    const content = document.getElementById('postContent').value.trim();
+    if (!author || !title || !content) { document.getElementById('postErrors').innerHTML = '<p class="fg-form-error">Tous les champs sont requis.</p>'; return; }
+    $.ajax({
+        url: '/forum/add', type: 'POST', contentType: 'application/json',
+        data: JSON.stringify({ author, title, content }), dataType: 'json',
+        success: res => { if(res.success){ closeModal('newPostModal'); showToast('Sujet publié ! 🎉'); setTimeout(()=>window.location.href='/forum',1500); } }
+    });
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+document.querySelectorAll('.fg-modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) closeModal(o.id); }));
+document.getElementById('commentContent')?.addEventListener('keydown', e => { if(e.ctrlKey && e.key==='Enter') submitComment(); });
+</script>
+{% endblock %}
