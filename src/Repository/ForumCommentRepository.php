@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 
 namespace App\Repository;
 
@@ -100,5 +101,16 @@ class ForumCommentRepository extends ServiceEntityRepository
         }
 
         return $tree;
+=======
+namespace App\Repository;
+use App\Entity\ForumComment;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+class ForumCommentRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry) { parent::__construct($registry, ForumComment::class); }
+    public function findByPost(int $postId): array {
+        return $this->findBy(['postId' => $postId], ['createdAt' => 'ASC']);
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     }
 }

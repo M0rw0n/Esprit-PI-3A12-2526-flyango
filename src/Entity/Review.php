@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'review')]
 class Review
 {
+<<<<<<< HEAD
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -21,11 +22,22 @@ class Review
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
+=======
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(name: 'activity_id')]
+    private int $activityId = 0;
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 
     #[ORM\Column(length: 100)]
     private string $author = '';
 
+<<<<<<< HEAD
     #[ORM\Column(type: 'integer')]
+=======
+    #[ORM\Column]
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     private int $rating = 5;
 
     #[ORM\Column(type: 'text', nullable: true)]
@@ -40,10 +52,15 @@ class Review
     }
 
     public function getId(): ?int { return $this->id; }
+<<<<<<< HEAD
     public function getActivity(): ?Activity { return $this->activity; }
     public function setActivity(?Activity $a): static { $this->activity = $a; return $this; }
     public function getUser(): ?User { return $this->user; }
     public function setUser(?User $u): static { $this->user = $u; return $this; }
+=======
+    public function getActivityId(): int { return $this->activityId; }
+    public function setActivityId(int $a): static { $this->activityId = $a; return $this; }
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     public function getAuthor(): string { return $this->author; }
     public function setAuthor(string $a): static { $this->author = $a; return $this; }
     public function getRating(): int { return $this->rating; }

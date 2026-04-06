@@ -1,4 +1,5 @@
 {% extends 'base/base.html.twig' %}
+<<<<<<< HEAD
 {% block title %}Fly&Go — Votre Agence de Voyage en Tunisie{% endblock %}
 {% block og_title %}Fly&Go — Agence de Voyage en Tunisie{% endblock %}
 {% block body %}
@@ -210,10 +211,177 @@
                     <span style="font-size:.73rem;color:var(--muted)">{{ p.createdAt|date('d/m/Y') }}</span>
                 </div>
             </a>
+=======
+{% block title %}Fly&Go — Explorez la Tunisie et le Monde{% endblock %}
+
+{% block body %}
+
+{# ══════════ HERO ══════════ #}
+<section class="fg-hero">
+    <div class="fg-hero__bg">
+        <div class="fg-hero__slide fg-hero__slide--1 active"></div>
+        <div class="fg-hero__slide fg-hero__slide--2"></div>
+        <div class="fg-hero__slide fg-hero__slide--3"></div>
+    </div>
+    <div class="fg-hero__overlay"></div>
+    <div class="fg-hero__particles"></div>
+
+    <div class="fg-hero__content">
+        <div class="fg-hero__eyebrow">
+            <span>✈</span> Agence de voyage certifiée — Tunisie &amp; Monde
+        </div>
+        <h1 class="fg-hero__title">
+            Explorez la Tunisie<br>avec <em>Fly&amp;Go</em>
+        </h1>
+        <p class="fg-hero__subtitle">
+            Des expériences authentiques, des destinations paradisiaques,<br>
+            des souvenirs qui durent toute une vie.
+        </p>
+
+        <div class="fg-hero__search">
+            <div class="fg-hero__search-field">
+                <i class="fa fa-map-marker-alt"></i>
+                <input type="text" id="heroSearchDest" placeholder="Destination (Djerba, Sahara…)">
+            </div>
+            <div class="fg-hero__search-field">
+                <i class="fa fa-calendar"></i>
+                <input type="date" id="heroSearchDate" min="{{ 'now'|date('Y-m-d') }}">
+            </div>
+            <div class="fg-hero__search-field">
+                <i class="fa fa-users"></i>
+                <select id="heroSearchPersons">
+                    <option value="1">1 personne</option>
+                    <option value="2" selected>2 personnes</option>
+                    <option value="3">3 personnes</option>
+                    <option value="4">4+ personnes</option>
+                </select>
+            </div>
+            <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--orange fg-btn--lg" id="heroSearchBtn">
+                <i class="fa fa-search"></i> Rechercher
+            </a>
+        </div>
+
+        <div class="fg-hero__stats">
+            <div class="fg-hero__stat">
+                <strong><span data-target="500" data-suffix="+">0+</span></strong>
+                <span>Activités disponibles</span>
+            </div>
+            <div class="fg-hero__stat-sep"></div>
+            <div class="fg-hero__stat">
+                <strong><span data-target="50000" data-suffix="+">0+</span></strong>
+                <span>Voyageurs satisfaits</span>
+            </div>
+            <div class="fg-hero__stat-sep"></div>
+            <div class="fg-hero__stat">
+                <strong>4.9★</strong>
+                <span>Note moyenne</span>
+            </div>
+            <div class="fg-hero__stat-sep"></div>
+            <div class="fg-hero__stat">
+                <strong><span data-target="7" data-suffix=" dest.">0 dest.</span></strong>
+                <span>En Tunisie</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="fg-hero__dots">
+        <button class="fg-hero__dot active" onclick="goSlide(0)"></button>
+        <button class="fg-hero__dot" onclick="goSlide(1)"></button>
+        <button class="fg-hero__dot" onclick="goSlide(2)"></button>
+    </div>
+    <a href="#activities-section" class="fg-hero__scroll"><i class="fa fa-chevron-down"></i></a>
+</section>
+
+{# ══════════ CATEGORIES ══════════ #}
+<section class="fg-band">
+    <div class="fg-band__inner">
+        <div class="fg-band__item active"><i class="fa fa-star"></i><span>Tout voir</span></div>
+        <div class="fg-band__item"><i class="fa fa-mountain"></i><span>Aventure</span></div>
+        <div class="fg-band__item"><i class="fa fa-umbrella-beach"></i><span>Plages</span></div>
+        <div class="fg-band__item"><i class="fa fa-landmark"></i><span>Culture</span></div>
+        <div class="fg-band__item"><i class="fa fa-spa"></i><span>Bien-être</span></div>
+        <div class="fg-band__item"><i class="fa fa-utensils"></i><span>Gastronomie</span></div>
+        <div class="fg-band__item"><i class="fa fa-camera"></i><span>Photo</span></div>
+        <div class="fg-band__item"><i class="fa fa-horse"></i><span>Équitation</span></div>
+    </div>
+</section>
+
+{# ══════════ ACTIVITIES ══════════ #}
+<section class="fg-section" id="activities-section">
+    <div class="fg-section__inner">
+        <div class="fg-section__header">
+            <div>
+                <p class="fg-section__eyebrow">Nos Activités</p>
+                <h2 class="fg-section__title">Expériences <em>Recommandées</em></h2>
+            </div>
+            <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--ghost">
+                Voir tout <i class="fa fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="fg-cards-grid">
+            {% for activity in activities %}
+            <div class="fg-card fg-card--activity" data-id="{{ activity.id }}" data-price="{{ activity.price }}">
+                <div class="fg-card__image">
+                    {% if activity.image %}
+                        <img src="{{ asset(activity.image) }}" alt="{{ activity.title }}"
+                             onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80'">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80" alt="{{ activity.title }}">
+                    {% endif %}
+                    {% if loop.index <= 2 %}
+                        <span class="fg-card__badge">🔥 Populaire</span>
+                    {% elseif activity.price < 50 %}
+                        <span class="fg-card__badge fg-card__badge--deal">💰 Bon plan</span>
+                    {% endif %}
+                    <button class="fg-card__wishlist"
+                            onclick="toggleWishlistItem({{ activity.id }}, '{{ activity.title|e('js') }}', {{ activity.price }}, '{{ activity.image|e('js') }}')">
+                        <i class="fa fa-heart"></i>
+                    </button>
+                    {% if activity.date %}
+                    <span class="fg-card__date-badge"><i class="fa fa-calendar"></i> {{ activity.date|date('d/m/Y') }}</span>
+                    {% endif %}
+                </div>
+                <div class="fg-card__body">
+                    {% if activity.place %}
+                        <span class="fg-card__location"><i class="fa fa-map-marker-alt"></i> {{ activity.place.name }}</span>
+                    {% endif %}
+                    <h3 class="fg-card__title">{{ activity.title }}</h3>
+                    <p class="fg-card__desc">{{ activity.description|length > 85 ? activity.description|slice(0,85) ~ '…' : activity.description }}</p>
+                    <div class="fg-card__meta">
+                        {% if activity.duration %}<span><i class="fa fa-clock"></i> {{ activity.duration }}</span>{% endif %}
+                        {% if activity.capacity %}<span><i class="fa fa-users"></i> {{ activity.capacity }} places</span>{% endif %}
+                    </div>
+                    <div class="fg-card__rating">
+                        <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i><i class="fa fa-star-half-alt"></i>
+                        <span>(4.5)</span>
+                    </div>
+                    <div class="fg-card__footer">
+                        <div class="fg-card__price">
+                            <span class="fg-card__price-amount">{{ activity.price }} DT</span>
+                            <span class="fg-card__price-label">/pers.</span>
+                        </div>
+                        <div class="fg-card__actions">
+                            <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--blue fg-btn--sm">Détails</a>
+                            <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--orange fg-btn--sm">
+                                Réserver <i class="fa fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-empty-state" style="grid-column:1/-1">
+                <i class="fa fa-hiking"></i><p>Aucune activité disponible.</p>
+                <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--orange">Voir le catalogue</a>
+            </div>
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
             {% endfor %}
         </div>
     </div>
 </section>
+<<<<<<< HEAD
 {% endif %}
 
 <section style="background:linear-gradient(135deg,var(--navy),var(--cyan-d));padding:4rem 0">
@@ -270,10 +438,52 @@
                     </div>
                 </div>
             </div>
+=======
+
+{# ══════════ DESTINATIONS — images réelles Tunisie ══════════ #}
+<section class="fg-section fg-section--dark" id="destinations">
+    <div class="fg-section__inner">
+        <div class="fg-section__header">
+            <div>
+                <p class="fg-section__eyebrow">Destinations</p>
+                <h2 class="fg-section__title" style="color:#fff">Découvrez la <em>Tunisie</em></h2>
+            </div>
+        </div>
+
+        {% set realImages = {
+            'Sidi Bou Said':   'https://images.unsplash.com/photo-1610822454978-e1cdde073a70?w=800&q=85',
+            'Sahara Douz':     'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=85',
+            'Carthage':        'https://images.unsplash.com/photo-1580834341580-8c17a3a630ca?w=800&q=85',
+            'Medina de Tunis': 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=800&q=85',
+            'Djerba':          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=85',
+            'Kairouan':        'https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=85',
+            'Tabarka':         'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=85'
+        } %}
+
+        <div class="fg-destinations-grid">
+            {% for place in places %}
+            <div class="fg-dest-card" style="animation-delay:{{ loop.index0 * 0.1 }}s">
+                <div class="fg-dest-card__img">
+                    <img src="{{ realImages[place.name] ?? 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=800&q=85' }}"
+                         alt="{{ place.name }}" loading="lazy">
+                </div>
+                <div class="fg-dest-card__overlay">
+                    <div class="fg-dest-card__info">
+                        <h3>{{ place.name }}</h3>
+                        <p><i class="fa fa-map-marker-alt"></i> {{ place.city }}, {{ place.country }}</p>
+                    </div>
+                    <a href="{{ path('activity_index') }}?place={{ place.id }}" class="fg-dest-card__btn">
+                        Explorer <i class="fa fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
         </div>
     </div>
 </section>
 
+<<<<<<< HEAD
 <!-- Newsletter -->
 <section style="background:linear-gradient(135deg,var(--navy-dd),var(--navy));padding:5rem 0">
     <div style="max-width:680px;margin:0 auto;padding:0 2rem;text-align:center">
@@ -285,6 +495,112 @@
             <button type="submit" class="btn btn-gold btn-lg"><i class="fa fa-paper-plane"></i> S'inscrire</button>
         </form>
         <p style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:1rem">En vous inscrivant, vous acceptez de recevoir nos offres. Désabonnement possible à tout moment.</p>
+=======
+{# ══════════ FORUM ══════════ #}
+<section class="fg-section">
+    <div class="fg-section__inner">
+        <div class="fg-section__header">
+            <div>
+                <p class="fg-section__eyebrow">Communauté</p>
+                <h2 class="fg-section__title">Discussions <em>Récentes</em></h2>
+            </div>
+            <a href="{{ path('forum_index') }}" class="fg-btn fg-btn--ghost">Voir tout <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="fg-forum-grid">
+            {% for post in recentPosts %}
+            <div class="fg-forum-card">
+                <div class="fg-forum-card__top">
+                    <div class="fg-forum-card__avatar">{{ post.author|slice(0,1)|upper }}</div>
+                    <div class="fg-forum-card__meta">
+                        <strong>{{ post.author }}</strong>
+                        <span><i class="fa fa-clock"></i> {{ post.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                    <span class="fg-forum-card__status fg-forum-card__status--{{ post.status|lower }}">
+                        {{ post.status == 'APPROVED' ? '✅' : '⏳' }} {{ post.status }}
+                    </span>
+                </div>
+                <h3 class="fg-forum-card__title">{{ post.title }}</h3>
+                <p class="fg-forum-card__excerpt">{{ post.content|slice(0,115) }}{% if post.content|length > 115 %}…{% endif %}</p>
+                <div class="fg-forum-card__footer">
+                    <span><i class="fa fa-comments"></i> {{ post.comments|length }} commentaire(s)</span>
+                    <a href="{{ path('forum_show', {id: post.id}) }}" class="fg-btn fg-btn--ghost fg-btn--sm">
+                        Lire <i class="fa fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-empty-state" style="grid-column:1/-1">
+                <i class="fa fa-comments"></i><p>Aucune discussion récente.</p>
+                <a href="{{ path('forum_index') }}" class="fg-btn fg-btn--orange">Rejoindre le forum</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# ══════════ REVIEWS ══════════ #}
+<section class="fg-section fg-section--blue">
+    <div class="fg-section__inner">
+        <div class="fg-section__header fg-section__header--center">
+            <div>
+                <p class="fg-section__eyebrow">Avis Clients</p>
+                <h2 class="fg-section__title" style="color:#fff">Ce que disent <em>nos voyageurs</em></h2>
+            </div>
+        </div>
+        <div class="fg-reviews-slider" id="reviewsSlider">
+            {% for review in reviews %}
+            <div class="fg-review-card">
+                <div class="fg-review-card__stars">
+                    {% for i in 1..5 %}<i class="fa fa-star{% if i > review.rating %}-o{% endif %}"></i>{% endfor %}
+                </div>
+                <p class="fg-review-card__comment">{{ review.comment }}</p>
+                <div class="fg-review-card__author">
+                    <div class="fg-review-card__avatar">{{ review.author|slice(0,1)|upper }}</div>
+                    <div><strong>{{ review.author }}</strong><span>{{ review.createdAt|date('d/m/Y') }}</span></div>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-review-card active">
+                <div class="fg-review-card__stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></div>
+                <p class="fg-review-card__comment">Le Safari Sahara était une expérience absolument magique. La nuit sous les étoiles dans le désert est un souvenir inoubliable !</p>
+                <div class="fg-review-card__author"><div class="fg-review-card__avatar">P</div><div><strong>Pierre D.</strong><span>Mars 2026</span></div></div>
+            </div>
+            <div class="fg-review-card">
+                <div class="fg-review-card__stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></div>
+                <p class="fg-review-card__comment">Sidi Bou Saïd est splendide ! Guide excellent, très cultivé et passionné. Je recommande vivement Fly&Go pour toute visite en Tunisie.</p>
+                <div class="fg-review-card__author"><div class="fg-review-card__avatar">M</div><div><strong>Marie L.</strong><span>Février 2026</span></div></div>
+            </div>
+            <div class="fg-review-card">
+                <div class="fg-review-card__stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></div>
+                <p class="fg-review-card__comment">Organisation parfaite. Carthage était fascinant, l'histoire prenait vie ! Rapport qualité/prix imbattable.</p>
+                <div class="fg-review-card__author"><div class="fg-review-card__avatar">J</div><div><strong>Jean B.</strong><span>Janvier 2026</span></div></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="fg-reviews-nav">
+            <button onclick="prevReview()" class="fg-reviews-nav__btn"><i class="fa fa-chevron-left"></i></button>
+            <div class="fg-reviews-dots" id="reviewDots"></div>
+            <button onclick="nextReview()" class="fg-reviews-nav__btn"><i class="fa fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
+
+{# ══════════ CTA ══════════ #}
+<section class="fg-cta">
+    <div class="fg-cta__inner">
+        <div class="fg-cta__text">
+            <h2>Prêt pour votre prochaine aventure ?</h2>
+            <p>Réservez maintenant et profitez de tarifs exclusifs sur toutes nos activités</p>
+        </div>
+        <div class="fg-cta__actions">
+            <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--white fg-btn--xl">
+                <i class="fa fa-calendar-plus"></i> Réserver une activité
+            </a>
+            <a href="{{ path('forum_index') }}" class="fg-btn fg-btn--lg" style="background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.4)">
+                <i class="fa fa-comments"></i> Rejoindre le forum
+            </a>
+        </div>
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     </div>
 </section>
 
@@ -292,6 +608,7 @@
 
 {% block javascripts %}
 <script>
+<<<<<<< HEAD
 let slide = 0;
 const slides = document.querySelectorAll('.hero__slide');
 const dots = document.querySelectorAll('.hero__dot');
@@ -309,6 +626,60 @@ function heroSearch() {
 }
 document.getElementById('heroQ')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') heroSearch();
+=======
+// ── Hero Slider ──
+let slideIdx = 0;
+const slides = document.querySelectorAll('.fg-hero__slide');
+const heroDots = document.querySelectorAll('.fg-hero__dot');
+function goSlide(n) {
+    slides[slideIdx].classList.remove('active');
+    heroDots[slideIdx].classList.remove('active');
+    slideIdx = n;
+    slides[slideIdx].classList.add('active');
+    heroDots[slideIdx].classList.add('active');
+}
+setInterval(() => goSlide((slideIdx + 1) % slides.length), 5500);
+
+// ── Reviews Slider ──
+let revIdx = 0;
+const revCards = document.querySelectorAll('.fg-review-card');
+const revDotsEl = document.getElementById('reviewDots');
+revCards.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'fg-reviews-dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goReview(i);
+    revDotsEl?.appendChild(d);
+});
+function goReview(n) {
+    revCards[revIdx]?.classList.remove('active');
+    document.querySelectorAll('.fg-reviews-dot')[revIdx]?.classList.remove('active');
+    revIdx = (n + revCards.length) % revCards.length;
+    revCards[revIdx]?.classList.add('active');
+    document.querySelectorAll('.fg-reviews-dot')[revIdx]?.classList.add('active');
+}
+function prevReview() { goReview(revIdx - 1); }
+function nextReview() { goReview(revIdx + 1); }
+if (revCards.length > 0) {
+    revCards[0].classList.add('active');
+    setInterval(() => goReview(revIdx + 1), 6500);
+}
+
+// ── Category band ──
+document.querySelectorAll('.fg-band__item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.fg-band__item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+    });
+});
+
+// ── Hero search redirect ──
+document.getElementById('heroSearchBtn')?.addEventListener('click', function(e) {
+    const dest = document.getElementById('heroSearchDest')?.value.trim();
+    if (dest) {
+        e.preventDefault();
+        window.location.href = '{{ path("activity_index") }}?q=' + encodeURIComponent(dest);
+    }
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 });
 </script>
 {% endblock %}

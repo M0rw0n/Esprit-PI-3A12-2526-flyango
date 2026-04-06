@@ -1,0 +1,72 @@
+{% extends 'layouts/user_base.html.twig' %}
+
+{% block title %}Mes réservations | Fly & Go{% endblock %}
+
+{% block body %}
+    <section class="hero hero-home">
+        <div class="hero-copy">
+            <span class="eyebrow">Suivi personnel</span>
+            <h1>Mes réservations</h1>
+            <p>Recherche dynamique, annulation sécurisée et lecture directe de <strong>circuit_reservation</strong>.</p>
+        </div>
+        <div class="stats-strip">
+            <div class="stats-card"><div class="label">Réservations</div><div class="value">{{ stats.total }}</div></div>
+            <div class="stats-card"><div class="label">Confirmées</div><div class="value">{{ stats.confirmed }}</div></div>
+            <div class="stats-card"><div class="label">Annulées</div><div class="value">{{ stats.cancelled }}</div></div>
+            <div class="stats-card"><div class="label">Total dépensé</div><div class="value">{{ stats.spent|number_format(0, ',', ' ') }} TND</div></div>
+        </div>
+    </section>
+
+    <section class="sticky-toolbar panel admin-toolbar">
+        <div class="filters filters-admin-wide" style="margin-top:0;">
+            <div>
+                <label class="small">Recherche</label>
+                <input id="res-q" class="input" type="text" value="{{ filters.q }}" placeholder="Circuit, destination, statut...">
+            </div>
+            <div>
+                <label class="small">Statut</label>
+                <select id="res-status">
+                    {% for status in ['Tous', 'CONFIRME', 'ANNULE'] %}
+                        <option value="{{ status }}" {{ filters.status == status ? 'selected' : '' }}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="small-note" id="res-count">{{ reservations|length }} résultat(s)</div>
+        </div>
+    </section>
+
+    <section class="section" style="padding:20px; margin-top:22px;">
+        <div id="reservationList" style="margin-top:18px;" data-live-region>
+            {% include 'circuit_module/reservations/_list.html.twig' with {reservations: reservations, userId: userId} %}
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const q = document.getElementById('res-q');
+            const status = document.getElementById('res-status');
+            const list = document.getElementById('reservationList');
+            const count = document.getElementById('res-count');
+            let timer;
+            const refresh = async () => {
+                const params = new URLSearchParams({ user: '{{ userId }}' });
+                if (q.value) params.set('q', q.value);
+                if (status.value) params.set('status', status.value);
+                window.FlyAndGo?.setLoading(list, true, 'Actualisation des réservations...');
+                try {
+                    const response = await fetch('{{ path('reservation_search_api') }}?' + params.toString());
+                    if (!response.ok) throw new Error('Impossible de charger les réservations');
+                    const data = await response.json();
+                    list.innerHTML = data.html;
+                    count.textContent = `${data.count} résultat(s)`;
+                } catch (error) {
+                    window.FlyAndGo?.notify(error.message || 'Erreur de chargement', 'error');
+                } finally {
+                    window.FlyAndGo?.setLoading(list, false);
+                }
+            };
+            q?.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(refresh, 250); });
+            status?.addEventListener('change', refresh);
+        })();
+    </script>
+{% endblock %}

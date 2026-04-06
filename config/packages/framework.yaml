@@ -1,16 +1,45 @@
+<<<<<<< HEAD
 framework:
     secret: '%env(APP_SECRET)%'
     http_method_override: false
     handle_all_throwables: true
 
+=======
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+<<<<<<< HEAD
+    annotations: false
+    http_method_override: false
+    handle_all_throwables: true
+
+    # Enables session support. Note that the session will ONLY be started if you read or write from it.
+    # Remove or comment this section to explicitly disable session support.
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     session:
         handler_id: null
         cookie_secure: auto
         cookie_samesite: lax
+<<<<<<< HEAD
         storage_factory_id: session.storage.factory.native
 
     php_errors:
         log: true
+=======
+
+    #esi: true
+    #fragments: true
+    php_errors:
+        log: true
+=======
+
+    # Note that the session will be started ONLY if you read or write from it.
+    session: true
+
+    #esi: true
+    #fragments: true
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 
 when@test:
     framework:

@@ -1,4 +1,12 @@
 twig:
+<<<<<<< HEAD
     default_path: '%kernel.project_dir%/templates'
     globals:
         app_name: 'Fly&Go'
+=======
+    file_name_pattern: '*.twig'
+
+when@test:
+    twig:
+        strict_variables: true
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739

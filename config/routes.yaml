@@ -1,5 +1,25 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 controllers:
     resource:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+<<<<<<< HEAD
+=======
+=======
+# yaml-language-server: $schema=../vendor/symfony/routing/Loader/schema/routing.schema.json
+
+# This file is the entry point to configure the routes of your app.
+# Methods with the #[Route] attribute are automatically imported.
+# See also https://symfony.com/doc/current/routing.html
+
+# To list all registered routes, run the following command:
+#   bin/console debug:router
+
+controllers:
+    resource: routing.controllers
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739

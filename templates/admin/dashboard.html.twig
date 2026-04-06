@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends 'admin/layout.html.twig' %}
 {% block title %}Tableau de bord — Fly&Go Admin{% endblock %}
 {% block breadcrumb %}Tableau de bord{% endblock %}
@@ -247,4 +248,300 @@ function moderatePost(id, status) {
      .fail(() => showToast('Erreur', 'error'));
 }
 </script>
+=======
+<<<<<<< HEAD
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block title %}Dashboard admin | Fly &amp; Go{% endblock %}
+
+{% block body %}
+    <section class="admin-shell-header">
+        <div>
+            <p class="admin-shell-caption">Dashboard</p>
+            <h1>Dashboard</h1>
+            <p>Planifiez, priorisez et pilotez vos opérations Fly &amp; Go avec une interface premium inspirée de votre maquette.</p>
+        </div>
+        <div class="admin-shell-actions">
+            <a class="btn btn-primary" href="{{ path('admin_circuits') }}">+ Add Project</a>
+            <a class="btn btn-light" href="{{ path('admin_reservations') }}">Import Data</a>
+        </div>
+    </section>
+
+    <section class="admin-kpi-grid-refined">
+        <article class="admin-kpi-card admin-kpi-primary">
+            <div class="admin-kpi-head"><span>Total Projects</span><span class="kpi-arrow">↗</span></div>
+            <strong>{{ dashboard.global.circuits }}</strong>
+            <small>Catalogue Fly &amp; Go disponible</small>
+        </article>
+        <article class="admin-kpi-card">
+            <div class="admin-kpi-head"><span>Ended Projects</span><span class="kpi-arrow">↗</span></div>
+            <strong>{{ dashboard.global.inactiveCircuits }}</strong>
+            <small>Circuits archivés ou inactifs</small>
+        </article>
+        <article class="admin-kpi-card">
+            <div class="admin-kpi-head"><span>Running Projects</span><span class="kpi-arrow">↗</span></div>
+            <strong>{{ dashboard.global.activeCircuits }}</strong>
+            <small>Circuits actifs en vente</small>
+        </article>
+        <article class="admin-kpi-card">
+            <div class="admin-kpi-head"><span>Pending Project</span><span class="kpi-arrow">↗</span></div>
+            <strong>{{ dashboard.global.pendingCustom }}</strong>
+            <small>Demandes sur mesure en attente</small>
+        </article>
+    </section>
+
+    <section class="admin-dashboard-reference-grid">
+        <div class="travel-panel admin-analytics-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Project Analytics</span>
+                    <h2>Activité hebdomadaire</h2>
+                </div>
+            </div>
+            <div class="admin-week-chart">
+                {% set weeklyMax = 1 %}
+                {% for item in dashboard.weeklyActivity %}
+                    {% if item.total > weeklyMax %}{% set weeklyMax = item.total %}{% endif %}
+                {% endfor %}
+                {% for item in dashboard.weeklyActivity %}
+                    {% set barHeight = item.total > 0 ? ((item.total / weeklyMax) * 118) + 36 : 56 %}
+                    <div class="admin-week-bar-wrap {{ item.highlight ? 'is-highlight' : '' }}">
+                        <div class="admin-week-bar" style="height: {{ barHeight }}px;">
+                            {% if item.total > 0 %}<span>{{ item.total }}</span>{% endif %}
+                        </div>
+                        <small>{{ item.label }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="travel-panel admin-reminder-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Reminders</span>
+                    <h2>Départ à surveiller</h2>
+                </div>
+            </div>
+            <strong class="admin-reminder-title">{{ dashboard.reminder.title }}</strong>
+            <p>{{ dashboard.reminder.subtitle }}</p>
+            <a class="btn btn-primary travel-full-btn" href="{{ path('admin_reservations') }}">Start Meeting</a>
+        </div>
+
+        <div class="travel-panel admin-project-list-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Project</span>
+                    <h2>Top circuits</h2>
+                </div>
+                <a class="btn btn-light btn-sm" href="{{ path('admin_circuits') }}">+ New</a>
+            </div>
+            <div class="admin-project-list">
+                {% for circuit in dashboard.topCircuits %}
+                    <article class="admin-project-row">
+                        <span class="project-dot dot-{{ loop.index }}"></span>
+                        <div>
+                            <strong>{{ circuit.title }}</strong>
+                            <small>Destination {{ circuit.destination }}</small>
+                        </div>
+                    </article>
+                {% else %}
+                    <div class="empty-state">Aucun circuit classé.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-dashboard-reference-grid admin-dashboard-reference-grid-bottom">
+        <div class="travel-panel admin-collaboration-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Team Collaboration</span>
+                    <h2>Dernières réservations</h2>
+                </div>
+                <a class="btn btn-light btn-sm" href="{{ path('admin_reservations') }}">+ Add Member</a>
+            </div>
+            <div class="admin-collab-list">
+                {% for reservation in dashboard.recentReservations %}
+                    <article class="admin-collab-row">
+                        <div class="admin-collab-avatar">{{ (reservation.prenom ?: 'U')|slice(0,1)|upper }}</div>
+                        <div class="admin-collab-copy">
+                            <strong>{{ reservation.prenom ?: 'Client' }} {{ reservation.nom ?: '' }}</strong>
+                            <small>{{ reservation.title }} · {{ reservation.destination }}</small>
+                        </div>
+                        <span class="status-chip status-chip-{{ reservation.status|lower|replace({'é':'e', 'è':'e', 'ê':'e', '_':'-'}) }}">{{ reservation.status }}</span>
+                    </article>
+                {% else %}
+                    <div class="empty-state">Aucune réservation récente.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="travel-panel admin-progress-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Project Progress</span>
+                    <h2>Réservations confirmées</h2>
+                </div>
+            </div>
+            <div class="admin-gauge" style="--progress: {{ dashboard.completionPercent }};">
+                <div class="admin-gauge-inner">
+                    <strong>{{ dashboard.completionPercent }}%</strong>
+                    <span>Project Ended</span>
+                </div>
+            </div>
+            <div class="admin-legend">
+                <span><i class="dot-complete"></i> Completed</span>
+                <span><i class="dot-progress"></i> In Progress</span>
+                <span><i class="dot-pending"></i> Pending</span>
+            </div>
+        </div>
+
+        <div class="travel-panel admin-timer-card">
+            <div class="admin-timer-pattern"></div>
+            <div class="admin-timer-copy">
+                <span class="eyebrow">Time Tracker</span>
+                <strong id="liveAdminClock">--:--:--</strong>
+                <small>{{ dashboard.global.travellers }} voyageurs suivis · {{ dashboard.global.reviews }} avis</small>
+            </div>
+            <div class="admin-timer-actions">
+                <span class="timer-btn timer-btn-light">❚❚</span>
+                <span class="timer-btn timer-btn-stop">■</span>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const target = document.getElementById('liveAdminClock');
+            if (!target) return;
+            const update = () => {
+                const now = new Date();
+                target.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            };
+            update();
+            window.setInterval(update, 1000);
+        })();
+    </script>
+=======
+{% extends "base.html.twig" %}
+
+{% block title %}Dashboard Admin - Fly & Go{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #1e4d7b, #0d2137);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">
+            ✈️ <span style="color: #F78D00;">FLY & GO</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_logout') }}">
+                        🚪 Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    {% include 'admin/_sidebar.html.twig' %}
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        <!-- Stats Cards -->
+        {% if currentTab == 'dashboard' %}
+            <div class="stats-container">
+                <h2 class="mb-4">Dashboard</h2>
+                
+                <div class="row">
+                    <!-- Total Users -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-teal">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value">{{ stats.totalUsers }}</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                    </div>
+
+                    <!-- Active Users -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-green">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-value">{{ stats.activeUsers }}</div>
+                            <div class="stat-label">Active Users</div>
+                        </div>
+                    </div>
+
+                    <!-- Active % -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-blue">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value">{{ stats.activePercent }}%</div>
+                            <div class="stat-label">Active %</div>
+                        </div>
+                    </div>
+
+                    <!-- Voyageurs -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-orange">
+                            <div class="stat-icon">✈️</div>
+                            <div class="stat-value">{{ stats.voyageurs }}</div>
+                            <div class="stat-label">Voyageurs</div>
+                        </div>
+                    </div>
+
+                    <!-- Admins -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-red">
+                            <div class="stat-icon">🔐</div>
+                            <div class="stat-value">{{ stats.admins }}</div>
+                            <div class="stat-label">Admins</div>
+                        </div>
+                    </div>
+
+                    <!-- New This Month -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-purple">
+                            <div class="stat-icon">🆕</div>
+                            <div class="stat-value">{{ stats.newThisMonth }}</div>
+                            <div class="stat-label">New This Month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Users Tab -->
+        {% elseif currentTab == 'users' %}
+            {% include 'admin/_users_tab.html.twig' %}
+
+        <!-- Profiles Tab -->
+        {% elseif currentTab == 'profiles' %}
+            {% include 'admin/_profiles_tab.html.twig' %}
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #F0F7FF;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ asset('js/dashboard.js') }}"></script>
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 {% endblock %}

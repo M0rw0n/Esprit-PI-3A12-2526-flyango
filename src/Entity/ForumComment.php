@@ -12,12 +12,21 @@ class ForumComment
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
 
+<<<<<<< HEAD
     #[ORM\ManyToOne(targetEntity: ForumPost::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?ForumPost $post = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $parentId = null;
+=======
+    #[ORM\Column(name: 'post_id')]
+    private int $postId = 0;
+
+    #[ORM\ManyToOne(targetEntity: ForumPost::class, inversedBy: 'comments')]
+    #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id', nullable: true)]
+    private ?ForumPost $post = null;
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 
     #[ORM\Column(length: 100)]
     private string $author = '';
@@ -26,6 +35,7 @@ class ForumComment
     private string $content = '';
 
     #[ORM\Column(type: 'date')]
+<<<<<<< HEAD
     private $createdAt;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
@@ -39,6 +49,9 @@ class ForumComment
 
     #[ORM\Column(type: 'boolean')]
     private bool $isPinned = false;
+=======
+    private \DateTimeInterface $createdAt;
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 
     public function __construct()
     {
@@ -46,14 +59,20 @@ class ForumComment
     }
 
     public function getId(): ?int { return $this->id; }
+<<<<<<< HEAD
     public function getPost(): ?ForumPost { return $this->post; }
     public function setPost(?ForumPost $p): static { $this->post = $p; return $this; }
     public function getParentId(): ?int { return $this->parentId; }
     public function setParentId(?int $id): static { $this->parentId = $id; return $this; }
+=======
+    public function getPostId(): int { return $this->postId; }
+    public function setPostId(int $p): static { $this->postId = $p; return $this; }
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     public function getAuthor(): string { return $this->author; }
     public function setAuthor(string $a): static { $this->author = $a; return $this; }
     public function getContent(): string { return $this->content; }
     public function setContent(string $c): static { $this->content = $c; return $this; }
+<<<<<<< HEAD
     public function getCreatedAt() { return $this->createdAt; }
     public function setCreatedAt($d): static { $this->createdAt = $d; return $this; }
 
@@ -73,4 +92,8 @@ class ForumComment
     public function getDepth(): int {
         return 0;
     }
+=======
+    public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 }

@@ -1,0 +1,82 @@
+<div class="admin-content">
+    <h2 class="mb-4">Gestion des Profils Voyageurs</h2>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="row align-items-center">
+            <!-- Type Voyage Buttons -->
+            <div class="col-12 mb-3">
+                <label class="form-label mb-2">Filtrer par type de voyage:</label>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary type-filter" data-type="">
+                        Tous
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success type-filter" data-type="Adventure">
+                        🏔️ Adventure
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info type-filter" data-type="Relaxation">
+                        🏖️ Relaxation
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-purple type-filter" data-type="Cultural">
+                        🏛️ Cultural
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-dark type-filter" data-type="Business">
+                        💼 Business
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning type-filter" data-type="Family">
+                        👨‍👩‍👧 Family
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger type-filter" data-type="Romantic">
+                        💑 Romantic
+                    </button>
+                </div>
+            </div>
+
+            <!-- Destination & Budget Filters -->
+            <div class="col-md-4">
+                <input type="text" 
+                       id="destination-filter" 
+                       class="form-control" 
+                       placeholder="🔍 Destination...">
+            </div>
+
+            <div class="col-md-4">
+                <input type="range" 
+                       id="budget-min" 
+                       class="form-range" 
+                       min="0" 
+                       max="100000" 
+                       step="100" 
+                       placeholder="Budget min">
+                <small>Budget min</small>
+            </div>
+
+            <div class="col-md-4">
+                <input type="range" 
+                       id="budget-max" 
+                       class="form-range" 
+                       min="0" 
+                       max="100000" 
+                       step="100" 
+                       placeholder="Budget max">
+                <small>Budget max</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results count -->
+    <div class="mb-3 text-muted">
+        <small>{{ profils|length }} résultat(s)</small>
+    </div>
+
+    <!-- Profiles Grid -->
+    <div class="profiles-grid">
+        {% for profil in profils %}
+            {% include 'admin/_profile_card.html.twig' with {'profil': profil, 'user': profil.user} %}
+        {% else %}
+            <div class="alert alert-info w-100">
+                Aucun profil trouvé
+            </div>
+        {% endfor %}
+    </div>
+</div>

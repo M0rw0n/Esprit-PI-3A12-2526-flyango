@@ -1,0 +1,64 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Nouvelle activité — Fly&Go{% endblock %}
+
+{% block body %}
+<div class="fg-page-hero">
+    <div class="fg-page-hero__overlay"></div>
+    <div class="fg-page-hero__content">
+        <p class="fg-page-hero__eyebrow"><a href="{{ path('activity_index') }}" style="color:rgba(255,255,255,.7)"><i class="fa fa-arrow-left"></i> Activités</a> › Nouvelle</p>
+        <h1>Créer une <em>nouvelle activité</em></h1>
+    </div>
+</div>
+
+<div style="max-width:700px;margin:2.5rem auto;padding:0 1.5rem">
+    <div style="background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:2.5rem;border:1px solid var(--border)">
+        <form action="{{ path('activity_new') }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{{ csrf_token('activity_new') }}">
+
+            <div class="fg-booking-form__field">
+                <label>Titre de l'activité *</label>
+                <input type="text" name="title" placeholder="Ex: Safari Sahara" required maxlength="255">
+            </div>
+
+            <div class="fg-booking-form__field">
+                <label>Description</label>
+                <textarea name="description" rows="5" placeholder="Décrivez l'activité en détail…"></textarea>
+            </div>
+
+            <div class="fg-booking-form__row">
+                <div class="fg-booking-form__field">
+                    <label>Prix (DT) *</label>
+                    <input type="number" name="price" min="0" step="0.01" placeholder="150.00" required>
+                </div>
+                <div class="fg-booking-form__field">
+                    <label>Durée</label>
+                    <input type="text" name="duration" placeholder="Ex: 2h, 1 jour…">
+                </div>
+            </div>
+
+            <div class="fg-booking-form__row">
+                <div class="fg-booking-form__field">
+                    <label>Capacité (personnes) *</label>
+                    <input type="number" name="capacity" min="1" placeholder="20" required>
+                </div>
+                <div class="fg-booking-form__field">
+                    <label>Date</label>
+                    <input type="date" name="date">
+                </div>
+            </div>
+
+            <div class="fg-booking-form__field">
+                <label>Image</label>
+                <input type="file" name="image" accept="image/*" style="padding:.5rem">
+            </div>
+
+            <div style="display:flex;gap:1rem;margin-top:1.5rem">
+                <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--ghost" style="flex:1;justify-content:center">Annuler</a>
+                <button type="submit" class="fg-btn fg-btn--orange" style="flex:2;justify-content:center">
+                    <i class="fa fa-plus"></i> Créer l'activité
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 security:
     password_hashers:
         App\Entity\User:
@@ -9,12 +10,35 @@ security:
                 class: App\Entity\User
                 property: email
 
+=======
+<<<<<<< HEAD
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        users_in_memory: { memory: null }
+=======
+# See the following page for more details:
+# https://symfony.com/doc/current/security.html
+
+security:
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        # used to reload user from session & other features (e.g. switch-user)
+        app_user_provider:
+            id: App\Repository\UserRepository
+
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
             lazy: true
+<<<<<<< HEAD
             provider: app_user_provider
             form_login:
                 login_path: app_login
@@ -37,3 +61,59 @@ security:
 
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
+=======
+<<<<<<< HEAD
+            provider: users_in_memory
+
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#the-firewall
+
+            # https://symfony.com/doc/current/security/impersonating_user.html
+            # switch_user: true
+=======
+            provider: app_user_provider
+            custom_authenticator: App\Security\AppAuthenticator
+            logout:
+                path: app_logout
+
+
+            # activate different ways to authenticate
+            # https://symfony.com/doc/current/security.html#the-logout-path
+
+            # https://symfony.com/doc/current/security/form_login_setup.html
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+<<<<<<< HEAD
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+        # - { path: ^/profile, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            # By default, password hashers are resource intensive and take time. This is
+            # important to generate secure password hashes. In tests however, secure hashes
+            # are not important, waste resources and increase test times. The following
+            # reduces the work factor to the lowest possible values.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon
+=======
+        # Admin access
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        # User profile access
+        - { path: ^/profil, roles: ROLE_USER }
+        # Login and Register are public
+        - { path: ^/(login|register|forgot-password|reset-password), roles: PUBLIC_ACCESS }
+
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER]
+
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739

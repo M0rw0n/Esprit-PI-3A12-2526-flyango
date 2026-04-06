@@ -1,10 +1,24 @@
 <?php
+<<<<<<< HEAD
 
 namespace App\Entity;
 
 use App\Repository\ActivityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+=======
+// ════════════════════════════════════════════════════════════════
+//  FLY&GO — ENTITIES  (all in one file for easy copy-paste)
+//  Split each class into its own file in src/Entity/
+// ════════════════════════════════════════════════════════════════
+
+// ──────────────────────────────
+// src/Entity/Activity.php
+// ──────────────────────────────
+namespace App\Entity;
+
+use App\Repository\ActivityRepository;
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
@@ -20,7 +34,11 @@ class Activity
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+<<<<<<< HEAD
     #[ORM\Column(type: 'float')]
+=======
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     private float $price = 0;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -29,12 +47,21 @@ class Activity
     #[ORM\Column(type: 'date', nullable: true)]
     private ?\DateTimeInterface $date = null;
 
+<<<<<<< HEAD
     #[ORM\Column(type: 'integer')]
     private int $capacity = 10;
+=======
+    #[ORM\Column]
+    private int $capacity = 0;
+
+    #[ORM\Column(name: 'place_id', nullable: true)]
+    private ?int $placeId = null;
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
+<<<<<<< HEAD
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $lieu = null;
 
@@ -56,6 +83,12 @@ class Activity
         $this->reviews = new ArrayCollection();
         $this->createdAt = new \DateTime();
     }
+=======
+    // Relation (lazy)
+    #[ORM\ManyToOne(targetEntity: Place::class)]
+    #[ORM\JoinColumn(name: 'place_id', referencedColumnName: 'id', nullable: true)]
+    private ?Place $place = null;
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 
     public function getId(): ?int { return $this->id; }
     public function getTitle(): string { return $this->title; }
@@ -70,6 +103,7 @@ class Activity
     public function setDate(?\DateTimeInterface $d): static { $this->date = $d; return $this; }
     public function getCapacity(): int { return $this->capacity; }
     public function setCapacity(int $c): static { $this->capacity = $c; return $this; }
+<<<<<<< HEAD
     public function getImage(): ?string { return $this->image; }
     public function setImage(?string $i): static { $this->image = $i; return $this; }
     public function getLieu(): ?string { return $this->lieu; }
@@ -88,4 +122,12 @@ class Activity
         foreach ($this->reviews as $r) { $total += $r->getRating(); }
         return round($total / $this->reviews->count(), 1);
     }
+=======
+    public function getPlaceId(): ?int { return $this->placeId; }
+    public function setPlaceId(?int $p): static { $this->placeId = $p; return $this; }
+    public function getImage(): ?string { return $this->image; }
+    public function setImage(?string $i): static { $this->image = $i; return $this; }
+    public function getPlace(): ?Place { return $this->place; }
+    public function setPlace(?Place $p): static { $this->place = $p; return $this; }
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 }

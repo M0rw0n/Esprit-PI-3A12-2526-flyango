@@ -1,0 +1,87 @@
+{% extends 'layouts/user_base.html.twig' %}
+
+{% block title %}Circuit sur mesure | Fly & Go{% endblock %}
+
+{% block body %}
+    <section class="hero">
+        <h1>Circuit personnalisé avec IA</h1>
+        <p style="margin-top:10px">Formulaire Symfony avec validation serveur, logique métier de base et insertion dans <strong>circuit_personnalise</strong>.</p>
+    </section>
+
+    <section class="section" style="padding:24px; margin-top:22px;">
+        {% if errors %}
+            <ul class="error-list">
+                {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" class="inline-form enhanced-form" style="margin-top:12px;" novalidate data-validate-form data-submit-loading="Enregistrement en cours...">
+            <input type="hidden" name="_token" value="{{ csrf_token('custom_circuit') }}">
+
+            <div class="three-cols">
+                <div>
+                    <label class="small">Destination</label>
+                    <input class="input" type="text" name="destination" value="{{ values.destination }}" placeholder="Ex: Tokyo, Japon" required minlength="2">
+                </div>
+                <div>
+                    <label class="small">Date de départ</label>
+                    <input id="custom-date-depart" class="input" type="date" name="date_depart" value="{{ values.dateDepart }}" required>
+                </div>
+                <div>
+                    <label class="small">Date de retour</label>
+                    <input id="custom-date-retour" class="input" type="date" name="date_retour" value="{{ values.dateRetour }}" required data-date-after="#custom-date-depart" data-validate-message="La date de retour doit être postérieure ou égale à la date de départ.">
+                </div>
+            </div>
+
+            <div class="three-cols">
+                <div>
+                    <label class="small">Durée</label>
+                    <input class="input" type="number" name="duree" min="1" max="30" value="{{ values.duree }}">
+                </div>
+                <div>
+                    <label class="small">Budget min</label>
+                    <input id="custom-budget-min" class="input" type="number" name="budget_min" min="0" step="1" value="{{ values.budgetMin }}">
+                </div>
+                <div>
+                    <label class="small">Budget max</label>
+                    <input class="input" type="number" name="budget_max" min="0" step="1" value="{{ values.budgetMax }}" data-min-value-of="#custom-budget-min" data-validate-message="Le budget maximum doit être supérieur ou égal au budget minimum.">
+                </div>
+            </div>
+
+            <div class="two-cols">
+                <div>
+                    <label class="small">Style de voyage</label>
+                    <select name="style_voyage">
+                        {% for style in ['Aventure', 'Culture', 'Luxe', 'Détente', 'Économique'] %}
+                            <option value="{{ style }}" {{ values.styleVoyage == style ? 'selected' : '' }}>{{ style }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="small">Rythme</label>
+                    <select name="niveau_fatigue">
+                        <option value="1" {{ values.niveauFatigue == 1 ? 'selected' : '' }}>Intense</option>
+                        <option value="2" {{ values.niveauFatigue == 2 ? 'selected' : '' }}>Modéré</option>
+                        <option value="3" {{ values.niveauFatigue == 3 ? 'selected' : '' }}>Lent</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="small">Centres d’intérêt</label>
+                <div class="tags" data-checkbox-group data-checkbox-message="Choisissez au moins un centre d’intérêt.">
+                    {% for item in ['Culture', 'Nature', 'Gastronomie', 'Sport', 'Histoire', 'Ville', 'Plage'] %}
+                        <label class="tag"><input type="checkbox" name="centres_interet[]" value="{{ item }}" {{ item in values.centresInteret ? 'checked' : '' }}> {{ item }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel" style="background:#f8fbff; box-shadow:none;">
+                <strong>Rendu métier prévu</strong>
+                <p class="muted">Lors de l’enregistrement, le module alimente automatiquement <code>meteo_info</code>, <code>plan_b</code>, <code>statut</code> et <code>etape</code> pour rester compatible avec votre schéma SQL actuel.</p>
+            </div>
+
+            <button class="btn btn-primary" type="submit" data-loading-label="Enregistrement...">Enregistrer le circuit sur mesure</button>
+        </form>
+    </section>
+{% endblock %}

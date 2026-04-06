@@ -1,0 +1,162 @@
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block title %}Avis admin | Fly &amp; Go{% endblock %}
+
+{% block body %}
+    <section class="admin-page-head">
+        <div>
+            <span class="eyebrow">Avis clients</span>
+            <h1>CRUD complet des avis</h1>
+            <p>Création, édition, suppression et recalcul automatique des notes circuits dans la base.</p>
+        </div>
+    </section>
+
+    <section class="stats-strip stats-strip-admin compact-stats">
+        <article class="stats-card"><div class="label">Total avis</div><div class="value">{{ summary.total }}</div></article>
+        <article class="stats-card"><div class="label">Note moyenne</div><div class="value">{{ summary.average|number_format(1, ',', ' ') }}</div></article>
+        <article class="stats-card"><div class="label">Achats vérifiés</div><div class="value">{{ summary.verified }}</div></article>
+        <article class="stats-card"><div class="label">Votes utiles</div><div class="value">{{ summary.helpful }}</div></article>
+    </section>
+
+    <section class="sticky-toolbar panel admin-toolbar">
+        <div class="filters filters-admin filters-admin-wide">
+            <div>
+                <label class="small">Recherche</label>
+                <input id="admin-review-q" class="input" type="text" value="{{ filters.q }}" placeholder="Client, circuit, commentaire...">
+            </div>
+            <div>
+                <label class="small">Note</label>
+                <select id="admin-review-rating">
+                    {% for item in ['Tous', '5', '4', '3', '2', '1'] %}
+                        <option value="{{ item }}" {{ filters.rating == item ? 'selected' : '' }}>{{ item == 'Tous' ? item : item ~ '/5' }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="toolbar-end-note" id="admin-review-count">{{ reviews|length }} résultat(s)</div>
+        </div>
+    </section>
+
+    <section class="admin-two-columns">
+        <aside class="panel admin-form-panel">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">{{ editReview ? 'Mise à jour' : 'Nouvel avis' }}</span>
+                    <h2>{{ editReview ? 'Modifier l’avis sélectionné' : 'Ajouter un avis' }}</h2>
+                </div>
+                {% if editReview %}
+                    <a class="btn btn-light btn-sm" href="{{ path('admin_reviews') }}">Réinitialiser</a>
+                {% endif %}
+            </div>
+
+            {% if formErrors %}
+                <ul class="error-list">
+                    {% for error in formErrors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+
+            <form class="inline-form enhanced-form" method="post" action="{{ editReview ? path('admin_review_update', {id: editReview.id}) : path('admin_review_create') }}" novalidate data-validate-form data-submit-loading="Sauvegarde en cours...">
+                <input type="hidden" name="_token" value="{{ editReview ? csrf_token('admin_review_update_' ~ editReview.id) : csrf_token('admin_review_create') }}">
+
+                <div>
+                    <label class="small">Pack / circuit</label>
+                    <select name="id_circuit" required>
+                        <option value="">Sélectionner</option>
+                        {% for circuit in circuits %}
+                            <option value="{{ circuit.id_circuit }}" {{ formValues.circuitId == circuit.id_circuit ? 'selected' : '' }}>{{ circuit.title }} · {{ circuit.destination }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="small">Client</label>
+                    <select name="user_id" required>
+                        <option value="">Sélectionner</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {{ formValues.userId == user.id ? 'selected' : '' }}>{{ user.prenom }} {{ user.nom }} · {{ user.email }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="three-cols">
+                    <div>
+                        <label class="small">Note</label>
+                        <select name="rating">
+                            {% for item in [5, 4, 3, 2, 1] %}
+                                <option value="{{ item }}" {{ formValues.rating == item ? 'selected' : '' }}>{{ item }}/5</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="small">Votes utiles</label>
+                        <input class="input" type="number" name="helpful_count" min="0" value="{{ formValues.helpfulCount }}">
+                    </div>
+                    <div>
+                        <label class="small">Achat vérifié</label>
+                        <select name="verified_purchase">
+                            <option value="1" {{ formValues.verifiedPurchase ? 'selected' : '' }}>Oui</option>
+                            <option value="0" {{ not formValues.verifiedPurchase ? 'selected' : '' }}>Non</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="small">Publié le</label>
+                    <input class="input" type="datetime-local" name="created_at" value="{{ formValues.createdAt }}">
+                </div>
+
+                <div>
+                    <label class="small">Commentaire</label>
+                    <textarea name="comment" rows="5" required minlength="10" maxlength="1500">{{ formValues.comment }}</textarea>
+                </div>
+
+                <button class="btn {{ editReview ? 'btn-accent' : 'btn-primary' }}" type="submit">{{ editReview ? 'Mettre à jour un avis' : 'Ajouter un avis' }}</button>
+            </form>
+        </aside>
+
+        <div class="panel">
+            <div class="section-head">
+                <div>
+                    <span class="eyebrow">Feedback existant</span>
+                    <h2>Liste des avis</h2>
+                </div>
+            </div>
+            <div id="adminReviewList" data-live-region>
+                {% include 'admin/reviews/_list.html.twig' with {reviews: reviews} %}
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const q = document.getElementById('admin-review-q');
+            const rating = document.getElementById('admin-review-rating');
+            const wrapper = document.getElementById('adminReviewList');
+            const count = document.getElementById('admin-review-count');
+            let timer;
+
+            const refresh = async () => {
+                const params = new URLSearchParams();
+                if (q.value) params.set('q', q.value);
+                if (rating.value) params.set('rating', rating.value);
+                window.FlyAndGo?.setLoading(wrapper, true, 'Actualisation des avis...');
+                try {
+                    const response = await fetch('{{ path('admin_reviews_search_api') }}?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!response.ok) throw new Error('Impossible de charger les avis');
+                    const data = await response.json();
+                    wrapper.innerHTML = data.html;
+                    count.textContent = `${data.count} résultat(s)`;
+                } catch (error) {
+                    window.FlyAndGo?.notify(error.message || 'Erreur de chargement', 'error');
+                } finally {
+                    window.FlyAndGo?.setLoading(wrapper, false);
+                }
+            };
+
+            q?.addEventListener('input', () => {
+                clearTimeout(timer);
+                timer = setTimeout(refresh, 220);
+            });
+            rating?.addEventListener('change', refresh);
+        })();
+    </script>
+{% endblock %}

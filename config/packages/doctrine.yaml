@@ -1,6 +1,7 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
+<<<<<<< HEAD
         server_version: '10.4'
         charset: utf8mb4
         mapping_types:
@@ -25,10 +26,38 @@ doctrine:
         auto_mapping: true
         mappings:
             App:
+=======
+
+        # IMPORTANT: You MUST configure your server version,
+        # either here or in the DATABASE_URL env var (see .env file)
+        #server_version: '16'
+
+        profiling_collect_backtrace: '%kernel.debug%'
+<<<<<<< HEAD
+        use_savepoints: true
+    orm:
+        auto_generate_proxy_classes: true
+        enable_lazy_ghost_objects: true
+        report_fields_where_declared: true
+        validate_xml_mapping: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+=======
+    orm:
+        validate_xml_mapping: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        identity_generation_preferences:
+            Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+        auto_mapping: true
+        mappings:
+            App:
+                type: attribute
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+<<<<<<< HEAD
         controller_resolver:
             auto_mapping: false
 
@@ -36,3 +65,34 @@ doctrine_migrations:
     migrations_paths:
         'App\Migrations': '%kernel.project_dir%/migrations'
     enable_profiler: false
+=======
+
+when@test:
+    doctrine:
+        dbal:
+            # "TEST_TOKEN" is typically set by ParaTest
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+<<<<<<< HEAD
+            auto_generate_proxy_classes: false
+            proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
+=======
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739

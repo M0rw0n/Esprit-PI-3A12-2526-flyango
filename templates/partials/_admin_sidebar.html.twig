@@ -1,0 +1,33 @@
+{% set current = app.request.attributes.get('_route') %}
+<aside class="admin-sidebar modern-admin-sidebar">
+    <div>
+        <div class="admin-sidebar-brand admin-sidebar-brand-modern">
+            <div class="admin-sidebar-logo">✈</div>
+            <div>
+                <a class="brand" href="{{ path('admin_dashboard') }}">FLY &amp; GO</a>
+                <span class="brand-sub">Vol, taxi, circuits &amp; séjours · admin</span>
+            </div>
+        </div>
+
+        <div class="sidebar-section-label">Menu</div>
+        <nav class="sidebar-nav sidebar-nav-modern">
+            <a class="{{ current starts with 'admin_dashboard' ? 'active' : '' }}" href="{{ path('admin_dashboard') }}">Dashboard</a>
+            <a class="{{ current starts with 'admin_circuit' or current == 'admin_circuits' or current == 'admin_circuits_search_api' ? 'active' : '' }}" href="{{ path('admin_circuits') }}">Packs / Circuits</a>
+            <a class="{{ current starts with 'admin_reservation' ? 'active' : '' }}" href="{{ path('admin_reservations') }}">Réservations</a>
+            <a class="{{ current starts with 'admin_review' ? 'active' : '' }}" href="{{ path('admin_reviews') }}">Avis clients</a>
+        </nav>
+
+        <div class="sidebar-section-label sidebar-section-spaced">Général</div>
+        <div class="sidebar-nav sidebar-nav-modern sidebar-nav-secondary">
+            <a href="{{ path('app_home') }}">Changer d'espace</a>
+            <button class="theme-toggle theme-toggle-sidebar" type="button" data-theme-toggle aria-label="Basculer le thème"></button>
+        </div>
+    </div>
+
+    <div class="admin-sidebar-promo">
+        <div class="promo-glow"></div>
+        <strong>Fly &amp; Go cockpit</strong>
+        <p>Retrouvez le même univers visuel que l’espace user avec un pilotage admin complet.</p>
+        <a class="btn btn-primary btn-sm" href="{{ path('app_home') }}">Ouvrir</a>
+    </div>
+</aside>

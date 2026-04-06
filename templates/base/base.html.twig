@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <meta name="description" content="Fly&Go - Votre agence de voyage en Tunisie. Réservez hébergements, circuits, activités et transports. Expérience premium avec support 24/7.">
     <meta name="keywords" content="voyage tunisie, hébergement, circuit tunisie, activités, transport">
     <meta name="author" content="Fly&Go">
@@ -40,10 +41,20 @@
     <link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}"></noscript>
     
+=======
+    <title>{% block title %}Fly&Go — Agence de Voyage Premium{% endblock %}</title>
+    <meta name="description" content="Fly&Go — Explorez le monde avec style.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}">
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
 
+<<<<<<< HEAD
 <nav class="fg-nav" id="fgNav">
     <div class="fg-nav__wrap">
         <a href="{{ path('home') }}" class="fg-nav__logo" aria-label="Fly&Go accueil">
@@ -175,6 +186,140 @@
 <div class="toast-box" id="toastBox"></div>
 <!-- Load JS deferred for better performance -->
 <script src="{{ asset('js/flyandgo.js') }}" defer></script>
+=======
+<nav class="fg-navbar" id="fgNavbar">
+    <div class="fg-navbar__inner">
+        <a href="{{ path('home') }}" class="fg-navbar__logo">
+            <div class="fg-navbar__logo-icon">✈</div>
+            <span>Fly<strong>&amp;Go</strong></span>
+        </a>
+        <ul class="fg-navbar__links">
+            <li><a href="{{ path('home') }}"           class="{{ app.request.attributes.get('_route') == 'home' ? 'active' : '' }}">Accueil</a></li>
+            <li><a href="{{ path('activity_index') }}" class="{{ app.request.attributes.get('_route') starts with 'activity' ? 'active' : '' }}">Activités</a></li>
+            <li><a href="{{ path('forum_index') }}"    class="{{ app.request.attributes.get('_route') starts with 'forum' ? 'active' : '' }}">Forum</a></li>
+            <li><a href="#destinations">Destinations</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <div class="fg-navbar__actions">
+            <div class="fg-lang-switcher">
+                <button class="fg-lang-btn" id="langBtn">
+                    <i class="fa fa-globe"></i><span id="currentLang">FR</span><i class="fa fa-chevron-down fa-xs"></i>
+                </button>
+                <div class="fg-lang-dropdown" id="langDropdown">
+                    <button onclick="switchLang('fr')">🇫🇷 Français</button>
+                    <button onclick="switchLang('en')">🇬🇧 English</button>
+                    <button onclick="switchLang('ar')">🇹🇳 العربية</button>
+                    <button onclick="switchLang('de')">🇩🇪 Deutsch</button>
+                </div>
+            </div>
+            <button class="fg-navbar__icon-btn" id="wishlistToggle" title="Wishlist">
+                <i class="fa fa-heart"></i><span class="fg-badge" id="wishlistBadge">0</span>
+            </button>
+            <button class="fg-navbar__icon-btn" id="notifToggle" title="Notifications">
+                <i class="fa fa-bell"></i><span class="fg-badge fg-badge--red" id="notifBadge">3</span>
+            </button>
+            <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--orange"><i class="fa fa-search"></i> Réserver</a>
+            <button class="fg-hamburger" id="hamburger"><span></span><span></span><span></span></button>
+        </div>
+    </div>
+    <div class="fg-mobile-menu" id="mobileMenu">
+        <a href="{{ path('home') }}"><i class="fa fa-home"></i> Accueil</a>
+        <a href="{{ path('activity_index') }}"><i class="fa fa-hiking"></i> Activités</a>
+        <a href="{{ path('forum_index') }}"><i class="fa fa-comments"></i> Forum</a>
+    </div>
+</nav>
+
+<div class="fg-notif-panel" id="notifPanel">
+    <div class="fg-notif-panel__header"><span>Notifications</span><button onclick="clearNotifs()">Tout effacer</button></div>
+    <div class="fg-notif-panel__list" id="notifList">
+        <div class="fg-notif-item fg-notif-item--new"><i class="fa fa-calendar-check"></i><div><p>Réservation Safari Sahara confirmée !</p><span>Il y a 2h</span></div></div>
+        <div class="fg-notif-item fg-notif-item--new"><i class="fa fa-star"></i><div><p>Promo : -20% sur les excursions Djerba</p><span>Il y a 5h</span></div></div>
+        <div class="fg-notif-item"><i class="fa fa-comments"></i><div><p>Réponse à votre discussion forum</p><span>Hier</span></div></div>
+    </div>
+</div>
+
+<div class="fg-wishlist-panel" id="wishlistPanel">
+    <div class="fg-wishlist-panel__header"><span><i class="fa fa-heart"></i> Ma Wishlist</span><button onclick="toggleWishlist()"><i class="fa fa-times"></i></button></div>
+    <div class="fg-wishlist-panel__list" id="wishlistItems">
+        <div class="fg-wishlist-empty"><i class="fa fa-heart-broken"></i><p>Votre wishlist est vide</p><a href="{{ path('activity_index') }}" class="fg-btn fg-btn--orange" style="font-size:.8rem;padding:.5rem 1rem">Découvrir les activités</a></div>
+    </div>
+</div>
+
+<div class="fg-overlay" id="fgOverlay"></div>
+
+<main id="fgMain">
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <script>document.addEventListener('DOMContentLoaded',()=>showToast('{{ message|e('js') }}','{{ type }}'));</script>
+        {% endfor %}
+    {% endfor %}
+    {% block body %}{% endblock %}
+</main>
+
+<footer class="fg-footer" id="contact">
+    <div class="fg-footer__inner">
+        <div class="fg-footer__brand">
+            <div class="fg-footer__logo">✈ Fly<strong>&amp;Go</strong></div>
+            <p>Votre partenaire de voyage premium en Tunisie et dans le monde. Des expériences inoubliables vous attendent.</p>
+            <div class="fg-footer__socials">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+        <div class="fg-footer__col"><h4>Navigation</h4><ul>
+            <li><a href="{{ path('home') }}">Accueil</a></li>
+            <li><a href="{{ path('activity_index') }}">Activités</a></li>
+            <li><a href="{{ path('forum_index') }}">Forum</a></li>
+        </ul></div>
+        <div class="fg-footer__col"><h4>Destinations</h4><ul>
+            <li><a href="#">Sidi Bou Saïd</a></li>
+            <li><a href="#">Sahara — Douz</a></li>
+            <li><a href="#">Carthage</a></li>
+            <li><a href="#">Djerba</a></li>
+            <li><a href="#">Kairouan</a></li>
+        </ul></div>
+        <div class="fg-footer__col"><h4>Contact</h4><ul>
+            <li><i class="fa fa-map-marker-alt"></i> Tunis, Tunisie</li>
+            <li><i class="fa fa-phone"></i> +216 71 000 000</li>
+            <li><i class="fa fa-envelope"></i> contact@flyandgo.tn</li>
+            <li><i class="fa fa-clock"></i> Lun–Sam : 8h–20h</li>
+        </ul></div>
+    </div>
+    <div class="fg-footer__bottom"><p>© 2026 <strong>Fly&amp;Go</strong> — Tous droits réservés. Fait avec ❤️ en Tunisie</p></div>
+</footer>
+
+<div class="fg-chatbot" id="chatbot">
+    <div class="fg-chatbot__header">
+        <div class="fg-chatbot__avatar">✈</div>
+        <div><strong>Assistant Fly&amp;Go</strong><span class="fg-chatbot__status">En ligne</span></div>
+        <button class="fg-chatbot__close" onclick="toggleChatbot()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="fg-chatbot__body" id="chatbotBody">
+        <div class="fg-chatbot__msg fg-chatbot__msg--bot">
+            <div class="fg-chatbot__bubble">👋 Bonjour ! Je suis votre assistant Fly&amp;Go.<br>Comment puis-je vous aider ?</div>
+        </div>
+        <div class="fg-chatbot__suggestions" id="chatbotSuggestions">
+            <button onclick="askBot('Quels sites visiter en Tunisie ?')">🏛️ Sites Tunisie</button>
+            <button onclick="askBot('Quel budget pour voyager ?')">💰 Budget voyage</button>
+            <button onclick="askBot('Faut-il un visa ?')">📋 Visa &amp; formalités</button>
+            <button onclick="askBot('Conseils sécurité voyage')">🛡️ Sécurité</button>
+        </div>
+    </div>
+    <div class="fg-chatbot__footer">
+        <input type="text" id="chatbotInput" placeholder="Posez votre question..." autocomplete="off">
+        <button onclick="sendChatbot()" id="chatbotSend"><i class="fa fa-paper-plane"></i></button>
+    </div>
+</div>
+<button class="fg-chatbot__toggle" id="chatbotToggle" onclick="toggleChatbot()">
+    <i class="fa fa-comments"></i><span class="fg-chatbot__toggle-badge">FAQ</span>
+</button>
+
+<div class="fg-toast-container" id="toastContainer"></div>
+
+<script src="{{ asset('js/flyandgo.js') }}"></script>
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
 {% block javascripts %}{% endblock %}
 </body>
 </html>

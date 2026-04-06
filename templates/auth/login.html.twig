@@ -1,0 +1,104 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Connexion - Fly & Go{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-gradient-bg"></div>
+    
+    <div class="d-flex align-items-center justify-content-center min-vh-100">
+        <div class="auth-card">
+            <!-- Header -->
+            <div class="auth-header">
+                <div class="auth-icon">✈️</div>
+                <h1 class="auth-title">FLY & GO</h1>
+                <p class="auth-subtitle">Travel Management Platform</p>
+            </div>
+
+            <!-- Form -->
+            <form method="post" novalidate>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">📧 Email</label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           value="{{ last_username }}"
+                           class="input-field form-control" 
+                           placeholder="votre@email.com"
+                           required>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">🔑 Mot de passe</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           class="input-field form-control" 
+                           placeholder="Entrez votre mot de passe"
+                           required>
+                </div>
+
+                <!-- Error message -->
+                {% if error %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                    </div>
+                {% endif %}
+
+                <!-- Remember me -->
+                <div class="mb-3 form-check">
+                    <input type="checkbox" 
+                           class="form-check-input" 
+                           id="remember" 
+                           name="_remember_me">
+                    <label class="form-check-label" for="remember">
+                        Se souvenir de moi
+                    </label>
+                </div>
+
+                <!-- Forgot password -->
+                <div class="mb-3 text-center">
+                    <a href="{{ path('app_forgot_password') }}" class="forgot-password-link">
+                        Mot de passe oublié ?
+                    </a>
+                </div>
+
+                <!-- Login button -->
+                <button type="submit" class="btn btn-primary-flygo w-100">
+                    <span>🔐 Se connecter</span>
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span>ou</span>
+            </div>
+
+            <!-- Social buttons -->
+            <div class="social-buttons">
+                <button type="button" class="btn-social btn-google">
+                    🔴 Continuer avec Google
+                </button>
+                <button type="button" class="btn-social btn-apple">
+                    🍎 Continuer avec Apple
+                </button>
+            </div>
+
+            <!-- Register link -->
+            <p class="auth-footer-text">
+                Pas encore de compte? 
+                <a href="{{ path('app_register') }}" class="auth-link">S'inscrire</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
