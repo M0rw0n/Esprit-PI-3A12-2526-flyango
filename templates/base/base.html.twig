@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fly&Go - Votre agence de voyage en Tunisie. Réservez hébergements, circuits, activités et transports. Expérience premium avec support 24/7.">
+    <meta name="keywords" content="voyage tunisie, hébergement, circuit tunisie, activités, transport">
+    <meta name="author" content="Fly&Go">
+    <meta name="theme-color" content="#1B3A6B">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="{% block og_title %}Fly&Go — Agence de Voyage{% endblock %}">
+    <meta property="og:description" content="Réservez vos hébergements, circuits et activités en Tunisie.">
+    <meta property="og:type" content="website">
+    
+    <!-- Performance: Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://images.unsplash.com">
+    
+    <!-- Fonts avec font-display: swap -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
+    
+    <!-- Font Awesome - defer -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+    
+    <!-- Critical CSS inline -->
+    <style>
+        :root{--navy:#1B3A6B;--navy-d:#122850;--navy-dd:#0C1E3D;--cyan:#00B4D8;--cyan-d:#0096B7;--gold:#FFB700;--gold-d:#E5A400;--bg:#F0F4F8;--bg2:#E8EEF5;--card:#fff;--text:#0F1E35;--muted:#64748B;--light:#94A3B8;--border:#DDE5EF;--green:#10B981;--red:#EF4444;--orange:#F97316;--r:14px;--r-sm:8px;--font:'Outfit','Plus Jakarta Sans',system-ui,sans-serif;--t:.22s ease;--bounce:.4s cubic-bezier(.34,1.56,.64,1)}
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+        img{max-width:100%;display:block}
+        a{text-decoration:none;color:inherit}
+    </style>
+    
+    <!-- Main CSS async -->
+    <link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}"></noscript>
+    
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+<nav class="fg-nav" id="fgNav">
+    <div class="fg-nav__wrap">
+        <a href="{{ path('home') }}" class="fg-nav__logo" aria-label="Fly&Go accueil">
+            <img src="{{ asset('images/logo.png') }}" alt="Fly&Go" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+            <span style="display:none;font-size:1.4rem;font-weight:900;color:var(--navy)">Fly<span style="color:var(--gold)">&amp;</span>Go</span>
+        </a>
+
+        <ul class="fg-nav__links">
+            <li><a href="{{ path('home') }}" class="{{ app.request.attributes.get('_route') == 'home' ? 'on' : '' }}"><i class="fa fa-home"></i> Accueil</a></li>
+            <li><a href="{{ path('hebergement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'hebergement' ? 'on' : '' }}"><i class="fa fa-hotel"></i> Hébergements</a></li>
+            <li><a href="{{ path('circuit_index') }}" class="{{ app.request.attributes.get('_route') starts with 'circuit' ? 'on' : '' }}"><i class="fa fa-route"></i> Circuits</a></li>
+            <li><a href="{{ path('activity_index') }}" class="{{ app.request.attributes.get('_route') starts with 'activity' ? 'on' : '' }}"><i class="fa fa-hiking"></i> Activités</a></li>
+            <li><a href="{{ path('transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'transport' ? 'on' : '' }}"><i class="fa fa-plane"></i> Transport</a></li>
+            <li><a href="{{ path('price_comparator') }}" class="{{ app.request.attributes.get('_route') == 'price_comparator' ? 'on' : '' }}"><i class="fa fa-scale-balanced"></i> Comparateur Prix</a></li>
+            <li><a href="{{ path('forum_index') }}" class="{{ app.request.attributes.get('_route') starts with 'forum' ? 'on' : '' }}"><i class="fa fa-comments"></i> Forum</a></li>
+        </ul>
+
+        <div class="fg-nav__right">
+            {% if app.user %}
+                <div class="fg-user-menu">
+                    <button class="fg-user-btn" id="fgUserBtn">
+                        <div class="fg-user-avatar">
+                            {{ app.user.prenom|slice(0,1)|upper }}
+                        </div>
+                        <span class="fg-user-name">{{ app.user.prenom }}</span>
+                        <i class="fa fa-chevron-down fg-user-arrow"></i>
+                    </button>
+                    <div class="fg-user-dropdown" id="fgUserDropdown">
+                        <div class="fg-dropdown-header">
+                            <strong>{{ app.user.prenom }} {{ app.user.nom|default('') }}</strong>
+                            <span>{{ app.user.email }}</span>
+                        </div>
+                        <div class="fg-dropdown-links">
+                            <a href="{{ path('user_dashboard') }}"><i class="fa fa-user"></i> Mon espace</a>
+                            <a href="{{ path('user_reservations') }}"><i class="fa fa-calendar-check"></i> Mes réservations</a>
+                            <a href="{{ path('user_history') }}"><i class="fa fa-history"></i> Historique</a>
+                            <a href="{{ path('user_avis') }}"><i class="fa fa-star"></i> Mes avis</a>
+                            <a href="{{ path('favoris_all') }}"><i class="fa fa-heart"></i> Favoris</a>
+                            {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('admin_dashboard') }}" class="fg-dropdown-admin"><i class="fa fa-shield-alt"></i> Administration</a>
+                            {% endif %}
+                        </div>
+                        <div class="fg-dropdown-footer">
+                            <a href="{{ path('app_logout') }}" class="fg-logout"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn btn-outline btn-sm"><i class="fa fa-sign-in-alt"></i> Connexion</a>
+                <a href="{{ path('app_register') }}" class="btn btn-gold btn-sm"><i class="fa fa-user-plus"></i> Inscription</a>
+            {% endif %}
+            <button class="fg-burger" id="fgBurger"><span></span><span></span><span></span></button>
+        </div>
+    </div>
+    <div class="fg-mobile" id="fgMobile">
+        <a href="{{ path('home') }}"><i class="fa fa-home"></i> Accueil</a>
+        <a href="{{ path('hebergement_index') }}"><i class="fa fa-hotel"></i> Hébergements</a>
+        <a href="{{ path('circuit_index') }}"><i class="fa fa-route"></i> Circuits</a>
+        <a href="{{ path('activity_index') }}"><i class="fa fa-hiking"></i> Activités</a>
+        <a href="{{ path('transport_index') }}"><i class="fa fa-plane"></i> Transport</a>
+        <a href="{{ path('price_comparator') }}"><i class="fa fa-scale-balanced"></i> Comparateur Prix</a>
+        <a href="{{ path('forum_index') }}"><i class="fa fa-comments"></i> Forum</a>
+        {% if app.user %}
+        <a href="{{ path('user_dashboard') }}"><i class="fa fa-user"></i> Mon espace</a>
+        <a href="{{ path('user_reservations') }}"><i class="fa fa-calendar-check"></i> Mes réservations</a>
+        <a href="{{ path('user_history') }}"><i class="fa fa-history"></i> Historique</a>
+        <a href="{{ path('user_avis') }}"><i class="fa fa-star"></i> Mes avis</a>
+        <a href="{{ path('favoris_all') }}"><i class="fa fa-heart"></i> Favoris</a>
+        <a href="{{ path('app_logout') }}"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+        {% else %}
+        <a href="{{ path('app_login') }}"><i class="fa fa-sign-in-alt"></i> Connexion</a>
+        {% endif %}
+    </div>
+</nav>
+
+{% for type, messages in app.flashes %}
+    {% for msg in messages %}
+    <div style="position:fixed;top:80px;right:1.5rem;z-index:2000;max-width:420px">
+        <div class="toast toast--{{ type == 'success' ? 'success' : (type == 'error' ? 'error' : 'info') }}" style="display:flex;pointer-events:auto">
+            {{ type == 'success' ? '✅' : (type == 'error' ? '❌' : 'ℹ️') }} {{ msg }}
+        </div>
+    </div>
+    {% endfor %}
+{% endfor %}
+
+{% block body %}{% endblock %}
+
+<footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__brand">
+            <div class="footer__logo" style="display:flex;align-items:center;gap:.75rem">
+                <img src="{{ asset('images/logo.png') }}" alt="Fly&Go" style="height:56px;width:auto;object-fit:contain" onerror="this.style.display='none'">
+                <span style="font-size:1.2rem;font-weight:900;color:#fff">Fly<span style="color:var(--gold)">&amp;</span>Go</span>
+            </div>
+            <p>Plateforme complète avec rôle admin, espace utilisateur, circuits sur mesure et comparateur de prix inspiré des écrans fournis.</p>
+        </div>
+        <div class="footer__col">
+            <h4>Services</h4>
+            <ul>
+                <li><i class="fa fa-hotel"></i><a href="{{ path('hebergement_index') }}">Hébergements</a></li>
+                <li><i class="fa fa-route"></i><a href="{{ path('circuit_index') }}">Circuits</a></li>
+                <li><i class="fa fa-brain"></i><a href="{{ path('circuit_ai_create') }}">Circuit IA</a></li>
+                <li><i class="fa fa-plane"></i><a href="{{ path('transport_index') }}">Transport</a></li>
+                <li><i class="fa fa-scale-balanced"></i><a href="{{ path('price_comparator') }}">Comparateur Prix</a></li>
+            </ul>
+        </div>
+        <div class="footer__col">
+            <h4>Compte</h4>
+            <ul>
+                <li><i class="fa fa-user"></i><a href="{{ path('user_dashboard') }}">Mon espace</a></li>
+                <li><i class="fa fa-calendar-check"></i><a href="{{ path('user_reservations') }}">Mes réservations</a></li>
+                <li><i class="fa fa-star"></i><a href="{{ path('user_avis') }}">Mes avis</a></li>
+            </ul>
+        </div>
+        <div class="footer__col">
+            <h4>Contact</h4>
+            <ul>
+                <li><i class="fa fa-phone"></i><a href="tel:+21612345678">+216 12 345 678</a></li>
+                <li><i class="fa fa-envelope"></i><a href="mailto:contact@flyandgo.tn">contact@flyandgo.tn</a></li>
+                <li><i class="fa fa-map-marker-alt"></i><a href="#">Tunis, Tunisie</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer__bottom">
+        © {{ "now"|date("Y") }} <strong>Fly&amp;Go</strong> — version livrée avec modules utilisateur + admin.
+    </div>
+</footer>
+
+<div class="toast-box" id="toastBox"></div>
+<!-- Load JS deferred for better performance -->
+<script src="{{ asset('js/flyandgo.js') }}" defer></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,71 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ circuit ? 'Modifier' : 'Nouveau' }} circuit — Admin{% endblock %}
+{% block breadcrumb %}{{ circuit ? 'Modifier circuit' : 'Nouveau circuit' }}{% endblock %}
+{% block admin_body %}
+<div class="form-wrap">
+    <div style="margin-bottom:1.5rem">
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">{{ circuit ? '✏️ ' ~ circuit.titre : '➕ Nouveau circuit' }}</h2>
+        <a href="{{ path('admin_circuits') }}" style="font-size:.85rem;color:var(--muted)"><i class="fa fa-arrow-left"></i> Retour</a>
+    </div>
+    <form action="{{ circuit ? path('admin_circuit_edit', {id: circuit.id}) : path('admin_circuit_new') }}" method="POST" enctype="multipart/form-data">
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-route"></i> Informations du circuit</div>
+            <div class="fgrid">
+                <div class="ffield fgrid--full">
+                    <label>Titre du circuit <span class="required">*</span></label>
+                    <input type="text" name="titre" value="{{ circuit ? circuit.titre : '' }}" required placeholder="Ex: Circuit désert du Sahara 5 jours">
+                </div>
+                <div class="ffield">
+                    <label>Départ</label>
+                    <input type="text" name="depart" value="{{ circuit ? circuit.depart : '' }}" placeholder="Ex: Tunis">
+                </div>
+                <div class="ffield">
+                    <label>Destination</label>
+                    <input type="text" name="destination" value="{{ circuit ? circuit.destination : '' }}" placeholder="Ex: Douz, Tozeur">
+                </div>
+                <div class="ffield">
+                    <label>Durée</label>
+                    <input type="text" name="duree" value="{{ circuit ? circuit.duree : '' }}" placeholder="Ex: 5 jours / 4 nuits">
+                </div>
+                <div class="ffield">
+                    <label>Prix par personne (TND) <span class="required">*</span></label>
+                    <input type="number" name="prix" step="0.001" value="{{ circuit ? circuit.prix : '' }}" required min="0">
+                </div>
+                <div class="ffield">
+                    <label>Difficulté</label>
+                    <select name="difficulte">
+                        <option value="">-- Choisir --</option>
+                        {% for d in ['Facile', 'Modéré', 'Difficile', 'Extrême'] %}
+                        <option value="{{ d }}" {{ circuit and circuit.difficulte == d ? 'selected' : '' }}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ffield">
+                    <label>Places disponibles</label>
+                    <input type="number" name="places" value="{{ circuit ? circuit.placesDisponibles : '' }}" min="1" placeholder="20">
+                </div>
+                <div class="ffield">
+                    <label>Statut</label>
+                    <select name="actif">
+                        <option value="1" {{ (circuit and circuit.actif) or (not circuit) ? 'selected' : '' }}>Actif</option>
+                        <option value="0" {{ circuit and not circuit.actif ? 'selected' : '' }}>Inactif</option>
+                    </select>
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Description</label>
+                    <textarea name="description" rows="5" placeholder="Décrivez le circuit...">{{ circuit ? circuit.description : '' }}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-image"></i> Image</div>
+            {% if circuit and circuit.image %}<div class="img-prev"><img src="{{ asset(circuit.image) }}" alt="{{ circuit.titre }}"></div>{% endif %}
+            <div class="ffield"><input type="file" name="image" accept="image/*"></div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-navy btn-lg"><i class="fa fa-save"></i> {{ circuit ? 'Mettre à jour' : 'Créer le circuit' }}</button>
+            <a href="{{ path('admin_circuits') }}" class="btn btn-outline">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

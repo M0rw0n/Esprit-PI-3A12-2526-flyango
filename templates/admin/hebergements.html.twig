@@ -1,0 +1,55 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Hébergements — Admin{% endblock %}
+{% block breadcrumb %}Hébergements{% endblock %}
+{% block admin_body %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+    <div>
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Gestion des hébergements</h2>
+        <p style="color:var(--muted);font-size:.85rem">{{ hebergements|length }} hébergements au total</p>
+    </div>
+    <a href="{{ path('admin_hebergement_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Nouvel hébergement</a>
+</div>
+<div class="admin-acts">
+    {% for h in hebergements %}
+    <div class="adm-act">
+        <div class="adm-act__img">
+            {% if h.image %}
+            <img src="{{ asset(h.image) }}" alt="{{ h.nom }}" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=70'">
+            {% else %}
+            <div style="height:130px;background:var(--bg2);display:flex;align-items:center;justify-content:center"><i class="fa fa-hotel" style="font-size:2rem;color:var(--border)"></i></div>
+            {% endif %}
+            <div style="position:absolute;top:.5rem;right:.5rem">
+                <span class="status status--{{ h.disponible ? 'confirmed' : 'cancelled' }}">{{ h.disponible ? 'Disponible' : 'Indisponible' }}</span>
+            </div>
+        </div>
+        <div class="adm-act__body">
+            <div class="adm-act__title">{{ h.nom }}</div>
+            <div class="adm-act__meta">
+                <span><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ h.ville }}</span>
+                <span><i class="fa fa-tag" style="color:var(--muted)"></i> {{ h.type }}</span>
+                {% if h.capacite %}<span><i class="fa fa-users" style="color:var(--muted)"></i> {{ h.capacite }} pers.</span>{% endif %}
+            </div>
+            <div class="adm-act__foot">
+                <div class="price price--sm">
+                    <span class="price__val">{{ h.prixParNuit|number_format(3, ',', ' ') }}</span>
+                    <span class="price__cur">TND</span>
+                    <span class="price__per">/nuit</span>
+                </div>
+                <div class="adm-act__actions">
+                    <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-outline btn-sm" target="_blank"><i class="fa fa-eye"></i></a>
+                    <a href="{{ path('admin_hebergement_edit', {id: h.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-edit"></i></a>
+                    <form action="{{ path('admin_hebergement_delete', {id: h.id}) }}" method="POST" onsubmit="return confirm('Supprimer « {{ h.nom }} » ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_heb_'~h.id) }}">
+                        <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1"><i class="fa fa-hotel"></i><h3>Aucun hébergement</h3>
+        <a href="{{ path('admin_hebergement_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Ajouter</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

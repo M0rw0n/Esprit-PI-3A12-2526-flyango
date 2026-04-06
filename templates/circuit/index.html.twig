@@ -1,0 +1,173 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Circuits de voyage — Fly&Go{% endblock %}
+{% block body %}
+
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Circuits de voyage</h1>
+        <p class="hero-subtitle">{{ circuits|length }} circuits disponibles — Circuits admin + circuits personnalisés IA</p>
+    </div>
+</section>
+
+<div class="fg-filter-sticky" id="filterSticky">
+    <div class="fg-filter-inner">
+        <form method="GET" action="{{ path('circuit_index') }}" id="filterForm" class="fg-filter-form">
+            <div class="fg-filter-row">
+                <div class="fg-filter-search">
+                    <i class="fa fa-search"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Destination, titre..." data-auto-submit>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-mountain"></i>
+                    <select name="difficulte" data-auto-submit>
+                        <option value="">Toutes difficultés</option>
+                        <option value="Facile" {{ difficulte|default('') == 'Facile' ? 'selected' : '' }}>Facile</option>
+                        <option value="Modéré" {{ difficulte|default('') == 'Modéré' ? 'selected' : '' }}>Modéré</option>
+                        <option value="Difficile" {{ difficulte|default('') == 'Difficile' ? 'selected' : '' }}>Difficile</option>
+                        <option value="Extrême" {{ difficulte|default('') == 'Extrême' ? 'selected' : '' }}>Extrême</option>
+                    </select>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-sort"></i>
+                    <select name="sort" data-auto-submit>
+                        <option value="recent" {{ sort|default('recent') == 'recent' ? 'selected' : '' }}>Plus récents</option>
+                        <option value="price_asc" {{ sort|default('recent') == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                        <option value="price_desc" {{ sort|default('recent') == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+                        <option value="places_desc" {{ sort|default('recent') == 'places_desc' ? 'selected' : '' }}>Plus de places</option>
+                    </select>
+                </div>
+                <a href="{{ path('circuit_index') }}" class="btn btn-outline" title="Réinitialiser">
+                    <i class="fa fa-times"></i>
+                </a>
+                <a href="{{ path('circuit_ai_create') }}" class="btn btn-gold">
+                    <i class="fa fa-brain"></i> Circuit IA
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container" id="resultsContainer">
+    <div class="fg-results-header">
+        <div class="fg-results-info">
+            <h2 class="fg-results-count">{{ circuits|length }} circuit{{ circuits|length > 1 ? 's' : '' }} trouvé{{ circuits|length > 1 ? 's' : '' }}</h2>
+            <p class="fg-results-sub">Circuits créés par l'admin + circuits personnalisés générés par IA</p>
+        </div>
+        <div class="fg-results-badges">
+            <span class="fg-badge"><i class="fa fa-brain"></i> Circuits IA disponibles</span>
+            <span class="fg-badge"><i class="fa fa-shield-alt"></i> Garantie satisfait</span>
+        </div>
+    </div>
+
+    {% if circuits %}
+    <div class="hcards" id="cardsGrid">
+        {% for c in circuits %}
+        <article class="hcard anim" data-id="{{ c.id }}" onclick="window.location='{{ path('circuit_show', {id: c.id}) }}'">
+            <div class="hcard__img">
+                <img src="{{ c.image ? asset(c.image) : 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80' }}" alt="{{ c.titre }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80'">
+                <div class="hcard__badges">
+                    {% if c.isAiGenerated %}<span class="hcard__badge hcard__badge--featured"><i class="fa fa-brain"></i> Circuit IA</span>{% endif %}
+                    {% if c.difficulte == 'Facile' %}<span class="hcard__badge hcard__badge--new">{{ c.difficulte }}</span>{% endif %}
+                </div>
+                <button class="hcard__wish" onclick="event.stopPropagation(); toggleFavorite({{ c.id }}, 'circuit', this)">
+                    <i class="fa fa-heart"></i>
+                </button>
+                {% if c.avis|length > 0 %}
+                <div class="hcard__rating">
+                    <i class="fa fa-star"></i>
+                    {{ c.getMoyenneNotes()|number_format(1, '.') }} · {{ c.avis|length }} avis
+                </div>
+                {% endif %}
+            </div>
+            <div class="hcard__body">
+                <div class="hcard__header">
+                    <div class="hcard__loc">
+                        <i class="fa fa-map-marker-alt"></i>
+                        {{ c.depart }} → {{ c.destination }}
+                    </div>
+                    <span class="hcard__type" style="background:{{ c.difficulte == 'Facile' ? 'rgba(16,185,129,.1);color:#059669' : c.difficulte == 'Difficile' ? 'rgba(239,68,68,.1);color:#dc2626' : 'rgba(249,115,22,.1);color:#ea580c' }}">{{ c.difficulte ?: 'Tous niveaux' }}</span>
+                </div>
+                <h3 class="hcard__name">{{ c.titre }}</h3>
+                {% if c.description %}<p class="hcard__desc">{{ c.description|length > 100 ? c.description|slice(0,100)~'…' : c.description }}</p>{% endif %}
+                <div class="hcard__meta">
+                    {% if c.duree %}<span><i class="fa fa-clock"></i> {{ c.duree }}</span>{% endif %}
+                    {% if c.placesDisponibles %}<span><i class="fa fa-users"></i> {{ c.placesDisponibles }} places</span>{% endif %}
+                </div>
+                <div class="hcard__tags">
+                    <span class="hcard__tag"><i class="fa fa-tag"></i> {{ c.sourceType == 'admin' ? 'Circuit admin' : 'Circuit perso' }}</span>
+                    {% if c.isAiGenerated %}<span class="hcard__tag" style="background:rgba(255,183,0,.15);color:#92400e"><i class="fa fa-brain"></i> Généré par IA</span>{% endif %}
+                </div>
+                <div class="hcard__foot">
+                    <div class="hcard__price">
+                        <span class="hcard__price-val">{{ c.prix|number_format(0, '', ' ') }}</span>
+                        <span class="hcard__price-cur">TND</span>
+                        <span class="hcard__price-per">/pers.</span>
+                    </div>
+                    <div class="hcard__actions" onclick="event.stopPropagation()">
+                        <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                        <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-navy btn-sm">Réserver</a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fg-empty">
+        <div class="fg-empty__icon"><i class="fa fa-route"></i></div>
+        <h3>Aucun circuit trouvé</h3>
+        <p>Essayez de modifier vos critères de Recherche</p>
+        <a href="{{ path('circuit_ai_create') }}" class="btn btn-navy">Créer un circuit IA</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-filter-sticky{position:sticky;top:68px;z-index:50;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--s1);padding:.75rem 0}
+.fg-filter-inner{max-width:1380px;margin:0 auto;padding:0 2rem}
+.fg-filter-form{width:100%}
+.fg-filter-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.fg-filter-search{flex:1;min-width:200px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-search i{position:absolute;left:.85rem;color:var(--muted)}
+.fg-filter-search input{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font)}
+.fg-filter-select-wrap{flex:1;min-width:140px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-select-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-select-wrap i{position:absolute;left:.85rem;color:var(--muted);pointer-events:none}
+.fg-filter-select-wrap select{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:0;margin:0}
+.fg-filter-select-wrap select option{padding:.5rem}
+.fg-results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.fg-results-count{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+.fg-results-sub{font-size:.85rem;color:var(--muted)}
+.fg-results-badges{display:flex;gap:.75rem;flex-wrap:wrap}
+.fg-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border-radius:100px;background:var(--bg);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted)}
+.fg-badge i{color:var(--gold)}
+.fg-empty{text-align:center;padding:4rem 2rem}
+.fg-empty__icon{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)}
+.fg-empty h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.fg-empty p{color:var(--muted);margin-bottom:1.5rem}
+.hcard__type{font-size:.7rem;font-weight:700;padding:.2rem .5rem;border-radius:4px}
+@media (max-width:900px){
+    .fg-filter-row{flex-direction:column;align-items:stretch}
+    .fg-filter-search,.fg-filter-select-wrap{min-width:100%}
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+        let timeout;
+        el.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 600);
+        });
+        el.addEventListener('change', () => filterForm.submit());
+    });
+});
+</script>
+{% endblock %}

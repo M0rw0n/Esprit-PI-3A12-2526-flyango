@@ -1,0 +1,49 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Activités favorites — Fly&Go{% endblock %}
+
+{% block body %}
+<section class="page-header">
+    <div class="container">
+        <h1><i class="fa fa-hiking"></i> Activités favorites</h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="favorites-tabs">
+            <a href="{{ path('favoris_all') }}" class="tab"><i class="fa fa-heart"></i> Tous</a>
+            <a href="{{ path('favoris_hebergements') }}" class="tab"><i class="fa fa-hotel"></i> Hébergements</a>
+            <a href="{{ path('favoris_circuits') }}" class="tab"><i class="fa fa-route"></i> Circuits</a>
+            <a href="{{ path('favoris_activities') }}" class="tab active"><i class="fa fa-hiking"></i> Activités</a>
+            <a href="{{ path('favoris_transports') }}" class="tab"><i class="fa fa-plane"></i> Transport</a>
+        </div>
+
+        {% if favorites is empty %}
+            <div class="empty-state">
+                <i class="fa fa-hiking"></i>
+                <h3>Aucune activité favorite</h3>
+                <a href="{{ path('activity_index') }}" class="btn btn-gold"><i class="fa fa-search"></i> Explorer</a>
+            </div>
+        {% else %}
+            <div class="hebergements-grid">
+                {% for fav in favorites %}
+                    {% set a = fav.activity %}
+                    <div class="hebergement-card" data-id="{{ a.id }}">
+                        <div class="hebergement-card__image">
+                            {% if a.image %}<img src="{{ asset(a.image) }}" alt="{{ a.title }}">{% else %}<div class="placeholder-img"><i class="fa fa-hiking"></i></div>{% endif %}
+                            <button class="favorite-btn active" onclick="toggleFavorite({{ a.id }}, 'activity', this)"><i class="fa fa-heart"></i></button>
+                        </div>
+                        <div class="hebergement-card__body">
+                            <h3>{{ a.title }}</h3>
+                            <p class="location"><i class="fa fa-map-marker-alt"></i> {{ a.lieu }}</p>
+                            <div class="price">{{ a.price|number_format(3) }} TND</div>
+                            <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-gold btn-block"><i class="fa fa-eye"></i> Voir</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

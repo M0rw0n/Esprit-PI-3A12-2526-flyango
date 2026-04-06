@@ -1,0 +1,66 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Mes favoris — Fly&Go{% endblock %}
+
+{% block body %}
+<section class="page-header">
+    <div class="container">
+        <h1><i class="fa fa-heart"></i> Mes favoris</h1>
+        <p class="lead">Gérez vos hébergements sauvegardés</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="favorites-tabs">
+            <a href="{{ path('favoris_hebergements') }}" class="tab active"><i class="fa fa-hotel"></i> Hébergements</a>
+            <a href="{{ path('favoris_posts') }}" class="tab"><i class="fa fa-comments"></i> Posts Forum</a>
+        </div>
+
+        {% if favorites is empty %}
+            <div class="empty-state">
+                <i class="fa fa-heart-broken"></i>
+                <h3>Aucun favori</h3>
+                <p>Ajoutez des hébergements à vos favoris pour les retrouver ici.</p>
+                <a href="{{ path('hebergement_index') }}" class="btn btn-gold"><i class="fa fa-search"></i> Explorer</a>
+            </div>
+        {% else %}
+            <div class="hebergements-grid">
+                {% for fav in favorites %}
+                    {% set h = fav.hebergement %}
+                    <div class="hebergement-card" data-id="{{ h.id }}">
+                        <div class="hebergement-card__image">
+                            {% if h.image %}
+                                <img src="{{ asset(h.image) }}" alt="{{ h.nom }}">
+                            {% else %}
+                                <div class="placeholder-img"><i class="fa fa-hotel"></i></div>
+                            {% endif %}
+                            <button class="favorite-btn active" onclick="toggleFavorite({{ h.id }}, 'hebergement', this)" title="Retirer des favoris">
+                                <i class="fa fa-heart"></i>
+                            </button>
+                            <span class="badge">{{ h.type }}</span>
+                        </div>
+                        <div class="hebergement-card__body">
+                            <h3>{{ h.nom }}</h3>
+                            <p class="location"><i class="fa fa-map-marker-alt"></i> {{ h.ville }}</p>
+                            <div class="rating">
+                                {% set avg = h.moyenneNotes %}
+                                {% if avg > 0 %}
+                                    {% set full = (avg)|round(0, 'floor') %}
+                                    {% set empty = 5 - full %}
+                                    <span class="stars">{% for i in 1..full %}★{% endfor %}{% for i in 1..empty %}☆{% endfor %}</span>
+                                    <span class="avg">{{ avg }}/5</span>
+                                {% else %}
+                                    <span class="no-rating">Pas encore d'avis</span>
+                                {% endif %}
+                            </div>
+                            <div class="price">{{ h.prixParNuit|number_format(3) }} TND <small>/ nuit</small></div>
+                            <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-outline btn-block"><i class="fa fa-eye"></i> Voir</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

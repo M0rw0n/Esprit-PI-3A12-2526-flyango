@@ -1,0 +1,282 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ post.title }} — Forum Fly&Go{% endblock %}
+
+{% block stylesheets %}
+<style>
+.forum-container{max-width:760px;margin:0 auto;padding:2rem 1rem 4rem}
+.forum-back{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none;margin-bottom:1.25rem;transition:color .2s}
+.forum-back:hover{color:var(--navy)}
+.fshow{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.fshow__inner{display:flex}
+.fshow__votes{display:flex;flex-direction:column;align-items:center;padding:.75rem .5rem;background:var(--bg);gap:.15rem;min-width:44px}
+.fshow__vbtn{width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;font-size:1.1rem}
+.fshow__vbtn:hover{background:var(--border)}
+.fshow__vbtn.up:hover,.fshow__vbtn.up.active{color:#FF4500;background:rgba(255,69,0,.08)}
+.fshow__vbtn.down:hover,.fshow__vbtn.down.active{color:#7193FF;background:rgba(113,147,255,.08)}
+.fshow__sc{font-size:.88rem;font-weight:800;color:var(--text)}
+.fshow__main{padding:1rem 1.25rem;flex:1;min-width:0}
+.fshow__meta{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem}
+.fshow__meta a{color:var(--navy);font-weight:600;text-decoration:none}
+.fshow__cat{background:rgba(13,91,215,.08);color:var(--navy);padding:2px 8px;border-radius:999px;font-size:.68rem;font-weight:700}
+.fshow__title{font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:.65rem;line-height:1.35}
+.fshow__body{font-size:.95rem;line-height:1.7;color:var(--text);white-space:pre-wrap;word-wrap:break-word}
+.fshow__bar{display:flex;align-items:center;gap:.2rem;padding:.55rem .75rem;border-top:1px solid var(--border)}
+.fshow__abtn{display:inline-flex;align-items:center;gap:.35rem;padding:.45rem .7rem;border:none;background:none;color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;border-radius:6px;transition:background .15s;text-decoration:none}
+.fshow__abtn:hover{background:var(--border);color:var(--text)}
+.fshow__abtn.active{color:var(--navy)}
+.fshow__abtn i{font-size:.9rem}
+.cform{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-top:1rem}
+.cform__hd{display:flex;align-items:center;gap:.5rem;margin-bottom:.65rem;font-size:.85rem;font-weight:600;color:var(--muted)}
+.cform__hd i{color:var(--navy)}
+.cform textarea{width:100%;padding:.75rem;border:1.5px solid var(--border);border-radius:8px;font-size:.92rem;font-family:var(--font);resize:vertical;min-height:90px;outline:none;transition:border-color .2s}
+.cform textarea:focus{border-color:var(--navy)}
+.cform__ri{display:none;align-items:center;gap:.5rem;margin-bottom:.5rem;padding:.45rem .75rem;background:var(--bg);border-radius:6px;font-size:.82rem;color:var(--navy)}
+.cform__ri.on{display:flex}
+.cform__rix{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;margin-left:auto}
+.cform__rix:hover{color:var(--text)}
+.cform__ft{display:flex;justify-content:space-between;align-items:center;margin-top:.65rem}
+.cform__hint{font-size:.78rem;color:var(--muted)}
+.csort{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;margin-top:1.25rem;gap:.5rem;flex-wrap:wrap}
+.csort__l{display:flex;align-items:center;gap:.75rem}
+.csort__lab{font-size:.88rem;font-weight:700;color:var(--text)}
+.csort__tabs{display:flex;gap:.2rem}
+.csort__tab{padding:.4rem .75rem;border:none;background:none;color:var(--muted);font-size:.82rem;font-weight:600;cursor:pointer;border-radius:6px;transition:all .15s}
+.csort__tab:hover{background:var(--border);color:var(--text)}
+.csort__tab.active{background:var(--navy);color:#fff}
+.csort__exp{display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .75rem;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:.78rem;font-weight:600;cursor:pointer;border-radius:6px;transition:all .15s}
+.csort__exp:hover{background:var(--bg);color:var(--text)}
+.clist{margin-top:.5rem}
+.cempty{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.cempty i{font-size:2rem;margin-bottom:.75rem;display:block;opacity:.4}
+.clogin{text-align:center;padding:2rem;background:#fff;border:1px solid var(--border);border-radius:12px;margin-top:1rem}
+.clogin p{color:var(--muted);margin-bottom:1rem}
+.cloading{display:flex;justify-content:center;padding:2rem}
+.cloading::after{content:'';width:24px;height:24px;border:2.5px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:csp .7s linear infinite}
+@keyframes csp{to{transform:rotate(360deg)}}
+@media(max-width:640px){.forum-container{padding:1rem .75rem 3rem}.fshow__votes{min-width:36px;padding:.5rem .3rem}}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="forum-container">
+    <a href="{{ path('forum_index') }}" class="forum-back"><i class="fa fa-arrow-left"></i> Retour au forum</a>
+
+    {# ── Post ── #}
+    <article class="fshow">
+        <div class="fshow__inner">
+            <div class="fshow__votes">
+                <button class="fshow__vbtn up {{ userVote == 1 ? 'active' : '' }}" id="pvUp" title="J'aime"><i class="fa fa-arrow-up"></i></button>
+                <span class="fshow__sc" id="pScore">{{ likeCount }}</span>
+                <button class="fshow__vbtn down {{ userVote == -1 ? 'active' : '' }}" id="pvDown" title="Je n'aime pas"><i class="fa fa-arrow-down"></i></button>
+            </div>
+            <div class="fshow__main">
+                <div class="fshow__meta">
+                    {% if post.categorie %}<span class="fshow__cat">{{ post.categorie }}</span>{% endif %}
+                    <span>Posté par <a href="#">{{ post.author }}</a></span>
+                    <span>·</span>
+                    <span>{{ post.createdAt|date('d/m/Y à H:i') }}</span>
+                    <span>·</span>
+                    <span><i class="fa fa-eye"></i> {{ post.vues }}</span>
+                </div>
+                <h1 class="fshow__title">{{ post.title }}</h1>
+                <div class="fshow__body">{{ post.content|nl2br }}</div>
+            </div>
+        </div>
+        <div class="fshow__bar">
+            <span class="fshow__abtn"><i class="fa fa-comment"></i> <span id="cCnt">{{ totalComments|default(0) }}</span> Commentaires</span>
+            {% if app.user %}
+            <button class="fshow__abtn {{ isFavorited ? 'active' : '' }}" id="favBtn"><i class="fa fa-bookmark"></i> {{ isFavorited ? 'Sauvegardé' : 'Sauvegarder' }}</button>
+            {% endif %}
+            <button class="fshow__abtn" onclick="navigator.clipboard.writeText(window.location.href);showToast('Lien copié !')"><i class="fa fa-share-alt"></i> Partager</button>
+        </div>
+    </article>
+
+    {# ── Comment Form ── #}
+    {% if is_granted('ROLE_USER') %}
+    <div class="cform">
+        <div class="cform__hd"><i class="fa fa-pen"></i> Commenter en tant que <strong style="margin-left:.25rem">{{ app.user.prenom }} {{ app.user.nom }}</strong></div>
+        <div class="cform__ri" id="rInfo"><i class="fa fa-reply"></i> <span id="rTxt"></span><button class="cform__rix" id="rCancel">× Annuler</button></div>
+        <form id="cForm">
+            <input type="hidden" id="pId" value="">
+            <textarea id="cContent" placeholder="Écrire un commentaire..." rows="3"></textarea>
+            <div class="cform__ft">
+                <span class="cform__hint"><i class="fa fa-info-circle"></i> Soyez respectueux</span>
+                <button type="submit" class="btn btn-navy btn-sm" id="cSubmit"><i class="fa fa-paper-plane"></i> Publier</button>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="clogin"><p><i class="fa fa-lock"></i> Connectez-vous pour participer à la discussion</p><a href="{{ path('app_login') }}" class="btn btn-navy">Se connecter</a></div>
+    {% endif %}
+
+    {# ── Sort ── #}
+    <div class="csort">
+        <div class="csort__l">
+            <span class="csort__lab"><span id="cCnt2">{{ totalComments|default(0) }}</span> Commentaires</span>
+            <div class="csort__tabs">
+                <button class="csort__tab active" data-sort="top">Top</button>
+                <button class="csort__tab" data-sort="new">Récent</button>
+                <button class="csort__tab" data-sort="old">Ancien</button>
+            </div>
+        </div>
+        <button class="csort__exp" id="expAll"><i class="fa fa-expand"></i> Tout déplier</button>
+    </div>
+
+    {# ── Comments (AJAX) ── #}
+    <div class="clist"><div id="cWrap"><div class="cloading"></div></div></div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const PID = {{ post.id }};
+    const wrap = document.getElementById('cWrap');
+    let sort = 'top', expanded = false;
+
+    /* ── Load comments ── */
+    function load() {
+        wrap.innerHTML = '<div class="cloading"></div>';
+        fetch('/ajax/forum/comments/' + PID + '?sort=' + sort, {headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                wrap.innerHTML = d.html || '<div class="cempty"><i class="fa fa-comments"></i><p>Aucun commentaire. Soyez le premier !</p></div>';
+                el('cCnt').textContent = d.total;
+                el('cCnt2').textContent = d.total;
+                bind();
+            } else wrap.innerHTML = '<div class="cempty"><p>Erreur : ' + (d.message||'') + '</p></div>';
+        })
+        .catch(() => wrap.innerHTML = '<div class="cempty"><p>Erreur de chargement</p></div>');
+    }
+
+    function el(id) { return document.getElementById(id); }
+
+    /* ── Bind comment events ── */
+    function bind() {
+        // Vote
+        wrap.querySelectorAll('.vote-btn').forEach(b => b.onclick = function() {
+            const id = this.dataset.comment, v = parseInt(this.dataset.vote);
+            fetch('/ajax/forum/comment/' + id + '/vote', {
+                method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+                body:'vote=' + v
+            }).then(r=>r.json()).then(d => {
+                if (d.success) {
+                    const p = this.closest('.comment-actions');
+                    const sc = p.querySelector('.score'); if(sc) sc.textContent = d.score;
+                    const up = p.querySelector('.up'); if(up) up.classList.toggle('active', d.userVote===1);
+                    const dn = p.querySelector('.down'); if(dn) dn.classList.toggle('active', d.userVote===-1);
+                }
+            });
+        });
+
+        // Reply
+        wrap.querySelectorAll('.reply-btn').forEach(b => b.onclick = function() {
+            const id = this.dataset.comment, author = this.dataset.author;
+            wrap.querySelectorAll('.reply-form').forEach(f => f.classList.remove('active'));
+            const rf = document.getElementById('reply-form-' + id);
+            if (rf) { rf.classList.add('active'); rf.querySelector('textarea').focus(); }
+            if (el('pId')) el('pId').value = id;
+            if (el('rInfo')) { el('rInfo').classList.add('on'); el('rTxt').innerHTML = '↳ En réponse à <strong>' + author + '</strong>'; }
+        });
+
+        // Cancel reply
+        wrap.querySelectorAll('.cancel-reply').forEach(b => b.onclick = function() {
+            this.closest('.reply-form').classList.remove('active');
+        });
+
+        // Submit reply
+        wrap.querySelectorAll('.reply-form form').forEach(f => f.onsubmit = function(e) {
+            e.preventDefault();
+            const pid = this.dataset.parent, ta = this.querySelector('textarea'), c = ta.value.trim();
+            if (!c) return;
+            const fd = new FormData(); fd.append('post_id', PID); fd.append('parent_id', pid); fd.append('content', c);
+            fetch('/ajax/forum/comment/create', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd})
+            .then(r=>r.json()).then(d => {
+                if (d.success) { ta.value=''; this.closest('.reply-form').classList.remove('active'); load(); showToast('Réponse ajoutée !','success'); }
+                else showToast(d.message||'Erreur','error');
+            });
+        });
+
+        // Toggle replies
+        wrap.querySelectorAll('.toggle-replies').forEach(b => b.onclick = function() {
+            const id = this.dataset.comment, rp = document.getElementById('replies-' + id);
+            if (rp) { const h = rp.style.display==='none'; rp.style.display = h?'block':'none'; this.textContent = h ? '▲ Masquer' : '▼ Afficher les réponses'; }
+        });
+
+        // Delete
+        wrap.querySelectorAll('[data-action="delete"]').forEach(b => b.onclick = function() {
+            if (!confirm('Supprimer ce commentaire ?')) return;
+            fetch('/ajax/forum/comment/' + this.dataset.comment + '/delete', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(r=>r.json()).then(d => { if(d.success){load();showToast('Supprimé');}else showToast(d.message||'Erreur','error'); });
+        });
+
+        // Pin
+        wrap.querySelectorAll('[data-action="pin"]').forEach(b => b.onclick = function() {
+            fetch('/ajax/forum/comment/' + this.dataset.comment + '/pin', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+            .then(r=>r.json()).then(d => { if(d.success){load();showToast(d.message);}else showToast(d.message||'Erreur','error'); });
+        });
+    }
+
+    /* ── Post Vote ── */
+    function vp(v) {
+        fetch('/ajax/like/post/' + PID, {
+            method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+            body:'vote=' + v
+        }).then(r=>r.json()).then(d => {
+            if (d.success) {
+                el('pScore').textContent = d.score;
+                el('pvUp').classList.toggle('active', d.userVote===1);
+                el('pvDown').classList.toggle('active', d.userVote===-1);
+            } else showToast('Connectez-vous pour voter','error');
+        }).catch(() => showToast('Connectez-vous pour voter','error'));
+    }
+    el('pvUp').onclick = () => vp(1);
+    el('pvDown').onclick = () => vp(-1);
+
+    /* ── Favorite ── */
+    const fav = el('favBtn');
+    if (fav) fav.onclick = function() {
+        fetch('/ajax/favorite/post/' + PID, {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(r=>r.json()).then(d => {
+            if (d.success) { this.classList.toggle('active',d.favorited); this.innerHTML='<i class="fa fa-bookmark"></i> '+(d.favorited?'Sauvegardé':'Sauvegarder'); showToast(d.message); }
+        });
+    };
+
+    /* ── Main form ── */
+    const mf = el('cForm');
+    if (mf) mf.onsubmit = function(e) {
+        e.preventDefault();
+        const c = el('cContent').value.trim(); if(!c) return;
+        const fd = new FormData(); fd.append('post_id', PID); fd.append('content', c);
+        const pid = el('pId').value; if(pid) fd.append('parent_id', pid);
+        el('cSubmit').disabled = true;
+        fetch('/ajax/forum/comment/create', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'}, body:fd})
+        .then(r=>r.json()).then(d => {
+            el('cSubmit').disabled = false;
+            if (d.success) { el('cContent').value=''; el('pId').value=''; if(el('rInfo'))el('rInfo').classList.remove('on'); load(); showToast('Commentaire publié !','success'); }
+            else showToast(d.message||'Erreur','error');
+        }).catch(() => { el('cSubmit').disabled=false; showToast('Erreur','error'); });
+    };
+
+    /* ── Cancel reply main ── */
+    if (el('rCancel')) el('rCancel').onclick = function() { el('pId').value=''; el('rInfo').classList.remove('on'); };
+
+    /* ── Sort ── */
+    document.querySelectorAll('.csort__tab').forEach(b => b.onclick = function() {
+        document.querySelectorAll('.csort__tab').forEach(x=>x.classList.remove('active'));
+        this.classList.add('active'); sort = this.dataset.sort; load();
+    });
+
+    /* ── Expand all ── */
+    if (el('expAll')) el('expAll').onclick = function() {
+        expanded = !expanded;
+        wrap.querySelectorAll('.nested-replies').forEach(e => e.style.display = expanded?'block':'none');
+        wrap.querySelectorAll('.more-replies').forEach(b => b.textContent = expanded?'▲ Masquer':'▼ Afficher les réponses');
+        this.innerHTML = expanded ? '<i class="fa fa-compress"></i> Tout replier' : '<i class="fa fa-expand"></i> Tout déplier';
+    };
+
+    load();
+});
+</script>
+{% endblock %}

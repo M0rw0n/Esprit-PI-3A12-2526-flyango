@@ -1,0 +1,5 @@
+{% import 'forum/_comments_tree.html.twig' as tree_macros %}
+{% for item in comments %}
+    {% set item = item|merge({'comment': item.comment, 'depth': item.depth|default(0)}) %}
+    {{ tree_macros.comment_item(item, user) }}
+{% endfor %}

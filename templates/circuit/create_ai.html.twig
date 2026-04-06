@@ -1,0 +1,51 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Circuit personnalisé IA — Fly&Go{% endblock %}
+{% block body %}
+<div style="background:linear-gradient(135deg,var(--navy-dd),var(--navy));padding:3rem 0;color:#fff">
+    <div style="max-width:1180px;margin:0 auto;padding:0 2rem">
+        <h1 style="font-size:2rem;font-weight:900;margin-bottom:.5rem">Circuit personnalisé avec IA</h1>
+        <p style="opacity:.85;max-width:760px">Wizard simplifié inspiré de vos captures : destination, budget, style et dates pour générer un circuit sur mesure.</p>
+    </div>
+</div>
+<div style="max-width:980px;margin:0 auto;padding:2rem">
+    <div style="background:#fff;border:1px solid var(--border);border-radius:20px;padding:2rem;box-shadow:var(--s1)">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+            <span class="tag tag--navy">Étape 1/4</span>
+            <span class="tag">Destination & dates</span>
+            <span class="tag">Budget & style</span>
+            <span class="tag">Résumé & génération</span>
+        </div>
+        <form method="POST">
+            <div class="form-row" style="margin-bottom:1rem">
+                <div><label class="fg-label">Destination *</label><input type="text" name="destination" class="fg-input" placeholder="Ex: Tokyo, Japon" required></div>
+                <div><label class="fg-label">Ville de départ</label><input type="text" name="depart" class="fg-input" value="Tunis"></div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div><label class="fg-label">Date de départ *</label><input type="date" name="date_depart" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required></div>
+                <div><label class="fg-label">Date de retour *</label><input type="date" name="date_retour" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required></div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div><label class="fg-label">Durée (jours)</label><input type="number" name="jours" class="fg-input" min="1" max="30" value="7"></div>
+                <div><label class="fg-label">Voyageurs</label><input type="number" name="participants" class="fg-input" min="1" max="12" value="2"></div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Style</label>
+                    <select name="style" class="fg-input"><option>Découverte</option><option>Famille</option><option>Romantique</option><option>Aventure</option><option>Détente</option></select>
+                </div>
+                <div>
+                    <label class="fg-label">Budget</label>
+                    <select name="budget" class="fg-input"><option>Économique</option><option selected>Moyen</option><option>Premium</option></select>
+                </div>
+            </div>
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:1rem;margin-bottom:1.5rem;color:#1e3a8a">
+                <i class="fa fa-lightbulb"></i> L’IA analysera la destination et créera un programme complet avec estimation de prix, niveau de difficulté et points forts.
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:1rem;flex-wrap:wrap">
+                <a href="{{ path('circuit_index') }}" class="btn btn-outline">Annuler</a>
+                <button class="btn btn-gold" type="submit"><i class="fa fa-brain"></i> Générer le circuit</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

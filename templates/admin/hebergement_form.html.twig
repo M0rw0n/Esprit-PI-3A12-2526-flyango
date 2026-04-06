@@ -1,0 +1,78 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ hebergement ? 'Modifier' : 'Nouvel' }} hébergement — Admin{% endblock %}
+{% block breadcrumb %}{{ hebergement ? 'Modifier hébergement' : 'Nouvel hébergement' }}{% endblock %}
+{% block admin_body %}
+<div class="form-wrap">
+    <div style="margin-bottom:1.5rem">
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">
+            {{ hebergement ? '✏️ Modifier : ' ~ hebergement.nom : '➕ Nouvel hébergement' }}
+        </h2>
+        <a href="{{ path('admin_hebergements') }}" style="font-size:.85rem;color:var(--muted)"><i class="fa fa-arrow-left"></i> Retour</a>
+    </div>
+
+    <form action="{{ hebergement ? path('admin_hebergement_edit', {id: hebergement.id}) : path('admin_hebergement_new') }}" method="POST" enctype="multipart/form-data">
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-info-circle"></i> Informations générales</div>
+            <div class="fgrid">
+                <div class="ffield fgrid--full">
+                    <label>Nom de l'hébergement <span class="required">*</span></label>
+                    <input type="text" name="nom" class="ffield input" value="{{ hebergement ? hebergement.nom : '' }}" required placeholder="Ex: Hôtel Sidi Bou Said Palace">
+                </div>
+                <div class="ffield">
+                    <label>Ville <span class="required">*</span></label>
+                    <input type="text" name="ville" value="{{ hebergement ? hebergement.ville : '' }}" required placeholder="Ex: Tunis, Djerba...">
+                </div>
+                <div class="ffield">
+                    <label>Type <span class="required">*</span></label>
+                    <select name="type" required>
+                        <option value="">-- Choisir --</option>
+                        {% for t in ['Hôtel', 'Appartement', 'Villa', 'Riad', 'Resort', 'Maison d\'hôtes', 'Auberge'] %}
+                        <option value="{{ t }}" {{ hebergement and hebergement.type == t ? 'selected' : '' }}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ffield">
+                    <label>Prix par nuit (TND) <span class="required">*</span></label>
+                    <input type="number" name="prix_par_nuit" step="0.001" value="{{ hebergement ? hebergement.prixParNuit : '' }}" required min="0" placeholder="150.000">
+                </div>
+                <div class="ffield">
+                    <label>Capacité (personnes)</label>
+                    <input type="number" name="capacite" min="1" value="{{ hebergement ? hebergement.capacite : '' }}" placeholder="2">
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Adresse complète</label>
+                    <input type="text" name="adresse" value="{{ hebergement ? hebergement.adresse : '' }}" placeholder="Rue, quartier, ville...">
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Description</label>
+                    <textarea name="description" rows="5" placeholder="Décrivez cet hébergement...">{{ hebergement ? hebergement.description : '' }}</textarea>
+                </div>
+                <div class="ffield">
+                    <label>Disponible</label>
+                    <select name="disponible">
+                        <option value="1" {{ (hebergement and hebergement.disponible) or (not hebergement) ? 'selected' : '' }}>Oui - Disponible</option>
+                        <option value="0" {{ hebergement and not hebergement.disponible ? 'selected' : '' }}>Non - Indisponible</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-image"></i> Image</div>
+            {% if hebergement and hebergement.image %}
+            <div class="img-prev"><img src="{{ asset(hebergement.image) }}" alt="{{ hebergement.nom }}"></div>
+            {% endif %}
+            <div class="ffield">
+                <label>Image principale</label>
+                <input type="file" name="image" accept="image/*">
+                <span class="fhint">JPG, PNG, WebP — Max 5MB</span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-navy btn-lg"><i class="fa fa-save"></i> {{ hebergement ? 'Mettre à jour' : 'Créer l\'hébergement' }}</button>
+            <a href="{{ path('admin_hebergements') }}" class="btn btn-outline">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

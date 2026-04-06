@@ -1,0 +1,1098 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Mon historique — Fly&Go{% endblock %}
+{% block stylesheets %}
+<style>
+:root {
+    --white: #FFFFFF;
+    --bg: #F8FAFC;
+    --border: #E2E8F0;
+    --text: #1E293B;
+    --text-muted: #64748B;
+    --text-light: #94A3B8;
+    --primary: #3B82F6;
+    --primary-light: #EFF6FF;
+    --danger: #EF4444;
+    --danger-light: #FEF2F2;
+    --success: #10B981;
+    --success-light: #ECFDF5;
+    --warning: #F59E0B;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.15);
+    --radius: 12px;
+    --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+/* Header */
+.header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--primary-light);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+}
+
+.header-left h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.header-left .subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.header-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.icon-btn:hover { background: var(--bg); color: var(--danger); }
+.icon-btn svg { width: 20px; height: 20px; }
+
+/* Search Bar */
+.search-container {
+    position: relative;
+    max-width: 500px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+}
+
+.search-bar:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-bar svg { width: 18px; height: 18px; color: var(--text-light); flex-shrink: 0; }
+
+.search-bar input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.4rem;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.search-bar input::placeholder { color: var(--text-light); }
+
+/* Filter Pills */
+.filter-pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--white);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+.filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+.filter-pill.active:hover { background: #2563EB; }
+
+.filter-pill svg { width: 16px; height: 16px; }
+.filter-pill .count {
+    background: rgba(255,255,255,0.2);
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+.filter-pill:not(.active) .count {
+    background: var(--bg);
+}
+
+/* Main Container */
+.container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+/* Stats Bar */
+.stats-bar {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.stat-item .stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-item .stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+.stat-item .stat-icon.red { background: var(--danger-light); color: var(--danger); }
+.stat-item .stat-icon.green { background: var(--success-light); color: var(--success); }
+
+.stat-item .stat-icon svg { width: 20px; height: 20px; }
+
+.stat-item .stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.stat-item .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Date Groups */
+.date-group { margin-bottom: 2rem; }
+
+.date-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.date-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.date-header h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.date-header .date-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+}
+
+.date-header .date-icon svg { width: 16px; height: 16px; color: var(--text-muted); }
+
+.date-actions { display: flex; gap: 0.5rem; }
+
+.date-actions button {
+    padding: 0.35rem 0.75rem;
+    border: none;
+    background: var(--bg);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.date-actions button:hover { background: var(--danger-light); color: var(--danger); }
+
+/* History Item Card */
+.history-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.history-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.history-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+}
+
+.history-card:hover::before { opacity: 1; }
+
+.history-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.history-card.selected::before { opacity: 1; }
+
+.history-card.deleting {
+    animation: slideOut 0.4s ease forwards;
+}
+
+@keyframes slideOut {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100px); }
+}
+
+.history-card .card-checkbox {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.history-card .card-checkbox input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.history-card .card-checkbox input:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.history-card .card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+}
+
+.history-card:hover .card-icon { transform: scale(1.05); }
+
+.history-card .card-icon svg { width: 24px; height: 24px; }
+
+.history-card .card-icon.reservation { background: var(--primary-light); color: var(--primary); }
+.history-card .card-icon.favorite { background: var(--danger-light); color: var(--danger); }
+.history-card .card-icon.review { background: #FEF3C7; color: var(--warning); }
+.history-card .card-icon.forum { background: var(--success-light); color: var(--success); }
+.history-card .card-icon.hebergement_reservation { background: var(--primary-light); color: var(--primary); }
+.history-card .card-icon.hebergement_reservation { background: var(--primary-light); color: var(--primary); }
+
+.history-card .card-content { flex: 1; min-width: 0; }
+
+.history-card .card-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+    text-decoration: none;
+    display: block;
+    transition: color 0.2s;
+}
+
+.history-card .card-title:hover { color: var(--primary); }
+
+.history-card .card-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.history-card .card-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.history-card .card-meta svg { width: 14px; height: 14px; }
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.status-badge.confirmed, .status-badge.confirmee { background: var(--success-light); color: #059669; }
+.status-badge.pending, .status-badge.en_attente { background: #FEF3C7; color: #D97706; }
+.status-badge.cancelled, .status-badge.annulee { background: var(--danger-light); color: var(--danger); }
+.status-badge.favorite { background: var(--danger-light); color: var(--danger); }
+.status-badge.published { background: var(--success-light); color: #059669; }
+
+/* Amount */
+.card-amount {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    padding: 0.35rem 0.75rem;
+    background: var(--bg);
+    border-radius: 6px;
+}
+
+/* Card Actions */
+.history-card .card-actions {
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.2s;
+}
+
+.history-card:hover .card-actions { opacity: 1; transform: translateX(0); }
+
+.history-card .card-actions button,
+.history-card .card-actions .icon-action-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.history-card .card-actions button:hover,
+.history-card .card-actions .icon-action-btn:hover { background: var(--primary-light); color: var(--primary); }
+
+.history-card .card-actions button.delete-btn:hover { background: var(--danger-light); color: var(--danger); }
+
+.history-card .card-actions button svg,
+.history-card .card-actions .icon-action-btn svg { width: 18px; height: 18px; }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--text);
+}
+
+.btn:hover { background: var(--bg); }
+.btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-primary:hover { background: #2563EB; }
+.btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
+.btn-danger:hover { background: #DC2626; }
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+.btn-ghost { border: none; background: transparent; }
+.btn-ghost:hover { background: var(--bg); }
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 2px dashed var(--border);
+}
+
+.empty-state svg {
+    width: 80px;
+    height: 80px;
+    color: var(--text-light);
+    opacity: 0.4;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 { font-size: 1.25rem; color: var(--text); margin-bottom: 0.5rem; }
+.empty-state p { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto; }
+
+/* Today/Yesterday Labels */
+.today-label, .yesterday-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 0 0.75rem;
+}
+
+.today-label h3, .yesterday-label h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    border-left: 4px solid var(--primary);
+    animation: toastIn 0.3s ease;
+    min-width: 300px;
+}
+
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+
+.toast.hiding { animation: toastOut 0.3s ease forwards; }
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+}
+
+.toast .toast-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.toast .toast-icon.success { background: var(--success-light); color: var(--success); }
+.toast .toast-icon.error { background: var(--danger-light); color: var(--danger); }
+
+.toast .toast-icon svg { width: 18px; height: 18px; }
+
+.toast .toast-content { flex: 1; }
+.toast .toast-title { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.toast .toast-message { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Selection Banner */
+.selection-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--text);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 99;
+}
+
+.selection-banner.visible { transform: translateY(0); }
+
+.selection-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.selection-banner .count {
+    background: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.selection-banner-right {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container { padding: 1rem; }
+    .header { padding: 1rem; }
+    .filter-pills { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.5rem; }
+    .filter-pill { flex-shrink: 0; }
+    .history-card .card-actions { opacity: 1; transform: none; }
+    .header-left h1 { font-size: 1.2rem; }
+    .stats-bar { flex-wrap: wrap; }
+    .toast-container { left: 1rem; right: 1rem; bottom: 1rem; }
+    .toast { min-width: auto; }
+    .selection-banner { flex-direction: column; gap: 1rem; padding: 1rem; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+{# Header #}
+<header class="header">
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div class="header-top">
+            <div class="header-left">
+                <div class="header-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Mon historique</h1>
+                    <p class="subtitle">Vos activités et favoris</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" title="Tout supprimer" onclick="clearAllHistory()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <line x1="10" y1="11" x2="10" y2="17"/>
+                        <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        {# Search Bar #}
+        <div class="search-container">
+            <div class="search-bar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" placeholder="Rechercher dans l'historique..." id="searchHistory">
+            </div>
+        </div>
+
+        {# Filter Pills #}
+        <div class="filter-pills">
+            <a href="{{ path('user_history', {filter: 'all'}) }}" class="filter-pill {{ filter == 'all' ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                Tout
+            </a>
+            <a href="{{ path('user_history', {filter: 'reservations'}) }}" class="filter-pill {{ filter == 'reservations' ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                Réservations
+            </a>
+            <a href="{{ path('user_history', {filter: 'favorites'}) }}" class="filter-pill {{ filter == 'favorites' ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Favoris
+            </a>
+            <a href="{{ path('user_history', {filter: 'reviews'}) }}" class="filter-pill {{ filter == 'reviews' ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Avis
+            </a>
+            <a href="{{ path('user_history', {filter: 'forum'}) }}" class="filter-pill {{ filter == 'forum' ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Forum
+            </a>
+        </div>
+    </div>
+</header>
+
+{# Main Content #}
+<div class="container">
+    {% if history is empty %}
+        <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <h3>Aucune activité récente</h3>
+            <p>Votre historique apparaîtra ici après vos premières interactions avec nos services.</p>
+            <a href="{{ path('hebergement_index') }}" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Commencer à explorer
+            </a>
+        </div>
+    {% else %}
+        {# Stats Bar #}
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon blue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                </div>
+                <div>
+                    <div class="stat-value">{{ history|filter(i => 'reservation' in i.type)|length }}</div>
+                    <div class="stat-label">Réservations</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon red">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </div>
+                <div>
+                    <div class="stat-value">{{ history|filter(i => 'favorite' in i.type)|length }}</div>
+                    <div class="stat-label">Favoris</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div>
+                    <div class="stat-value">{{ history|filter(i => 'review' in i.type)|length }}</div>
+                    <div class="stat-label">Avis</div>
+                </div>
+            </div>
+        </div>
+
+        {# Group by Date #}
+        {% set today = "now"|date('Y-m-d') %}
+        {% set yesterday = "now"|date_modify('-1 day')|date('Y-m-d') %}
+        
+        {% set grouped = {} %}
+        {% for item in history %}
+            {% set dateKey = item.date|date('Y-m-d') %}
+            {% if dateKey not in grouped %}
+                {% set grouped = grouped|merge({(dateKey): []}) %}
+            {% endif %}
+            {% set grouped = grouped|merge({(dateKey): grouped[dateKey]|merge([item])}) %}
+        {% endfor %}
+        
+        {# Today #}
+        {% if today in grouped|keys %}
+        <div class="today-label">
+            <div class="date-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <h3>Aujourd'hui</h3>
+        </div>
+        {% for item in grouped[today] %}
+            {{ include('user/_history_card.html.twig') }}
+        {% endfor %}
+        {% endif %}
+        
+        {# Yesterday #}
+        {% if yesterday in grouped|keys %}
+        <div class="yesterday-label">
+            <div class="date-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </div>
+            <h3>Hier</h3>
+        </div>
+        {% for item in grouped[yesterday] %}
+            {{ include('user/_history_card.html.twig') }}
+        {% endfor %}
+        {% endif %}
+        
+        {# Older #}
+        {% for dateKey, items in grouped %}
+            {% if dateKey != today and dateKey != yesterday %}
+            <div class="date-group">
+                <div class="date-header">
+                    <div class="date-header-left">
+                        <div class="date-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        </div>
+                        <h2>{{ dateKey|date('d MMMM Y')|replace({'January': 'Janvier', 'February': 'Février', 'March': 'Mars', 'April': 'Avril', 'May': 'Mai', 'June': 'Juin', 'July': 'Juillet', 'August': 'Août', 'September': 'Septembre', 'October': 'Octobre', 'November': 'Novembre', 'December': 'Décembre'}) }}</h2>
+                    </div>
+                    <div class="date-actions">
+                        <button onclick="deleteDateGroup('{{ dateKey }}')">Supprimer</button>
+                    </div>
+                </div>
+                {% for item in items %}
+                    {{ include('user/_history_card.html.twig') }}
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+
+{# Toast Container #}
+<div class="toast-container" id="toastContainer"></div>
+
+{# Selection Banner #}
+<div class="selection-banner" id="selectionBanner">
+    <div class="selection-banner-left">
+        <span class="count" id="bannerCount">0</span>
+        <span>favoris sélectionnés</span>
+    </div>
+    <div class="selection-banner-right">
+        <button class="btn btn-ghost" onclick="deselectAll()" style="color: white;">Annuler</button>
+        <button class="btn btn-danger" onclick="deleteSelected()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Supprimer
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+let selectedItems = new Set();
+
+// Toast notifications
+function showToast(type, title, message) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            ${type === 'success' 
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+            }
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            ${message ? `<div class="toast-message">${message}</div>` : ''}
+        </div>
+    `;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// Search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchHistory');
+    const cards = document.querySelectorAll('.history-card');
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        cards.forEach(card => {
+            const title = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
+            card.style.display = title.includes(query) ? 'flex' : 'none';
+        });
+    });
+});
+
+// Card click to open
+document.querySelectorAll('.history-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+        if (e.target.closest('.card-checkbox') || e.target.closest('.card-actions') || e.target.closest('button')) return;
+        const link = card.querySelector('.card-title');
+        if (link) window.location.href = link.href;
+    });
+});
+
+function toggleCardSelection(checkbox) {
+    const card = checkbox.closest('.history-card');
+    if (card.dataset.deletable !== 'true') return;
+    
+    const entity = card.dataset.entity;
+    const entityId = card.dataset.entityId;
+    const itemKey = entity + '::' + entityId;
+    
+    if (checkbox.checked) {
+        card.classList.add('selected');
+        selectedItems.add(itemKey);
+    } else {
+        card.classList.remove('selected');
+        selectedItems.delete(itemKey);
+    }
+    
+    updateSelectionUI();
+}
+
+function toggleSelectAll() {
+    const cards = document.querySelectorAll('.history-card[data-deletable="true"]');
+    const allSelected = selectedItems.size === cards.length;
+    
+    if (allSelected) {
+        deselectAll();
+    } else {
+        cards.forEach(card => {
+            card.querySelector('input').checked = true;
+            card.classList.add('selected');
+            const entity = card.dataset.entity;
+            const entityId = card.dataset.entityId;
+            selectedItems.add(entity + '::' + entityId);
+        });
+    }
+    
+    updateSelectionUI();
+}
+
+function deselectAll() {
+    document.querySelectorAll('.history-card').forEach(card => {
+        card.querySelector('input').checked = false;
+        card.classList.remove('selected');
+    });
+    selectedItems.clear();
+    updateSelectionUI();
+}
+
+function updateSelectionUI() {
+    const count = selectedItems.size;
+    const banner = document.getElementById('selectionBanner');
+    const bannerCount = document.getElementById('bannerCount');
+    
+    if (count > 0) {
+        banner.classList.add('visible');
+        bannerCount.textContent = count;
+    } else {
+        banner.classList.remove('visible');
+    }
+}
+
+function deleteSingleItem(entity, entityId, btn) {
+    const card = btn.closest('.history-card');
+    
+    fetch('/historique/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ items: [{ entity: entity, entityId: entityId }] })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            card.classList.add('deleting');
+            setTimeout(() => {
+                card.remove();
+                checkEmptyState();
+            }, 400);
+            showToast('success', 'Supprimé', data.message || 'Élément supprimé avec succès');
+        } else {
+            showToast('error', 'Erreur', data.errors?.join(', ') || 'Impossible de supprimer');
+        }
+    })
+    .catch(() => showToast('error', 'Erreur', 'Erreur lors de la suppression'));
+}
+
+function deleteSelected() {
+    if (selectedItems.size === 0) return;
+    
+    const items = [];
+    selectedItems.forEach(key => {
+        const [entity, entityId] = key.split('::');
+        items.push({ entity: entity, entityId: parseInt(entityId) });
+    });
+    
+    const count = selectedItems.size;
+    
+    fetch('/historique/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ items: items })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            selectedItems.forEach(key => {
+                const [entity, entityId] = key.split('::');
+                const card = document.querySelector(`.history-card[data-entity="${entity}"][data-entity-id="${entityId}"]`);
+                if (card) {
+                    card.classList.add('deleting');
+                    setTimeout(() => card.remove(), 400);
+                }
+            });
+            
+            selectedItems.clear();
+            updateSelectionUI();
+            
+            setTimeout(() => {
+                checkEmptyState();
+                showToast('success', 'Supprimés', `${count} favori(s) supprimé(s) avec succès`);
+            }, 450);
+        } else {
+            showToast('error', 'Erreur', data.errors?.join(', ') || 'Impossible de supprimer');
+        }
+    })
+    .catch(() => showToast('error', 'Erreur', 'Erreur lors de la suppression'));
+}
+
+function clearAllHistory() {
+    const cards = document.querySelectorAll('.history-card[data-deletable="true"]');
+    if (cards.length === 0) {
+        showToast('error', 'Aucun favori', 'Il n\'y a pas de favoris à supprimer');
+        return;
+    }
+    
+    if (!confirm(`Supprimer tous les favoris (${cards.length} éléments) ?`)) return;
+    
+    const items = [];
+    cards.forEach(card => {
+        const entity = card.dataset.entity;
+        const entityId = card.dataset.entityId;
+        if (entity && entityId) {
+            items.push({ entity: entity, entityId: parseInt(entityId) });
+        }
+    });
+    
+    fetch('/historique/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ items: items })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            cards.forEach(card => card.classList.add('deleting'));
+            setTimeout(() => {
+                cards.forEach(card => card.remove());
+                checkEmptyState();
+                showToast('success', 'Nettoyé', `${cards.length} favori(s) supprimé(s)`);
+            }, 400);
+        } else {
+            showToast('error', 'Erreur', data.errors?.join(', ') || 'Impossible de supprimer');
+        }
+    })
+    .catch(() => showToast('error', 'Erreur', 'Erreur lors de la suppression'));
+}
+
+function deleteDateGroup(dateKey) {
+    const cards = document.querySelectorAll(`.history-card[data-deletable="true"]`);
+    const groupCards = Array.from(cards).filter(card => {
+        const cardDate = card.querySelector('.card-meta span')?.textContent || '';
+        return true;
+    });
+    
+    if (groupCards.length === 0) {
+        showToast('error', 'Aucun favori', 'Pas de favoris dans cette date');
+        return;
+    }
+    
+    if (!confirm(`Supprimer ${groupCards.length} favoris de cette date ?`)) return;
+    
+    const items = [];
+    groupCards.forEach(card => {
+        const entity = card.dataset.entity;
+        const entityId = card.dataset.entityId;
+        if (entity && entityId) {
+            items.push({ entity: entity, entityId: parseInt(entityId) });
+        }
+    });
+    
+    fetch('/historique/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ items: items })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            groupCards.forEach(card => card.classList.add('deleting'));
+            setTimeout(() => {
+                groupCards.forEach(card => card.remove());
+                checkEmptyState();
+                showToast('success', 'Supprimés', `${items.length} favori(s) supprimé(s)`);
+            }, 400);
+        } else {
+            showToast('error', 'Erreur', 'Impossible de supprimer');
+        }
+    })
+    .catch(() => showToast('error', 'Erreur', 'Erreur lors de la suppression'));
+}
+
+function checkEmptyState() {
+    const container = document.querySelector('.container');
+    if (document.querySelectorAll('.history-card').length === 0 && !document.querySelector('.empty-state')) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <h3>Aucune activité récente</h3>
+            <p>Votre historique apparaîtra ici après vos premières interactions.</p>
+            <a href="/hebergements" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Commencer à explorer
+            </a>
+        `;
+        container.appendChild(emptyState);
+    }
+}
+</script>
+{% endblock %}

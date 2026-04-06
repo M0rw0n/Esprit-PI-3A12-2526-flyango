@@ -1,0 +1,51 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Transport favoris — Fly&Go{% endblock %}
+
+{% block body %}
+<section class="page-header">
+    <div class="container">
+        <h1><i class="fa fa-plane"></i> Transport favoris</h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="favorites-tabs">
+            <a href="{{ path('favoris_all') }}" class="tab"><i class="fa fa-heart"></i> Tous</a>
+            <a href="{{ path('favoris_hebergements') }}" class="tab"><i class="fa fa-hotel"></i> Hébergements</a>
+            <a href="{{ path('favoris_circuits') }}" class="tab"><i class="fa fa-route"></i> Circuits</a>
+            <a href="{{ path('favoris_activities') }}" class="tab"><i class="fa fa-hiking"></i> Activités</a>
+            <a href="{{ path('favoris_transports') }}" class="tab active"><i class="fa fa-plane"></i> Transport</a>
+        </div>
+
+        {% if favorites is empty %}
+            <div class="empty-state">
+                <i class="fa fa-plane"></i>
+                <h3>Aucun transport favori</h3>
+                <a href="{{ path('transport_index') }}" class="btn btn-gold"><i class="fa fa-search"></i> Explorer</a>
+            </div>
+        {% else %}
+            <div class="hebergements-grid">
+                {% for fav in favorites %}
+                    {% set t = fav.transport %}
+                    <div class="hebergement-card" data-id="{{ t.id }}">
+                        <div class="hebergement-card__image">
+                            <div class="placeholder-img"><i class="fa fa-plane"></i></div>
+                            <button class="favorite-btn active" onclick="toggleFavorite({{ t.id }}, 'transport', this)"><i class="fa fa-heart"></i></button>
+                            <span class="badge">{{ t.transportType }}</span>
+                        </div>
+                        <div class="hebergement-card__body">
+                            <h3>{{ t.departCity }} → {{ t.arrivalCity }}</h3>
+                            <p class="location"><i class="fa fa-calendar"></i> {{ t.departureDatetime|date('d/m/Y H:i') }}</p>
+                            <p class="location"><i class="fa fa-clock"></i> {{ t.arrivalDatetime ? t.arrivalDatetime|date('d/m/Y H:i') : '' }}</p>
+                            <div class="price">{{ t.price|number_format(3) }} TND</div>
+                            <a href="{{ path('transport_show', {id: t.id}) }}" class="btn btn-gold btn-block"><i class="fa fa-eye"></i> Voir</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

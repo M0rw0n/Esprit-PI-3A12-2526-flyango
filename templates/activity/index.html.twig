@@ -1,0 +1,221 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Activités & Excursions — Fly&Go{% endblock %}
+{% block body %}
+
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Activités & Excursions</h1>
+        <p class="hero-subtitle">{{ activities|length }} activités disponibles — Découvrez des expériences uniques</p>
+    </div>
+</section>
+
+<div class="fg-filter-sticky" id="filterSticky">
+    <div class="fg-filter-inner">
+        <form method="GET" action="{{ path('activity_index') }}" id="filterForm" class="fg-filter-form">
+            <div class="fg-filter-row">
+                <div class="fg-filter-search">
+                    <i class="fa fa-search"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Nom de l'activité..." data-auto-submit>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-map-marker-alt"></i>
+                    <select name="lieu" data-auto-submit>
+                        <option value="">Tous les lieux</option>
+                        {% for v in ['Tunis','Sousse','Sfax','Djerba','Hammamet','Tozeur','Kairouan','Bizerte','Monastir','Nabeul','Tabarka'] %}
+                        <option value="{{ v }}" {{ lieu|default('') == v ? 'selected' : '' }}>{{ v }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-sort"></i>
+                    <select name="sort" data-auto-submit>
+                        <option value="">Trier par</option>
+                        <option value="prix_asc" {{ sort|default('') == 'prix_asc' ? 'selected' : '' }}>Prix ↑ croissant</option>
+                        <option value="prix_desc" {{ sort|default('') == 'prix_desc' ? 'selected' : '' }}>Prix ↓ décroissant</option>
+                        <option value="date_asc" {{ sort|default('') == 'date_asc' ? 'selected' : '' }}>Date ↑ proche</option>
+                        <option value="date_desc" {{ sort|default('') == 'date_desc' ? 'selected' : '' }}>Date ↓ lointaine</option>
+                    </select>
+                </div>
+                <a href="{{ path('activity_index') }}" class="btn btn-outline btn-sm" title="Réinitialiser">
+                    <i class="fa fa-times"></i>
+                </a>
+            </div>
+            {# ── Ligne 2 : filtres avancés (prix + dates) ── #}
+            <div class="fg-filter-row" style="margin-top:.5rem">
+                <div class="fg-filter-field">
+                    <i class="fa fa-coins"></i>
+                    <input type="number" name="prix_min" value="{{ prix_min }}" placeholder="Prix min (TND)" min="0" step="1" data-auto-submit>
+                </div>
+                <div class="fg-filter-field">
+                    <i class="fa fa-coins"></i>
+                    <input type="number" name="prix_max" value="{{ prix_max }}" placeholder="Prix max (TND)" min="0" step="1" data-auto-submit>
+                </div>
+                <div class="fg-filter-field">
+                    <i class="fa fa-calendar"></i>
+                    <input type="date" name="date_debut" value="{{ date_debut }}" title="Date début" data-auto-submit>
+                </div>
+                <div class="fg-filter-field">
+                    <i class="fa fa-calendar-check"></i>
+                    <input type="date" name="date_fin" value="{{ date_fin }}" title="Date fin" data-auto-submit>
+                </div>
+            </div>
+            {# Chips filtres actifs #}
+            {% set hasFilters = q or lieu or prix_min or prix_max or date_debut or date_fin or sort %}
+            {% if hasFilters %}
+            <div class="fg-active-filters">
+                <span class="fg-active-label"><i class="fa fa-filter"></i> Filtres actifs :</span>
+                {% if q %}<span class="fg-chip">« {{ q }} » <a href="{{ path('activity_index', app.request.query.all|merge({q: null})) }}">×</a></span>{% endif %}
+                {% if lieu %}<span class="fg-chip"><i class="fa fa-map-pin"></i> {{ lieu }} <a href="{{ path('activity_index', app.request.query.all|merge({lieu: null})) }}">×</a></span>{% endif %}
+                {% if prix_min %}<span class="fg-chip">≥ {{ prix_min }} TND <a href="{{ path('activity_index', app.request.query.all|merge({prix_min: null})) }}">×</a></span>{% endif %}
+                {% if prix_max %}<span class="fg-chip">≤ {{ prix_max }} TND <a href="{{ path('activity_index', app.request.query.all|merge({prix_max: null})) }}">×</a></span>{% endif %}
+                {% if date_debut %}<span class="fg-chip"><i class="fa fa-calendar"></i> Dès {{ date_debut }} <a href="{{ path('activity_index', app.request.query.all|merge({date_debut: null})) }}">×</a></span>{% endif %}
+                {% if date_fin %}<span class="fg-chip"><i class="fa fa-calendar"></i> Jusqu'au {{ date_fin }} <a href="{{ path('activity_index', app.request.query.all|merge({date_fin: null})) }}">×</a></span>{% endif %}
+                {% if sort %}<span class="fg-chip"><i class="fa fa-sort"></i> {{ sort == 'prix_asc' ? 'Prix ↑' : (sort == 'prix_desc' ? 'Prix ↓' : (sort == 'date_asc' ? 'Date ↑' : 'Date ↓')) }} <a href="{{ path('activity_index', app.request.query.all|merge({sort: null})) }}">×</a></span>{% endif %}
+                <a href="{{ path('activity_index') }}" class="fg-clear-all"><i class="fa fa-trash-alt"></i> Tout effacer</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="container" id="resultsContainer">
+    <div class="fg-results-header">
+        <div class="fg-results-info">
+            <h2 class="fg-results-count">{{ activities|length }} activité{{ activities|length > 1 ? 's' : '' }} trouvée{{ activities|length > 1 ? 's' : '' }}</h2>
+            <p class="fg-results-sub">Réservation instantanée · Activités certifiées · Meilleurs prix</p>
+        </div>
+        <div class="fg-results-badges">
+            <span class="fg-badge"><i class="fa fa-shield-alt"></i> Réservation sécurisée</span>
+            <span class="fg-badge"><i class="fa fa-star"></i> Avis vérifiés</span>
+        </div>
+    </div>
+
+    {% if activities %}
+    <div class="hcards" id="cardsGrid">
+        {% for a in activities %}
+        <article class="hcard anim" data-id="{{ a.id }}" onclick="window.location='{{ path('activity_show', {id: a.id}) }}'">
+            <div class="hcard__img">
+                {% if a.image %}
+                <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=600&q=80'">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=600&q=80" alt="{{ a.title }}">
+                {% endif %}
+                <div class="hcard__badges">
+                    {% if loop.index <= 2 %}<span class="hcard__badge hcard__badge--popular"><i class="fa fa-fire"></i> Populaire</span>{% elseif a.price < 50 %}<span class="hcard__badge hcard__badge--deal"><i class="fa fa-tag"></i> Bon plan</span>{% endif %}
+                </div>
+                <button class="hcard__wish" onclick="event.stopPropagation(); toggleFavorite({{ a.id }}, 'activity', this)">
+                    <i class="fa fa-heart"></i>
+                </button>
+                {% if a.reviews|length > 0 %}
+                <div class="hcard__rating">
+                    <i class="fa fa-star"></i>
+                    {{ a.getMoyenneNotes()|number_format(1, '.') }} · {{ a.reviews|length }} avis
+                </div>
+                {% endif %}
+            </div>
+            <div class="hcard__body">
+                <div class="hcard__header">
+                    <div class="hcard__loc">
+                        <i class="fa fa-map-marker-alt"></i>
+                        {{ a.lieu|default('—') }}
+                    </div>
+                </div>
+                <h3 class="hcard__name">{{ a.title }}</h3>
+                {% if a.description %}<p class="hcard__desc">{{ a.description|length > 100 ? a.description|slice(0,100)~'…' : a.description }}</p>{% endif %}
+                <div class="hcard__meta">
+                    {% if a.duration %}<span><i class="fa fa-clock"></i> {{ a.duration }}</span>{% endif %}
+                    <span><i class="fa fa-users"></i> {{ a.capacity }} places</span>
+                    {% if a.date %}<span><i class="fa fa-calendar"></i> {{ a.date|date('d/m/Y') }}</span>{% endif %}
+                </div>
+                <div class="hcard__tags">
+                    <span class="hcard__tag"><i class="fa fa-check"></i> Guide inclus</span>
+                    <span class="hcard__tag"><i class="fa fa-bolt"></i> Réservation rapide</span>
+                </div>
+                <div class="hcard__foot">
+                    <div class="hcard__price">
+                        <span class="hcard__price-val">{{ a.price|number_format(0, '', ' ') }}</span>
+                        <span class="hcard__price-cur">TND</span>
+                        <span class="hcard__price-per">/pers.</span>
+                    </div>
+                    <div class="hcard__actions" onclick="event.stopPropagation()">
+                        <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                        <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-navy btn-sm">Réserver</a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fg-empty">
+        <div class="fg-empty__icon"><i class="fa fa-hiking"></i></div>
+        <h3>Aucune activité trouvée</h3>
+        <p>Essayez de modifier vos critères de recherche</p>
+        <a href="{{ path('activity_index') }}" class="btn btn-navy">Voir toutes les activités</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-filter-sticky{position:sticky;top:68px;z-index:50;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--s1);padding:.75rem 0}
+.fg-filter-inner{max-width:1380px;margin:0 auto;padding:0 2rem}
+.fg-filter-form{width:100%}
+.fg-filter-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.fg-filter-search{flex:1;min-width:200px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-search i{position:absolute;left:.85rem;color:var(--muted)}
+.fg-filter-search input{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font)}
+.fg-filter-select-wrap{flex:1;min-width:140px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-select-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-select-wrap i{position:absolute;left:.85rem;color:var(--muted);pointer-events:none}
+.fg-filter-select-wrap select{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+/* New: filter field for inputs (prix, date) */
+.fg-filter-field{flex:1;min-width:130px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.55rem .85rem .55rem 2.3rem;transition:all var(--t)}
+.fg-filter-field:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-field i{position:absolute;left:.75rem;color:var(--muted);pointer-events:none;font-size:.85rem}
+.fg-filter-field input{border:none;background:none;outline:none;width:100%;font-size:.85rem;font-family:var(--font);color:var(--text)}
+.fg-filter-field input[type="number"]{-moz-appearance:textfield}
+.fg-filter-field input[type="number"]::-webkit-inner-spin-button,.fg-filter-field input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* Active filters chips */
+.fg-active-filters{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.65rem;padding-top:.55rem;border-top:1px dashed var(--border)}
+.fg-active-label{font-size:.78rem;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:.3rem}
+.fg-chip{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;background:rgba(13,91,215,.06);border:1px solid rgba(13,91,215,.15);border-radius:999px;font-size:.75rem;font-weight:600;color:var(--navy)}
+.fg-chip a{color:var(--navy);text-decoration:none;font-weight:800;opacity:.6;transition:opacity .15s}
+.fg-chip a:hover{opacity:1}
+.fg-chip i{font-size:.65rem}
+.fg-clear-all{font-size:.75rem;font-weight:600;color:#dc3545;text-decoration:none;display:inline-flex;align-items:center;gap:.25rem;margin-left:.5rem}
+.fg-clear-all:hover{text-decoration:underline}
+.fg-results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.fg-results-count{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+.fg-results-sub{font-size:.85rem;color:var(--muted)}
+.fg-results-badges{display:flex;gap:.75rem;flex-wrap:wrap}
+.fg-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border-radius:100px;background:var(--bg);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted)}
+.fg-badge i{color:var(--cyan)}
+.fg-empty{text-align:center;padding:4rem 2rem}
+.fg-empty__icon{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)}
+.fg-empty h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.fg-empty p{color:var(--muted);margin-bottom:1.5rem}
+@media(max-width:900px){
+    .fg-filter-row{flex-direction:column;align-items:stretch}
+    .fg-filter-search,.fg-filter-select-wrap,.fg-filter-field{min-width:100%}
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+        let timeout;
+        el.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 800);
+        });
+        el.addEventListener('change', () => filterForm.submit());
+    });
+});
+</script>
+{% endblock %}

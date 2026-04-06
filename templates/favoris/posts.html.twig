@@ -1,0 +1,53 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Posts favoris — Fly&Go{% endblock %}
+
+{% block body %}
+<section class="page-header">
+    <div class="container">
+        <h1><i class="fa fa-heart"></i> Posts favoris</h1>
+        <p class="lead">Vos posts de forum sauvegardés</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="favorites-tabs">
+            <a href="{{ path('favoris_hebergements') }}" class="tab"><i class="fa fa-hotel"></i> Hébergements</a>
+            <a href="{{ path('favoris_posts') }}" class="tab active"><i class="fa fa-comments"></i> Posts Forum</a>
+        </div>
+
+        {% if favorites is empty %}
+            <div class="empty-state">
+                <i class="fa fa-comments"></i>
+                <h3>Aucun post favori</h3>
+                <p>Ajoutez des posts du forum à vos favoris pour les retrouver ici.</p>
+                <a href="{{ path('forum_index') }}" class="btn btn-gold"><i class="fa fa-comments"></i> Forum</a>
+            </div>
+        {% else %}
+            <div class="posts-list">
+                {% for fav in favorites %}
+                    {% set p = fav.post %}
+                    <div class="post-card" data-id="{{ p.id }}">
+                        <div class="post-card__header">
+                            <h3><a href="{{ path('forum_show', {id: p.id}) }}">{{ p.title }}</a></h3>
+                            <button class="favorite-btn active" onclick="togglePostFavorite({{ p.id }}, this)" title="Retirer des favoris">
+                                <i class="fa fa-heart"></i>
+                            </button>
+                        </div>
+                        <p class="post-excerpt">{{ p.content|length > 150 ? p.content[:150] ~ '...' : p.content }}</p>
+                        <div class="post-meta">
+                            <span><i class="fa fa-user"></i> {{ p.author }}</span>
+                            <span><i class="fa fa-clock"></i> {{ p.createdAt|date('d/m/Y') }}</span>
+                            <span><i class="fa fa-eye"></i> {{ p.vues }} vues</span>
+                            {% if p.categorie %}
+                                <span class="badge-sm">{{ p.categorie }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

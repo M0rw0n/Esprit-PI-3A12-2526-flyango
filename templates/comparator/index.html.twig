@@ -1,0 +1,176 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Comparateur de prix — Fly&Go{% endblock %}
+{% block body %}
+
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Comparateur de Prix</h1>
+        <p class="hero-subtitle">Trouvez les meilleurs prix parmi {{ offers|length }} offres de nos partenaires</p>
+    </div>
+</section>
+
+<div class="fg-filter-sticky" id="filterSticky">
+    <div class="fg-filter-inner">
+        <form method="GET" id="filterForm" class="fg-filter-form">
+            <div class="fg-filter-row">
+                <div class="fg-filter-search">
+                    <i class="fa fa-search"></i>
+                    <input type="text" name="destination" value="{{ destination }}" placeholder="Destination, titre..." data-auto-submit>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-layer-group"></i>
+                    <select name="category" data-auto-submit>
+                        <option value="all" {{ category|default('all') == 'all' ? 'selected' : '' }}>🏠 Tous</option>
+                        <option value="hebergement" {{ category|default('all') == 'hebergement' ? 'selected' : '' }}>🏨 Hébergements</option>
+                        <option value="circuit" {{ category|default('all') == 'circuit' ? 'selected' : '' }}>🗺️ Circuits</option>
+                        <option value="activite" {{ category|default('all') == 'activite' ? 'selected' : '' }}>🎯 Activités</option>
+                    </select>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-sort"></i>
+                    <select name="sort" data-auto-submit>
+                        <option value="price_asc" {{ sort|default('price_asc') == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                        <option value="price_desc" {{ sort|default('price_asc') == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+                        <option value="discount_desc" {{ sort|default('price_asc') == 'discount_desc' ? 'selected' : '' }}>Réduction max</option>
+                    </select>
+                </div>
+                <a href="{{ path('price_comparator') }}" class="btn btn-outline" title="Réinitialiser">
+                    <i class="fa fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    <div class="fg-results-header">
+        <div class="fg-results-info">
+            <h2 class="fg-results-count">{{ offers|length }} offres trouvées</h2>
+            <p class="fg-results-sub">Comparez les prix de nos partenaires et économisez</p>
+        </div>
+    </div>
+
+    <div class="comp-layout">
+        <aside class="comp-sidebar">
+            <div class="comp-partners">
+                <h3 class="comp-partners__title"><i class="fa fa-building"></i> Agences connectées</h3>
+                {% for partner in partners %}
+                <div class="comp-partner">
+                    <span class="comp-partner__name">{{ partner }}</span>
+                    <span class="comp-partner__count">{{ countsByPartner[partner] ?? 0 }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </aside>
+
+        <div class="comp-offers">
+            {% if offers %}
+            {% for offer in offers %}
+            <div class="comp-offer">
+                <div class="comp-offer__left">
+                    <div class="comp-offer__badges">
+                        <span class="comp-badge comp-badge--partner">{{ offer.partner }}</span>
+                        <span class="comp-badge">
+                            {% if offer.module == 'hebergement' %}🏨{% elseif offer.module == 'circuit' %}🗺️{% else %}🎯{% endif %}
+                            {{ offer.module|capitalize }}
+                        </span>
+                        {% if offer.discount > 0 %}
+                        <span class="comp-badge comp-badge--discount"><i class="fa fa-tag"></i> {{ offer.discount }}% remise</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="comp-offer__title">{{ offer.title }}</h3>
+                    <p class="comp-offer__meta"><i class="fa fa-map-marker-alt"></i> {{ offer.destination }} · {{ offer.meta }}</p>
+                </div>
+                <div class="comp-offer__right">
+                    <div class="comp-offer__prices">
+                        {% if offer.original_price > offer.price %}
+                        <span class="comp-offer__original">{{ offer.original_price|number_format(3, ',', ' ') }} TND</span>
+                        {% endif %}
+                        <span class="comp-offer__price">{{ offer.price|number_format(3, ',', ' ') }} TND</span>
+                    </div>
+                    <a href="{{ offer.link }}" class="btn btn-gold btn-sm">Réserver</a>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="fg-empty">
+                <div class="fg-empty__icon"><i class="fa fa-scale-balanced"></i></div>
+                <h3>Aucune offre disponible</h3>
+                <p>Essayez de modifier vos critères de recherche</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-filter-sticky{position:sticky;top:68px;z-index:50;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--s1);padding:.75rem 0}
+.fg-filter-inner{max-width:1380px;margin:0 auto;padding:0 2rem}
+.fg-filter-form{width:100%}
+.fg-filter-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.fg-filter-search{flex:1;min-width:200px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-search i{position:absolute;left:.85rem;color:var(--muted)}
+.fg-filter-search input{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font)}
+.fg-filter-select-wrap{flex:1;min-width:140px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-select-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-select-wrap i{position:absolute;left:.85rem;color:var(--muted);pointer-events:none}
+.fg-filter-select-wrap select{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+.fg-results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.fg-results-count{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+.fg-results-sub{font-size:.85rem;color:var(--muted)}
+.comp-layout{display:grid;grid-template-columns:260px 1fr;gap:1.5rem;align-items:start}
+.comp-sidebar{position:sticky;top:140px}
+.comp-partners{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:1.25rem;box-shadow:var(--s1)}
+.comp-partners__title{font-size:.95rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;color:var(--navy)}
+.comp-partner{display:flex;justify-content:space-between;align-items:center;padding:.6rem .75rem;background:var(--bg);border-radius:var(--r-sm);margin-bottom:.5rem;font-size:.875rem}
+.comp-partner:last-child{margin-bottom:0}
+.comp-partner__name{font-weight:500;color:var(--text)}
+.comp-partner__count{font-weight:700;color:var(--navy);background:var(--card);padding:.15rem .5rem;border-radius:4px;font-size:.75rem}
+.comp-offers{display:flex;flex-direction:column;gap:1rem}
+.comp-offer{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);padding:1.25rem;display:flex;justify-content:space-between;gap:1.5rem;align-items:center;transition:all var(--t);box-shadow:var(--s1)}
+.comp-offer:hover{border-color:var(--gold);box-shadow:var(--s2);transform:translateY(-2px)}
+.comp-offer__left{flex:1;min-width:0}
+.comp-offer__badges{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem}
+.comp-badge{display:inline-flex;align-items:center;font-size:.7rem;font-weight:700;padding:.2rem .6rem;border-radius:100px}
+.comp-badge--partner{background:rgba(27,58,107,.1);color:var(--navy)}
+.comp-badge--discount{background:rgba(239,68,68,.1);color:#dc2626}
+.comp-offer__title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:.35rem}
+.comp-offer__meta{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:.4rem}
+.comp-offer__right{text-align:right;flex-shrink:0}
+.comp-offer__prices{margin-bottom:.75rem}
+.comp-offer__original{font-size:.85rem;color:var(--muted);text-decoration:line-through;display:block}
+.comp-offer__price{font-size:1.6rem;font-weight:900;color:#dc2626;letter-spacing:-.02em}
+.fg-empty{text-align:center;padding:4rem 2rem;background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
+.fg-empty__icon{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)}
+.fg-empty h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.fg-empty p{color:var(--muted)}
+@media (max-width:900px){
+    .comp-layout{grid-template-columns:1fr}
+    .comp-sidebar{position:static}
+    .fg-filter-row{flex-direction:column;align-items:stretch}
+    .fg-filter-search,.fg-filter-select-wrap{min-width:100%}
+    .comp-offer{flex-direction:column;text-align:center}
+    .comp-offer__right{text-align:center;width:100%}
+    .comp-offer__prices{text-align:center}
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+        let timeout;
+        el.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 600);
+        });
+        el.addEventListener('change', () => filterForm.submit());
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        server_version: '10.4'
+        charset: utf8mb4
+        mapping_types:
+            enum: string
+            set: string
+            varbinary: string
+        types:
+            enum: App\Doctrine\Type\EnumType
+            user_role_enum: App\Doctrine\Type\UserRoleType
+            booking_status_enum: App\Doctrine\Type\BookingStatusType
+            travel_class_enum: App\Doctrine\Type\TravelClassType
+            car_category_enum: App\Doctrine\Type\CarCategoryType
+            car_transmission_enum: App\Doctrine\Type\CarTransmissionType
+            car_fuel_enum: App\Doctrine\Type\CarFuelTypeType
+            offer_type_enum: App\Doctrine\Type\OfferTypeType
+            voyage_type_enum: App\Doctrine\Type\VoyageTypeType
+            vehicle_type_enum: App\Doctrine\Type\VehicleTypeType
+            transport_type_enum: App\Doctrine\Type\TransportTypeType
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: 'App\Entity'
+                alias: App
+        controller_resolver:
+            auto_mapping: false
+
+doctrine_migrations:
+    migrations_paths:
+        'App\Migrations': '%kernel.project_dir%/migrations'
+    enable_profiler: false
