@@ -1,0 +1,126 @@
+{% extends 'layouts/user_base.html.twig' %}
+
+{% block title %}{{ circuit.title }} | Fly & Go{% endblock %}
+
+{% block body %}
+    <section class="hero">
+        <div class="toolbar">
+            <a class="btn btn-light" href="{{ path('circuit_index', {user: userId}) }}">← Retour aux circuits</a>
+            <div class="spacer"></div>
+            <span class="badge badge-green">★ {{ circuit.note_moyenne|default(0)|number_format(1, ',', ' ') }}</span>
+            <span class="badge badge-orange">{{ circuit.nb_avis }} avis</span>
+        </div>
+        <h1 style="margin-top:14px">{{ circuit.title }}</h1>
+        <p style="margin-top:10px">📍 {{ circuit.destination }} • {{ circuit.type }} • {{ circuit.duree }} jours</p>
+    </section>
+
+    <section class="grid-2" style="margin-top:22px;">
+        <div class="panel">
+            <img class="detail-image" src="{{ circuit.image_url ?: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200' }}" alt="{{ circuit.title }}">
+            <div class="kpis" style="margin-top:18px;">
+                <div class="kpi"><div class="muted">Prix / personne</div><div class="big">{{ circuit.prix_par_personne|number_format(0, ',', ' ') }} TND</div></div>
+                <div class="kpi"><div class="muted">Date départ</div><div class="big">{{ circuit.start_date ?: 'N/D' }}</div></div>
+                <div class="kpi"><div class="muted">Budget total</div><div class="big">{{ circuit.budget|number_format(0, ',', ' ') }} TND</div></div>
+            </div>
+            <hr class="soft">
+            <h3>Description</h3>
+            <p>{{ circuit.description }}</p>
+
+            <div class="two-cols" style="margin-top:18px;">
+                <div class="panel" style="padding:16px; box-shadow:none;">
+                    <h4>Météo & plan B</h4>
+                    <p>{{ circuit.meteo_info }}</p>
+                    <p class="small-note">{{ circuit.plan_b }}</p>
+                </div>
+                <div class="panel" style="padding:16px; box-shadow:none;">
+                    <h4>Tags métier</h4>
+                    <div class="tags">
+                        <span class="tag">Destination: {{ circuit.destination }}</span>
+                        <span class="tag">Type: {{ circuit.type }}</span>
+                        <span class="tag">Popularité: {{ circuit.popularite_score }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:18px; box-shadow:none;">
+                <h3>Programme jour par jour</h3>
+                <div class="day-list">
+                    {% for jour in circuit.jours %}
+                        <div class="day-item">
+                            <strong>Jour {{ jour.numero_jour }} — {{ jour.titre }}</strong>
+                            <p>{{ jour.activites }}</p>
+                            <div class="small-note">🏨 {{ jour.hebergement }} • 🚗 {{ jour.transport }} • Budget {{ jour.budget_jour|number_format(0, ',', ' ') }} TND</div>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">Aucun détail journalier disponible pour ce circuit.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:18px; box-shadow:none;">
+                <h3>Avis récents</h3>
+                <div class="review-list">
+                    {% for review in circuit.reviews %}
+                        <div class="review-item">
+                            <div class="review-head">
+                                <strong>{{ review.prenom ?: 'Utilisateur' }} {{ review.nom ?: '' }}</strong>
+                                <span class="price-pill">{{ review.rating }}/5</span>
+                            </div>
+                            <p>{{ review.comment }}</p>
+                            <div class="small-note">{{ review.created_at|slice(0, 10) }} • utile {{ review.helpful_count }}</div>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">Pas encore d'avis.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <aside class="panel">
+            <h3>Réserver ce circuit</h3>
+            <div class="table-like">
+                <div class="table-row"><div>Prix / personne</div><div><strong>{{ circuit.prix_par_personne|number_format(0, ',', ' ') }} TND</strong></div></div>
+                <div class="table-row"><div>Sous-total (2)</div><div>{{ pricing.subtotal|number_format(2, ',', ' ') }} TND</div></div>
+                <div class="table-row"><div>Taxes 10%</div><div>{{ pricing.taxes|number_format(2, ',', ' ') }} TND</div></div>
+                <div class="table-row"><div>Total</div><div><strong>{{ pricing.total|number_format(2, ',', ' ') }} TND</strong></div></div>
+                <div class="table-row"><div>EUR / USD</div><div>{{ pricing.eur|number_format(2, ',', ' ') }} € • {{ pricing.usd|number_format(2, ',', ' ') }} $</div></div>
+            </div>
+            <hr class="soft">
+            <form class="inline-form enhanced-form" method="post" action="{{ path('circuit_reserve', {id: circuit.id_circuit, user: userId}) }}" novalidate data-validate-form data-submit-loading="Confirmation en cours...">
+                <input type="hidden" name="_token" value="{{ csrf_token('reserve_' ~ circuit.id_circuit) }}">
+                <div>
+                    <label class="small">Date de départ</label>
+                    <input class="input" type="date" name="date_depart" value="{{ reservationDefaults.date_depart }}" required>
+                </div>
+                <div>
+                    <label class="small">Nombre de voyageurs</label>
+                    <select name="nb_travelers" required>
+                        {% for i in 1..6 %}
+                            <option value="{{ i }}" {{ i == reservationDefaults.nb_travelers ? 'selected' : '' }}>{{ i }} voyageur(s)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button class="btn btn-primary" type="submit">Confirmer la réservation</button>
+            </form>
+
+            <hr class="soft">
+            <h3>Laisser un avis</h3>
+            <form class="inline-form enhanced-form" method="post" action="{{ path('review_store', {id: circuit.id_circuit, user: userId}) }}" novalidate data-validate-form data-submit-loading="Publication en cours...">
+                <input type="hidden" name="_token" value="{{ csrf_token('review_' ~ circuit.id_circuit) }}">
+                <div>
+                    <label class="small">Note</label>
+                    <select name="rating" required>
+                        {% for i in 5..1 %}
+                            <option value="{{ i }}">{{ i }}/5</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="small">Commentaire</label>
+                    <textarea name="comment" rows="5" placeholder="Décrivez votre expérience..." required minlength="8" maxlength="1200"></textarea>
+                </div>
+                <button class="btn btn-accent" type="submit">Publier mon avis</button>
+            </form>
+        </aside>
+    </section>
+{% endblock %}

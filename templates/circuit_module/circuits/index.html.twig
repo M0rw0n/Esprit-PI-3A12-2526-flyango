@@ -1,0 +1,94 @@
+{% extends 'layouts/user_base.html.twig' %}
+
+{% block title %}Circuits | Fly & Go{% endblock %}
+
+{% block body %}
+    <section class="hero hero-home">
+        <div class="hero-copy">
+            <span class="eyebrow">Catalogue dynamique</span>
+            <h1>Explorer les packs circuits</h1>
+            <p>Recherche instantanée par destination, type, budget et durée avec mise à jour automatique pendant la saisie.</p>
+            <div class="search-note" id="resultCount">{{ circuits|length }} circuit(s) trouvé(s)</div>
+        </div>
+    </section>
+
+    <section class="sticky-toolbar panel admin-toolbar">
+        <div class="filters filters-admin">
+            <div>
+                <label class="small">Destination / mot-clé</label>
+                <input id="q" class="input" type="text" value="{{ filters.q }}" placeholder="Paris, Bali, Culture...">
+            </div>
+            <div>
+                <label class="small">Type</label>
+                <select id="type">
+                    <option value="Tous">Tous</option>
+                    {% for type in types %}
+                        <option value="{{ type }}" {{ filters.type == type ? 'selected' : '' }}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="small">Budget max</label>
+                <input id="maxPrice" class="input" type="number" min="0" step="1" value="{{ filters.maxPrice }}" placeholder="2000">
+            </div>
+            <div>
+                <label class="small">Durée max</label>
+                <input id="maxDuration" class="input" type="number" min="1" step="1" value="{{ filters.maxDuration }}" placeholder="7">
+            </div>
+            <div>
+                <label class="small">Tri</label>
+                <select id="sort">
+                    <option value="popularite" {{ filters.sort == 'popularite' ? 'selected' : '' }}>Popularité</option>
+                    <option value="prix_asc" {{ filters.sort == 'prix_asc' ? 'selected' : '' }}>Prix croissant</option>
+                    <option value="prix_desc" {{ filters.sort == 'prix_desc' ? 'selected' : '' }}>Prix décroissant</option>
+                    <option value="note_desc" {{ filters.sort == 'note_desc' ? 'selected' : '' }}>Note</option>
+                    <option value="duree_asc" {{ filters.sort == 'duree_asc' ? 'selected' : '' }}>Durée</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <section class="section live-section" style="padding:20px; margin-top:22px;">
+        <div id="cardsWrapper" data-live-region>
+            {% include 'circuit_module/circuits/_cards.html.twig' with {circuits: circuits, userId: userId} %}
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const ids = ['q', 'type', 'maxPrice', 'maxDuration', 'sort'];
+            const resultCount = document.getElementById('resultCount');
+            const wrapper = document.getElementById('cardsWrapper');
+            let timer;
+
+            const refresh = async () => {
+                const params = new URLSearchParams({ user: '{{ userId }}' });
+                ids.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.value !== '') params.set(id, el.value);
+                });
+                window.FlyAndGo?.setLoading(wrapper, true, 'Mise à jour des circuits...');
+                try {
+                    const response = await fetch('{{ path('circuit_search_api') }}?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!response.ok) throw new Error('Impossible de charger les circuits');
+                    const data = await response.json();
+                    wrapper.innerHTML = data.html;
+                    resultCount.textContent = `${data.count} circuit(s) trouvé(s)`;
+                } catch (error) {
+                    window.FlyAndGo?.notify(error.message || 'Erreur de chargement', 'error');
+                } finally {
+                    window.FlyAndGo?.setLoading(wrapper, false);
+                }
+            };
+
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                el?.addEventListener('input', () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(refresh, 250);
+                });
+                el?.addEventListener('change', refresh);
+            });
+        })();
+    </script>
+{% endblock %}

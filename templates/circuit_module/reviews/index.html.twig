@@ -1,0 +1,54 @@
+{% extends 'layouts/user_base.html.twig' %}
+
+{% block title %}Mes avis | Fly & Go{% endblock %}
+
+{% block body %}
+    <section class="hero">
+        <h1>Mes avis</h1>
+        <p style="margin-top:10px">Suivi des commentaires utilisateurs, moyenne, votes utiles et accès direct aux meilleurs circuits.</p>
+        <div class="stats-strip">
+            <div class="stats-card"><div class="label">Avis publiés</div><div class="value">{{ summary.total }}</div></div>
+            <div class="stats-card"><div class="label">Note moyenne</div><div class="value">{{ summary.average|number_format(1, ',', ' ') }}/5</div></div>
+            <div class="stats-card"><div class="label">Votes utiles</div><div class="value">{{ summary.helpful }}</div></div>
+            <div class="stats-card"><div class="label">Raccourci</div><div class="value"><a href="{{ path('circuit_index', {user: userId}) }}" style="color:inherit;">Nouveau circuit</a></div></div>
+        </div>
+    </section>
+
+    <section class="grid-2" style="margin-top:22px;">
+        <div class="panel">
+            <h3>Avis publiés</h3>
+            <div class="review-list" style="margin-top:16px;">
+                {% for review in reviews %}
+                    <article class="review-item">
+                        <div class="review-head">
+                            <div>
+                                <strong>{{ review.title }}</strong>
+                                <div class="small-note">{{ review.destination }}</div>
+                            </div>
+                            <div class="price-pill">{{ review.rating }}/5</div>
+                        </div>
+                        <p>{{ review.comment }}</p>
+                        <div class="small-note">{{ review.created_at|slice(0, 10) }} • utile {{ review.helpful_count }}</div>
+                    </article>
+                {% else %}
+                    <div class="empty-state">Aucun avis pour le moment.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <aside class="panel">
+            <h3>Circuits à noter</h3>
+            <div class="review-list" style="margin-top:16px;">
+                {% for circuit in circuits %}
+                    <article class="review-item">
+                        <strong>{{ circuit.title }}</strong>
+                        <div class="small-note">{{ circuit.destination }}</div>
+                        <div class="card-actions">
+                            <a class="btn btn-primary" href="{{ path('circuit_show', {id: circuit.id_circuit, user: userId}) }}">Ouvrir</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </aside>
+    </section>
+{% endblock %}

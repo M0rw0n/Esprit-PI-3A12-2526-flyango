@@ -1,0 +1,26 @@
+{% if reservations is empty %}
+    <div class="empty-state">Aucune réservation ne correspond aux filtres saisis.</div>
+{% else %}
+    <div class="reservation-list">
+        {% for reservation in reservations %}
+            <article class="reservation-item">
+                <div class="reservation-head">
+                    <div>
+                        <strong>{{ reservation.title }}</strong>
+                        <div class="small-note">{{ reservation.destination }} · {{ reservation.prenom ?: 'Client' }} {{ reservation.nom ?: '' }}</div>
+                    </div>
+                    <span class="price-pill">{{ reservation.total_price|number_format(0, ',', ' ') }} TND</span>
+                </div>
+                <p class="muted">{{ reservation.nb_travelers }} voyageur(s) · départ {{ reservation.date_depart }} · statut {{ reservation.status }}</p>
+                <div class="small-note">Réservée le {{ reservation.reserved_at|slice(0, 16) }}</div>
+                <div class="card-actions" style="margin-top: 14px;">
+                    <a class="btn btn-light btn-sm" href="{{ path('admin_reservations', {edit: reservation.id}) }}">Modifier</a>
+                    <form method="post" action="{{ path('admin_reservation_delete', {id: reservation.id}) }}" onsubmit="return confirm('Supprimer cette réservation ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_reservation_delete_' ~ reservation.id) }}">
+                        <button class="btn btn-danger btn-sm" type="submit">Supprimer</button>
+                    </form>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endif %}

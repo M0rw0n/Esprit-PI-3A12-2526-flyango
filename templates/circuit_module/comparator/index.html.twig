@@ -1,0 +1,125 @@
+{% extends 'layouts/user_base.html.twig' %}
+
+{% block title %}Comparateur de prix | Fly & Go{% endblock %}
+
+{% block body %}
+    <section class="hero">
+        <h1>Comparateur de prix</h1>
+        <p style="margin-top:10px">Prototype métier connecté à votre base actuelle et enrichi par des règles locales pour simuler les agences.</p>
+        <div class="filters">
+            <div>
+                <label class="small">Destination</label>
+                <input id="cmp-destination" class="input" type="text" placeholder="Paris, Tokyo, Bali...">
+            </div>
+            <div>
+                <label class="small">Départ</label>
+                <input id="cmp-depart" class="input" type="date">
+            </div>
+            <div>
+                <label class="small">Retour</label>
+                <input id="cmp-retour" class="input" type="date">
+            </div>
+            <div>
+                <label class="small">Voyageurs</label>
+                <input id="cmp-voyageurs" class="input" type="number" min="1" max="10" value="2">
+            </div>
+            <div>
+                <label class="small">Catégorie</label>
+                <select id="cmp-categorie">
+                    {% for item in ['Tous', 'Transport', 'Hôtels', 'Circuits', 'Activités'] %}
+                        <option value="{{ item }}">{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="toolbar" style="margin-top:16px;">
+            <button id="cmp-submit" class="btn btn-accent" type="button" data-loading-label="Comparaison...">Comparer</button>
+            <div class="spacer"></div>
+            <span class="search-note" id="cmp-stats">Aucune comparaison lancée.</span>
+        </div>
+    </section>
+
+    <section class="grid-2" style="margin-top:22px;">
+        <aside class="panel">
+            <h3>Agences simulées</h3>
+            <div class="review-list" style="margin-top:12px;">
+                <div class="review-item">🔵 Booking.com — Hôtels</div>
+                <div class="review-item">🟢 TravelTodo — Circuits</div>
+                <div class="review-item">🟡 Expedia — Transport</div>
+                <div class="review-item">🔴 TUI — Circuits</div>
+                <div class="review-item">🩷 Airbnb — Hôtels</div>
+                <div class="review-item">🎭 Viator — Activités</div>
+            </div>
+        </aside>
+
+        <div class="panel">
+            <h3>Résultats</h3>
+            <div id="cmp-results" class="review-list" style="margin-top:12px;" data-live-region>
+                <div class="empty-state">Saisissez une destination puis cliquez sur comparer.</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const submit = document.getElementById('cmp-submit');
+            const stats = document.getElementById('cmp-stats');
+            const results = document.getElementById('cmp-results');
+            const fields = {
+                destination: document.getElementById('cmp-destination'),
+                depart: document.getElementById('cmp-depart'),
+                retour: document.getElementById('cmp-retour'),
+                voyageurs: document.getElementById('cmp-voyageurs'),
+                categorie: document.getElementById('cmp-categorie')
+            };
+
+            submit.addEventListener('click', async () => {
+                if (!fields.destination.value.trim()) {
+                    window.FlyAndGo?.notify('Veuillez saisir une destination avant de comparer.', 'warning');
+                    fields.destination.focus();
+                    return;
+                }
+
+                const params = new URLSearchParams({
+                    destination: fields.destination.value,
+                    depart: fields.depart.value,
+                    retour: fields.retour.value,
+                    voyageurs: fields.voyageurs.value,
+                    categorie: fields.categorie.value,
+                    user: '{{ userId }}'
+                });
+                window.FlyAndGo?.setButtonLoading(submit, true);
+                window.FlyAndGo?.setLoading(results, true, 'Comparaison des offres...');
+                try {
+                    const response = await fetch('{{ path('comparator_search_api') }}?' + params.toString());
+                    const data = await response.json();
+                    if (!response.ok) {
+                        stats.textContent = data.message || 'Erreur de validation';
+                        window.FlyAndGo?.notify(stats.textContent, 'warning');
+                        return;
+                    }
+                    stats.textContent = `${data.stats.count} offres • meilleur prix ${Number(data.stats.bestPrice).toFixed(2)} TND • ${data.stats.bestAgency}`;
+                    results.innerHTML = data.offers.map(offer => `
+                    <article class="offer-item">
+                        <div class="offer-head">
+                            <div>
+                                <strong>${offer.badge} ${offer.agency}</strong>
+                                <div class="small-note">${offer.category} • ${offer.title} • ${offer.destination}</div>
+                            </div>
+                            <div class="price-pill">${Number(offer.price).toFixed(2)} TND</div>
+                        </div>
+                        <p class="muted">Prix barré ${Number(offer.oldPrice).toFixed(2)} TND • réduction ${offer.discount}% • note ${offer.score}/5</p>
+                        <a class="btn btn-light" href="/circuits/${offer.circuitId}?user={{ userId }}">Voir le circuit</a>
+                    </article>
+                `).join('');
+                } catch (error) {
+                    stats.textContent = 'Une erreur est survenue pendant la comparaison.';
+                    window.FlyAndGo?.notify(error.message || stats.textContent, 'error');
+                } finally {
+                    window.FlyAndGo?.setButtonLoading(submit, false);
+                    window.FlyAndGo?.setLoading(results, false);
+                }
+            });
+        })();
+    </script>
+{% endblock %}

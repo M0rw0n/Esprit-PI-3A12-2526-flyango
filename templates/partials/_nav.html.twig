@@ -1,0 +1,16 @@
+{% set current = app.request.attributes.get('_route') %}
+<header class="topbar">
+    <div class="brand-wrap">
+        <a class="brand" href="{{ path('circuit_index') }}">✈️ Fly &amp; Go</a>
+        <span class="brand-sub">module circuit Symfony 6.4</span>
+    </div>
+
+    <nav class="topnav">
+        <a class="{{ current starts with 'circuit_' ? 'active' : '' }}" href="{{ path('circuit_index') }}">Circuits</a>
+        <a class="{{ current == 'custom_circuit_index' ? 'active' : '' }}" href="{{ path('custom_circuit_index') }}">Circuit sur mesure</a>
+        <a class="{{ current starts with 'reservation_' ? 'active' : '' }}" href="{{ path('reservation_index') }}">Mes réservations</a>
+        <a class="{{ current starts with 'review_' ? 'active' : '' }}" href="{{ path('review_index') }}">Mes avis</a>
+        <a class="{{ current starts with 'comparator_' ? 'active' : '' }}" href="{{ path('comparator_index') }}">Comparateur</a>
+        <a class="{{ current starts with 'rating_' ? 'active' : '' }}" href="{{ path('rating_index') }}">Ratings</a>
+    </nav>
+</header>

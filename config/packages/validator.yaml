@@ -1,5 +1,10 @@
 framework:
     validation:
+<<<<<<< HEAD
+        email_validation_mode: html5
+
+=======
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
         # Enables validator auto-mapping support.
         # For instance, basic validation constraints will be inferred from Doctrine's metadata.
         #auto_mapping:
