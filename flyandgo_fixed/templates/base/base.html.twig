@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:site_name" content="Fly&Go">
+    {% block ogmeta %}{% endblock %}
+    <title>{% block title %}Fly&Go — Agence de Voyage{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+<nav class="fg-nav" id="fgNav">
+    <div class="fg-nav__wrap">
+        <a href="{{ path('home') }}" class="fg-nav__logo" aria-label="Fly&Go accueil">
+            <img src="{{ asset('images/logo.png') }}" alt="Fly&Go" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+            <span style="display:none;font-size:1.4rem;font-weight:900;color:var(--navy)">Fly<span style="color:var(--gold)">&amp;</span>Go</span>
+        </a>
+
+        <ul class="fg-nav__links">
+            <li><a href="{{ path('home') }}" class="{{ app.request.attributes.get('_route') == 'home' ? 'on' : '' }}"><i class="fa fa-home"></i> Accueil</a></li>
+            <li><a href="{{ path('hebergement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'hebergement' ? 'on' : '' }}"><i class="fa fa-hotel"></i> Hébergements</a></li>
+            <li><a href="{{ path('circuit_index') }}" class="{{ app.request.attributes.get('_route') starts with 'circuit' ? 'on' : '' }}"><i class="fa fa-route"></i> Circuits</a></li>
+            <li><a href="{{ path('activity_index') }}" class="{{ app.request.attributes.get('_route') starts with 'activity' ? 'on' : '' }}"><i class="fa fa-hiking"></i> Activités</a></li>
+            <li><a href="{{ path('transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'transport' ? 'on' : '' }}"><i class="fa fa-plane"></i> Transport</a></li>
+            <li><a href="{{ path('forum_index') }}" class="{{ app.request.attributes.get('_route') starts with 'forum' ? 'on' : '' }}"><i class="fa fa-comments"></i> Forum</a></li>
+            <li><a href="{{ path('games_index') }}" class="{{ app.request.attributes.get('_route') starts with 'games' ? 'on' : '' }}"><i class="fa fa-gamepad"></i> Jeux</a></li>
+        </ul>
+
+        <div class="fg-nav__right">
+            {% if app.user %}
+                <div class="fg-user-menu">
+                    <button class="fg-user-btn" id="fgUserBtn">
+                        <div class="fg-user-avatar">
+                            {{ app.user.prenom|slice(0,1)|upper }}
+                        </div>
+                        <span class="fg-user-name">{{ app.user.prenom }}</span>
+                        <i class="fa fa-chevron-down fg-user-arrow"></i>
+                    </button>
+                    <div class="fg-user-dropdown" id="fgUserDropdown">
+                        <div class="fg-dropdown-header">
+                            <strong>{{ app.user.prenom }} {{ app.user.nom|default('') }}</strong>
+                            <span>{{ app.user.email }}</span>
+                        </div>
+                        <div class="fg-dropdown-links">
+                            <a href="{{ path('user_dashboard') }}"><i class="fa fa-user"></i> Mon espace</a>
+                            <a href="{{ path('user_reservations') }}"><i class="fa fa-calendar-check"></i> Mes réservations</a>
+                            <a href="{{ path('user_history') }}"><i class="fa fa-history"></i> Historique</a>
+                            <a href="{{ path('user_avis') }}"><i class="fa fa-star"></i> Mes avis</a>
+                            <a href="{{ path('favoris_all') }}"><i class="fa fa-heart"></i> Favoris</a>
+                            {% if app.user %}
+                            <a href="/messenger/"><i class="fa fa-comments"></i> Messages</a>
+                            {% endif %}
+                            <a href="{{ path('chatbot_index') }}"><i class="fa fa-robot"></i> AI Assistant</a>
+                            <a href="{{ path('ai_puzzle_index') }}"><i class="fa fa-puzzle-piece"></i> AI Travel Puzzle</a>
+                            <a href="{{ path('user_profil_voyageur') }}"><i class="fa fa-suitcase-rolling"></i> Mon profil voyageur</a>
+                            {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('admin_dashboard') }}" class="fg-dropdown-admin"><i class="fa fa-shield-alt"></i> Administration</a>
+                            {% endif %}
+                        </div>
+                        <div class="fg-dropdown-footer">
+                            <a href="{{ path('app_logout') }}" class="fg-logout"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn btn-outline btn-sm"><i class="fa fa-sign-in-alt"></i> Connexion</a>
+                <a href="{{ path('app_register') }}" class="btn btn-gold btn-sm"><i class="fa fa-user-plus"></i> Inscription</a>
+            {% endif %}
+            <button class="fg-burger" id="fgBurger"><span></span><span></span><span></span></button>
+        </div>
+    </div>
+    <div class="fg-mobile" id="fgMobile">
+        <a href="{{ path('home') }}"><i class="fa fa-home"></i> Accueil</a>
+        <a href="{{ path('hebergement_index') }}"><i class="fa fa-hotel"></i> Hébergements</a>
+        <a href="{{ path('circuit_index') }}"><i class="fa fa-route"></i> Circuits</a>
+        <a href="{{ path('activity_index') }}"><i class="fa fa-hiking"></i> Activités</a>
+        <a href="{{ path('transport_index') }}"><i class="fa fa-plane"></i> Transport</a>
+        <a href="{{ path('forum_index') }}"><i class="fa fa-comments"></i> Forum</a>
+        {% if app.user %}
+        <a href="{{ path('user_dashboard') }}"><i class="fa fa-user"></i> Mon espace</a>
+        <a href="{{ path('user_reservations') }}"><i class="fa fa-calendar-check"></i> Mes réservations</a>
+        <a href="{{ path('user_history') }}"><i class="fa fa-history"></i> Historique</a>
+        <a href="{{ path('user_avis') }}"><i class="fa fa-star"></i> Mes avis</a>
+        <a href="{{ path('favoris_all') }}"><i class="fa fa-heart"></i> Favoris</a>
+        {% if app.user %}
+        <a href="/messenger/"><i class="fa fa-comments"></i> Messages</a>
+        {% endif %}
+        <a href="{{ path('chatbot_index') }}"><i class="fa fa-robot"></i> AI Assistant</a>
+        <a href="{{ path('ai_puzzle_index') }}"><i class="fa fa-puzzle-piece"></i> AI Travel Puzzle</a>
+        <a href="{{ path('app_logout') }}"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+        {% else %}
+        <a href="{{ path('chatbot_index') }}"><i class="fa fa-robot"></i> AI Assistant</a>
+        <a href="{{ path('ai_puzzle_index') }}"><i class="fa fa-puzzle-piece"></i> AI Travel Puzzle</a>
+        <a href="{{ path('app_login') }}"><i class="fa fa-sign-in-alt"></i> Connexion</a>
+        {% endif %}
+    </div>
+</nav>
+
+{% for type, messages in app.flashes %}
+    {% for msg in messages %}
+    <div style="position:fixed;top:80px;right:1.5rem;z-index:2000;max-width:420px">
+        <div class="toast toast--{{ type == 'success' ? 'success' : (type == 'error' ? 'error' : 'info') }}" style="display:flex;pointer-events:auto">
+            {{ type == 'success' ? '✅' : (type == 'error' ? '❌' : 'ℹ️') }} {{ msg }}
+        </div>
+    </div>
+    {% endfor %}
+{% endfor %}
+
+{% block body %}{% endblock %}
+
+<footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__brand">
+            <div class="footer__logo" style="display:flex;align-items:center;gap:.75rem">
+                <img src="{{ asset('images/logo.png') }}" alt="Fly&Go" style="height:56px;width:auto;object-fit:contain" onerror="this.style.display='none'">
+                <span style="font-size:1.2rem;font-weight:900;color:#fff">Fly<span style="color:var(--gold)">&amp;</span>Go</span>
+            </div>
+            <p>Plateforme complète avec rôle admin, espace utilisateur et circuits sur mesure.</p>
+        </div>
+        <div class="footer__col">
+            <h4>Services</h4>
+            <ul>
+                <li><i class="fa fa-hotel"></i><a href="{{ path('hebergement_index') }}">Hébergements</a></li>
+                <li><i class="fa fa-route"></i><a href="{{ path('circuit_index') }}">Circuits</a></li>
+                <li><i class="fa fa-brain"></i><a href="{{ path('circuit_ai_create') }}">Circuit personnalisé</a></li>
+                <li><i class="fa fa-plane"></i><a href="{{ path('transport_index') }}">Transport</a></li>
+            </ul>
+        </div>
+        <div class="footer__col">
+            <h4>Compte</h4>
+            <ul>
+                <li><i class="fa fa-user"></i><a href="{{ path('user_dashboard') }}">Mon espace</a></li>
+                <li><i class="fa fa-calendar-check"></i><a href="{{ path('user_reservations') }}">Mes réservations</a></li>
+                <li><i class="fa fa-star"></i><a href="{{ path('user_avis') }}">Mes avis</a></li>
+                <li><i class="fa fa-suitcase-rolling"></i><a href="{{ path('user_profil_voyageur') }}">Profil voyageur</a></li>
+            </ul>
+        </div>
+        <div class="footer__col">
+            <h4>Contact</h4>
+            <ul>
+                <li><i class="fa fa-phone"></i><a href="tel:+21612345678">+216 12 345 678</a></li>
+                <li><i class="fa fa-envelope"></i><a href="mailto:contact@flyandgo.tn">contact@flyandgo.tn</a></li>
+                <li><i class="fa fa-map-marker-alt"></i><a href="#">Tunis, Tunisie</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer__bottom">
+        © {{ "now"|date("Y") }} <strong>Fly&amp;Go</strong> — version livrée avec modules utilisateur + admin.
+    </div>
+</footer>
+
+<div class="toast-box" id="toastBox"></div>
+
+{# Share Modal #}
+<div id="shareModal" class="fg-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:3000;align-items:center;justify-content:center">
+    <div class="fg-modal-content" style="background:#fff;padding:2rem;border-radius:16px;width:100%;max-width:450px;position:relative;box-shadow:0 20px 50px rgba(0,0,0,0.2)">
+        <button onclick="closeShareModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)">&times;</button>
+        <h3 style="margin-bottom:1.5rem;font-weight:800;color:var(--navy)"><i class="fa fa-share-alt" style="color:var(--gold)"></i> Partager</h3>
+        
+        <div class="share-options" style="display:flex;flex-direction:column;gap:1rem">
+            <button onclick="showMessengerShare()" class="btn btn-outline" style="justify-content:flex-start;text-align:left;padding:1rem">
+                <i class="fa fa-comments" style="font-size:1.2rem;width:30px"></i>
+                <div>
+                    <div style="font-weight:700">Envoyer à un ami</div>
+                    <div style="font-size:0.75rem;color:var(--muted)">Message privé Messenger</div>
+                </div>
+            </button>
+            
+            <button onclick="shareToForumDirect()" class="btn btn-outline" style="justify-content:flex-start;text-align:left;padding:1rem">
+                <i class="fa fa-users" style="font-size:1.2rem;width:30px"></i>
+                <div>
+                    <div style="font-weight:700">Publier dans le forum</div>
+                    <div style="font-size:0.75rem;color:var(--muted)">Créer un post public</div>
+                </div>
+            </button>
+            
+            <button onclick="copyShareLink()" class="btn btn-outline" style="justify-content:flex-start;text-align:left;padding:1rem">
+                <i class="fa fa-link" style="font-size:1.2rem;width:30px"></i>
+                <div>
+                    <div style="font-weight:700">Copier le lien</div>
+                    <div style="font-size:0.75rem;color:var(--muted)">Lien direct vers cette page</div>
+                </div>
+            </button>
+        </div>
+
+        {# Messenger Specific Selection #}
+        <div id="messengerShareSelection" style="display:none;margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem">
+            <h4 style="font-size:0.9rem;margin-bottom:1rem"><i class="fa fa-user-friends" style="color:var(--gold)"></i> Choisir un ami</h4>
+            
+            {# Search Bar for Users #}
+            <div style="margin-bottom:1rem">
+                <div style="position:relative">
+                    <input type="text" id="searchUserInput" oninput="onSearchInputChange(this.value)" placeholder="Rechercher un ami..." 
+                        style="width:100%;padding:0.6rem 1rem 0.6rem 2.5rem;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;outline:none">
+                    <i class="fa fa-search" style="position:absolute;left:0.8rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.85rem"></i>
+                </div>
+                <div id="searchUsersResults" style="margin-top:0.5rem;max-height:250px;overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ asset('js/flyandgo.js') }}"></script>
+<script src="{{ asset('js/share-system.js') }}?v=2"></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Itinéraire - {{ circuit.titre }}</title>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #333; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1b466b; padding-bottom: 20px; }
+        .logo { font-size: 28px; font-weight: bold; color: #1b466b; }
+        .title { font-size: 24px; color: #1b466b; margin: 20px 0 10px; }
+        .subtitle { color: #666; font-size: 14px; }
+        .info-box { background: #f5f7fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .info-row { display: flex; justify-content: space-between; margin: 10px 0; }
+        .info-label { font-weight: bold; color: #1b466b; }
+        .info-value { color: #555; }
+        .section { margin: 30px 0; }
+        .section-title { font-size: 18px; color: #1b466b; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px; }
+        .price { font-size: 24px; font-weight: bold; color: #00b4d8; text-align: right; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #888; font-size: 12px; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-promo { background: #dc2626; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">✈️ Fly&Go</div>
+        <div class="subtitle">Itinéraire du circuit</div>
+    </div>
+
+    <h1 class="title">{{ circuit.titre }}</h1>
+    
+    <div class="info-box">
+        <div class="info-row">
+            <span class="info-label">Destination:</span>
+            <span class="info-value">{{ circuit.destination }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Durée:</span>
+            <span class="info-value">{{ circuit.duree }} jours</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Difficulté:</span>
+            <span class="info-value">{{ circuit.difficulte ?: 'Non spécifiée' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Dates:</span>
+            <span class="info-value">
+                {% if circuit.startDate %}{{ circuit.startDate|date('d/m/Y') }}{% endif %}
+                {% if circuit.endDate %} - {{ circuit.endDate|date('d/m/Y') }}{% endif %}
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Départ:</span>
+            <span class="info-value">{{ circuit.depart ?: 'Non spécifié' }}</span>
+        </div>
+    </div>
+
+    {% if circuit.description %}
+    <div class="section">
+        <div class="section-title">Description</div>
+        <p>{{ circuit.description|nl2br }}</p>
+    </div>
+    {% endif %}
+
+    {% if circuit.planB %}
+    <div class="section">
+        <div class="section-title">Plan B (Alternative)</div>
+        <p>{{ circuit.planB|nl2br }}</p>
+    </div>
+    {% endif %}
+
+    <div class="price">
+        {% if circuit.hasActivePromo() %}
+            <span class="badge badge-promo">-{{ circuit.reductionPercent }}%</span>
+            {{ circuit.promoPrix|number_format(0, ',', ' ') }} TND
+            <span style="font-size: 14px; color: #999; text-decoration: line-through;">{{ circuit.prix|number_format(0, ',', ' ') }} TND</span>
+        {% else %}
+            {{ circuit.prix|number_format(0, ',', ' ') }} TND
+        {% endif %}
+        <span style="font-size: 14px; color: #666;">/ personne</span>
+    </div>
+
+    <div class="footer">
+        <p>Document généré le {{ date|date('d/m/Y à H:i') }}</p>
+        <p>Fly&Go - Votre partenaire de voyage en Tunisie</p>
+        <p>Cet itinerary est fourni à titre informatif et peut être sujet à modifications.</p>
+    </div>
+</body>
+</html>

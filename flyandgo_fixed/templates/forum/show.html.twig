@@ -1,0 +1,1537 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ post.title }} — Forum Fly&Go{% endblock %}
+{% block stylesheets %}
+<style>
+:root {
+    --navy: #1B3A6B;
+    --cyan: #00B4D8;
+    --gold: #FFB700;
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --border: #ddd;
+    --text: #1C1C1E;
+    --muted: #65676B;
+    --primary: #0D5BD7;
+    --t: 0.2s;
+    --s1: 0 1px 3px rgba(0,0,0,0.1);
+    --like-color: #1877F2;
+    --dislike-color: #F02849;
+}
+
+/* Modal styles */
+.fb-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.fb-modal-overlay.show { display: flex; }
+.fb-modal {
+    background: white;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.fb-modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+.fb-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--muted);
+}
+.fb-modal-body { padding: 1rem; }
+.fb-like-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+.fb-like-user:hover { background: var(--bg); }
+.fb-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), var(--cyan));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+.fb-post-container { max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+
+/* Post Card */
+.fb-post-card {
+    background: var(--card);
+    border-radius: 8px;
+    box-shadow: var(--s1);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.fb-post-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.fb-post-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), var(--cyan));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.fb-post-info { flex: 1; }
+.fb-post-author {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.fb-post-tag {
+    background: var(--navy);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+.fb-post-time {
+    font-size: 0.75rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.fb-post-menu { color: var(--muted); cursor: pointer; padding: 0.5rem; }
+
+.fb-post-content { padding: 0 1rem 0.75rem; }
+.fb-post-title { font-size: 1.25rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+.fb-post-text { font-size: 0.95rem; line-height: 1.6; color: var(--text); }
+
+.fb-post-stats {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+.fb-post-stat-left { display: flex; align-items: center; gap: 0.5rem; }
+.fb-like-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--like-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+}
+
+.fb-post-actions {
+    display: flex;
+    justify-content: space-around;
+    padding: 0.25rem 1rem;
+    border-top: 1px solid var(--border);
+}
+.fb-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all var(--t);
+}
+.fb-action-btn:hover { background: var(--bg); }
+.fb-action-btn i { font-size: 1.1rem; }
+.fb-action-btn.liked { color: var(--like-color) !important; }
+.fb-action-btn.liked i { color: var(--like-color) !important; }
+.fb-action-btn.share-btn:hover { background: rgba(24,119,242,0.1); color: var(--like-color) !important; }
+.share-conv-item:hover { background: var(--bg); }
+
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes modalSlideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Comments Section */
+.fb-comments-section {
+    background: var(--card);
+    border-radius: 8px;
+    box-shadow: var(--s1);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.fb-comments-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+.fb-comments-count { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+.fb-sort-select {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: white;
+    cursor: pointer;
+}
+
+/* Comment Input */
+.fb-comment-input-area {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.fb-comment-input-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), var(--cyan));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+.fb-comment-input-wrapper { flex: 1; }
+.fb-comment-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: none;
+    transition: border-color var(--t);
+}
+.fb-comment-input:focus { outline: none; border-color: var(--cyan); }
+.fb-comment-input-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+.btn-voice {
+    background: linear-gradient(135deg, var(--navy), var(--cyan));
+    border: none;
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    margin-right: auto;
+}
+.btn-voice:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0,180,216,0.4);
+}
+.btn-voice.recording {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    animation: pulse 1s infinite;
+}
+.btn-voice:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Comment List */
+.fb-comments-list { margin-top: 1rem; }
+
+.fb-comment-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    position: relative;
+}
+.fb-comment-item:hover { background: rgba(0,0,0,0.02); }
+.fb-comment-item:hover .fb-comment-menu-btn { opacity: 1; }
+
+.fb-comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), var(--cyan));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.fb-comment-body { flex: 1; min-width: 0; }
+
+.fb-comment-bubble {
+    background: var(--bg);
+    border-radius: 18px;
+    padding: 0.6rem 1rem;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.fb-comment-author {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.15rem;
+}
+
+.fb-comment-text {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.fb-comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+    padding-left: 0.5rem;
+}
+
+.fb-comment-action {
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    border-radius: 4px;
+    transition: all var(--t);
+}
+.fb-comment-action:hover { background: rgba(0,0,0,0.05); color: var(--navy); }
+.fb-comment-action.liked { color: var(--cyan); }
+.fb-comment-action.translate-btn { font-size: 1rem; padding: 0 0.25rem; }
+.fb-comment-action.translate-btn:hover { transform: scale(1.2); }
+.fb-comment-action.translate-link { color: var(--cyan); font-size: 0.75rem; text-decoration: underline; }
+.fb-comment-dot { color: var(--muted); font-size: 0.7rem; }
+.fb-comment-time { font-size: 0.7rem; color: var(--muted); }
+.fb-comment-score { font-size: 0.75rem; color: var(--cyan); font-weight: 600; }
+
+.fb-comment-menu-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    opacity: 0;
+    transition: all var(--t);
+}
+.fb-comment-menu-btn:hover { background: rgba(0,0,0,0.1); }
+
+.fb-comment-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    min-width: 140px;
+    z-index: 100;
+    overflow: hidden;
+}
+.fb-comment-dropdown.show { display: block; }
+.fb-comment-dropdown button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+}
+.fb-comment-dropdown button:hover { background: var(--bg); }
+.fb-comment-dropdown button.danger { color: #dc3545; }
+
+/* Reply Form */
+.fb-reply-form {
+    display: none;
+    margin-top: 0.75rem;
+    margin-left: 2.5rem;
+}
+.fb-reply-form.active { display: flex; gap: 0.5rem; }
+.fb-reply-input {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    resize: none;
+}
+.fb-reply-input:focus { outline: none; border-color: var(--cyan); }
+
+/* Pagination */
+.fb-comments-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1rem;
+}
+.fb-page-btn {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border);
+    background: white;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--t);
+}
+.fb-page-btn:hover { background: var(--bg); }
+.fb-page-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+
+/* Empty State */
+.fb-empty-comments {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+}
+.fb-empty-comments i { font-size: 2rem; margin-bottom: 0.5rem; }
+
+/* Loading */
+.fb-loading {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+.fb-loading::after {
+    content: '';
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Toast */
+.fb-toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; }
+.fb-toast {
+    padding: 0.75rem 1.25rem;
+    background: var(--text);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    animation: slideIn 0.3s ease;
+}
+.fb-toast.success { background: #28a745; }
+.fb-toast.error { background: #dc3545; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Login prompt */
+.fb-login-prompt {
+    text-align: center;
+    padding: 1.5rem;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+.fb-login-prompt p { color: var(--muted); margin-bottom: 1rem; }
+
+/* Responsive */
+@media (max-width: 640px) {
+    .fb-post-container { margin: 1rem auto; padding: 0 0.5rem; }
+    .fb-action-btn { padding: 0.6rem 1rem; }
+    .fb-comment-bubble { max-width: 85%; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="fb-post-container">
+    {# Post Card #}
+    <article class="fb-post-card">
+        <div class="fb-post-header">
+            <div class="fb-post-avatar">{{ post.author ? post.author|slice(0,1)|upper : 'U' }}</div>
+            <div class="fb-post-info">
+                <div class="fb-post-author">
+                    {{ post.author ?: 'Utilisateur' }}
+                    {% if post.categorie %}
+                    <span class="fb-post-tag">{{ post.categorie }}</span>
+                    {% endif %}
+                </div>
+                <div class="fb-post-time">
+                    <span>{{ post.createdAt|time_ago }}</span>
+                    <span>·</span>
+                    <i class="fa fa-globe"></i>
+                </div>
+            </div>
+            <div class="fb-post-menu" style="position:relative">
+                <i class="fa fa-ellipsis-h" onclick="togglePostMenu()"></i>
+                <div id="post-menu-dropdown" style="display:none;position:absolute;right:0;top:20px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);z-index:100;min-width:150px">
+                    <button onclick="translatePost('{{ post.id }}', 'en')" style="width:100%;padding:.5rem 1rem;border:none;background:none;text-align:left;cursor:pointer;border-bottom:1px solid #eee">
+                        🇬🇧 Translate to English
+                    </button>
+                    <button onclick="translatePost('{{ post.id }}', 'ar')" style="width:100%;padding:.5rem 1rem;border:none;background:none;text-align:left;cursor:pointer;border-bottom:1px solid #eee">
+                        🇸🇦 Translate to العربية
+                    </button>
+                    <button onclick="translatePost('{{ post.id }}', 'fr')" style="width:100%;padding:.5rem 1rem;border:none;background:none;text-align:left;cursor:pointer">
+                        🇫🇷 Translate to Français
+                    </button>
+                </div>
+            </div>
+            {% if is_granted('ROLE_USER') %}
+            <button class="fb-action-btn" id="add-friend-btn-{{ post.id }}" 
+                {% if post.authorId %}
+                    onclick="sendFriendRequestDirect({{ post.authorId }}, {{ post.id }})"
+                {% else %}
+                    onclick="handleAddFriend({{ post.id }}, '{{ post.author|e('js') }}')"
+                {% endif %}
+                style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;border-radius:20px;padding:.4rem .75rem;font-size:.75rem;margin-left:.5rem">
+                <i class="fa fa-user-plus"></i> <span id="friend-btn-text-{{ post.id }}">Ajouter</span>
+            </button>
+            {% endif %}
+        </div>
+        
+        <div class="fb-post-content">
+            <h1 class="fb-post-title">{{ post.title }}</h1>
+            <div class="fb-post-text">{{ post.content|nl2br }}</div>
+            {% if post.image %}
+            <div style="margin-top:1rem">
+                <img src="{{ post.image }}" alt="Image" style="max-width:100%;max-height:400px;border-radius:8px">
+            </div>
+            {% endif %}
+            <div style="margin-top:.5rem">
+                <button class="fb-action-btn translate-link" onclick="showPostTranslation()">Traduire</button>
+                <div class="translated-content" id="translated-post" style="display:none;margin-top:.75rem;padding:.75rem;background:rgba(0,180,216,.1);border-radius:8px;border-left:3px solid var(--cyan);font-size:.9rem;color:var(--text)"></div>
+            </div>
+        </div>
+        
+        <div class="fb-post-stats">
+            <div class="fb-post-stat-left" onclick="showWhoLiked({{ post.id }})" style="cursor:pointer">
+                <span class="fb-like-icon"><i class="fa fa-thumbs-up"></i></span>
+                <span id="like-count">{{ likeCount }}</span> J'aime
+            </div>
+            <div>
+                <span id="comments-count-top">{{ totalComments|default(0) }}</span> commentaires
+            </div>
+        </div>
+        
+        <div class="fb-post-actions">
+            <button class="fb-action-btn" id="like-btn" data-action="like">
+                <i class="fa fa-thumbs-up"></i> <span id="like-text">J'aime</span>
+            </button>
+            <button class="fb-action-btn" onclick="document.getElementById('comment-input').focus()">
+                <i class="fa fa-comment"></i> Commenter
+            </button>
+            <button class="fb-action-btn share-btn" id="share-btn" onclick="openShareModal({{ post.id }}, '{{ post.title|e('js') }}', '{{ post.content|e('js')|slice(0, 100) }}')">
+                <i class="fa fa-share"></i> Partager
+            </button>
+        </div>
+    </article>
+
+    {# Comments Section #}
+    <div class="fb-comments-section">
+        <div class="fb-comments-header">
+            <span class="fb-comments-count"><span id="comments-count">{{ totalComments|default(0) }}</span> commentaires</span>
+            <select class="fb-sort-select" id="sort-select">
+                <option value="top">Top</option>
+                <option value="new">Plus récents</option>
+            </select>
+        </div>
+
+        {# Comment Input #}
+        {% if is_granted('ROLE_USER') %}
+        <div class="fb-comment-input-area">
+            <div class="fb-comment-input-avatar">{{ app.user ? app.user.prenom|slice(0,1)|upper : 'U' }}</div>
+            <div class="fb-comment-input-wrapper">
+                <form id="comment-form" enctype="multipart/form-data" action="#">
+                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                    <input type="hidden" name="parent_id" id="parent-id" value="">
+                    <textarea class="fb-comment-input" name="content" id="comment-input" placeholder="Écrire un commentaire ou cliquer sur le micro pour dicter..." rows="2"></textarea>
+                    <div class="fb-comment-image-preview" id="comment-image-preview" style="display:none;margin-bottom:0.5rem;position:relative">
+                        <img id="preview-img" style="max-width:200px;max-height:150px;border-radius:8px" src="" alt="Preview">
+                        <button type="button" onclick="removeCommentImage()" style="position:absolute;top:-8px;right:-8px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer">×</button>
+                    </div>
+                    <input type="file" name="image" id="comment-image-input" accept="image/*" style="display:none" onchange="previewCommentImage(this)">
+                    <div class="fb-comment-input-footer">
+                        <button type="button" class="btn-voice" id="voice-btn" title="Dicter un commentaire">
+                            <i class="fa fa-microphone"></i>
+                        </button>
+                        <button type="button" class="btn-image" id="image-btn" title="Ajouter une image" onclick="document.getElementById('comment-image-input').click()" style="background:none;border:none;cursor:pointer;padding:0.5rem;color:var(--muted)">
+                            <i class="fa fa-image"></i>
+                        </button>
+                        <button type="submit" class="btn btn-navy btn-sm" id="submit-btn">
+                            <i class="fa fa-paper-plane"></i> Publier
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="fb-login-prompt">
+            <p>Connectez-vous pour participer à la discussion</p>
+            <a href="{{ path('app_login') }}" class="btn btn-navy">Se connecter</a>
+        </div>
+        {% endif %}
+
+        {# Comments List #}
+        <div class="fb-comments-list" id="comments-wrapper">
+            <div class="fb-loading"></div>
+        </div>
+    </div>
+</div>
+
+{# Toast Container #}
+<div class="fb-toast-container" id="toast-container"></div>
+
+{# Who Liked Modal #}
+<div class="fb-modal-overlay" id="who-liked-modal" onclick="closeWhoLikedModal(event)">
+    <div class="fb-modal" onclick="event.stopPropagation()">
+        <div class="fb-modal-header">
+            <span>Personnes qui ont aimé</span>
+            <button class="fb-modal-close" onclick="closeWhoLikedModal()">&times;</button>
+        </div>
+        <div class="fb-modal-body" id="who-liked-body">
+            <div class="fb-loading"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const postId = {{ post.id }};
+    const wrapper = document.getElementById('comments-wrapper');
+    const sortSelect = document.getElementById('sort-select');
+    let currentSort = 'top';
+    let currentPage = 1;
+
+    function showToast(message, type = 'default') {
+        const tc = document.getElementById('toast-container');
+        const t = document.createElement('div');
+        t.className = 'fb-toast' + (type ? ' ' + type : '');
+        t.textContent = message;
+        tc.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+    }
+
+    function loadComments(page = 1) {
+        currentPage = page;
+        wrapper.innerHTML = '<div class="fb-loading"></div>';
+        fetch('/ajax/forum/comments/' + postId + '?sort=' + currentSort + '&page=' + page + '&mode=flat', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                wrapper.innerHTML = data.html || '<div class="fb-empty-comments"><i class="fa fa-comment-dots"></i><p>Aucun commentaire</p></div>';
+                document.getElementById('comments-count').textContent = data.total;
+                document.getElementById('comments-count-top').textContent = data.total;
+                bindCommentEvents();
+            } else {
+                wrapper.innerHTML = '<div class="fb-empty-comments"><p>Erreur: ' + (data.message || '') + '</p></div>';
+            }
+        })
+        .catch(() => wrapper.innerHTML = '<div class="fb-empty-comments"><p>Erreur de chargement</p></div>');
+    }
+
+    function bindCommentEvents() {
+        document.querySelectorAll('.like-btn').forEach(b => b.addEventListener('click', handleVote));
+        document.querySelectorAll('.reply-btn').forEach(b => b.addEventListener('click', handleReply));
+        document.querySelectorAll('.cancel-reply').forEach(b => b.addEventListener('click', handleCancelReply));
+        document.querySelectorAll('.reply-form form').forEach(f => f.addEventListener('submit', handleReplySubmit));
+        document.querySelectorAll('.fb-page-btn').forEach(b => b.addEventListener('click', function() {
+            loadComments(parseInt(this.textContent));
+        }));
+    }
+
+    function handleVote(e) {
+        const btn = e.currentTarget;
+        const id = btn.dataset.comment;
+        const vote = parseInt(btn.dataset.vote);
+        fetch('/ajax/forum/comment/' + id + '/vote', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+            body: 'vote=' + vote
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const commentItem = btn.closest('.fb-comment-item');
+                const scoreEl = commentItem.querySelector('.fb-comment-score');
+                if (scoreEl) scoreEl.innerHTML = '<i class="fa fa-thumbs-up"></i> ' + data.score;
+                btn.classList.toggle('liked', data.userVote === 1);
+                showToast(data.userVote === 1 ? 'Vous aimez ce commentaire' : 'Like retiré', 'success');
+            }
+        });
+    }
+
+    function handleReply(e) {
+        const btn = e.currentTarget;
+        const id = btn.dataset.comment;
+        const form = document.getElementById('reply-form-' + id);
+        if (form) form.classList.add('active');
+        document.getElementById('parent-id').value = id;
+        document.getElementById('comment-input').focus();
+    }
+
+    function handleCancelReply(e) {
+        const form = e.target.closest('.fb-reply-form');
+        if (form) form.classList.remove('active');
+        document.getElementById('parent-id').value = '';
+    }
+
+    function handleReplySubmit(e) {
+        e.preventDefault();
+        const form = e.target;
+        const parentId = form.dataset.parent;
+        const content = form.querySelector('textarea').value.trim();
+        if (!content && !form.querySelector('input[type="file"]')?.files[0]) return;
+        
+        const fd = new FormData();
+        fd.append('post_id', postId);
+        fd.append('parent_id', parentId);
+        fd.append('content', content);
+        
+        const imageInput = form.querySelector('input[type="file"]');
+        if (imageInput && imageInput.files[0]) {
+            fd.append('image', imageInput.files[0]);
+        }
+        
+        fetch('/ajax/forum/comment/create', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: fd
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                form.reset();
+                form.classList.remove('active');
+                document.getElementById('parent-id').value = '';
+                loadComments(currentPage);
+                showToast('Réponse publiée !', 'success');
+            } else {
+                showToast(data.message || 'Erreur', 'error');
+            }
+        });
+    }
+
+    window.toggleCommentMenu = function(id) {
+        const menu = document.getElementById('menu-' + id);
+        if (menu) menu.classList.toggle('show');
+        document.addEventListener('click', function closeMenu(e) {
+            if (!e.target.closest('.fb-comment-admin')) {
+                menu?.classList.remove('show');
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    };
+
+    window.pinComment = function(id) {
+        fetch('/ajax/forum/comment/' + id + '/pin', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadComments(currentPage);
+            }
+        });
+    };
+
+    window.deleteComment = function(id) {
+        if (!confirm('Supprimer ce commentaire ?')) return;
+        fetch('/ajax/forum/comment/' + id + '/delete', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Commentaire supprimé', 'success');
+                loadComments(currentPage);
+            } else {
+                showToast(data.message || 'Erreur', 'error');
+            }
+        });
+    };
+
+    const mainForm = document.getElementById('comment-form');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const content = document.getElementById('comment-input').value.trim();
+            const btn = document.getElementById('submit-btn');
+            
+            if (!content && !document.getElementById('comment-image-input').files[0]) {
+                showToast('Veuillez écrire un commentaire ou ajouter une image', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('post_id', postId);
+            formData.append('content', content || '');
+            
+            const parentId = document.getElementById('parent-id').value;
+            if (parentId) formData.append('parent_id', parentId);
+            
+            const imageInput = document.getElementById('comment-image-input');
+            if (imageInput && imageInput.files[0]) {
+                formData.append('image', imageInput.files[0]);
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Publication...';
+            
+            fetch('/ajax/forum/comment/create', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-paper-plane"></i> Publier';
+                
+                if (data.success) {
+                    document.getElementById('comment-input').value = '';
+                    document.getElementById('parent-id').value = '';
+                    removeCommentImage();
+                    loadComments(currentPage);
+                    showToast('Commentaire publié avec succès!', 'success');
+                } else {
+                    showToast(data.message || 'Erreur lors de la publication', 'error');
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-paper-plane"></i> Publier';
+                showToast('Erreur réseau: ' + error.message, 'error');
+            });
+        });
+    }
+
+    sortSelect?.addEventListener('change', function() {
+        currentSort = this.value;
+        loadComments(1);
+    });
+
+    const likeBtn = document.getElementById('like-btn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+            const isLiked = this.classList.contains('liked');
+            fetch('/ajax/forum/post/' + postId + '/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: 'vote=' + (isLiked ? 0 : 1)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    this.classList.toggle('liked', data.userVote === 1);
+                    const likeText = this.querySelector('#like-text');
+                    if (likeText) likeText.textContent = data.userVote === 1 ? 'Aimé' : 'J\'aime';
+                    document.getElementById('like-count').textContent = data.score;
+                    showToast(data.userVote === 1 ? 'Vous aimerez ce post' : 'Like retiré', 'success');
+                }
+            });
+        });
+    }
+    
+    // Share button handler
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn?.addEventListener('click', function() {
+        const shareUrl = window.location.href;
+        const shareTitle = '{{ post.title|escape('js') }}';
+        
+        if (navigator.share) {
+            navigator.share({
+                title: shareTitle,
+                text: 'Découvrez ce post sur Fly&Go Forum',
+                url: shareUrl
+            }).then(() => showToast('Post partagé avec succès!', 'success'))
+            .catch(err => { if (err.name !== 'AbortError') copyShareLink(shareUrl); });
+        } else {
+            copyShareLink(shareUrl);
+        }
+    });
+    
+    function copyShareLink(url) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Lien copié dans le presse-papiers!', 'success');
+            });
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('Lien copié!', 'success');
+        }
+    }
+    
+    // Show who liked modal
+    window.showWhoLiked = function(postId) {
+        const modal = document.getElementById('who-liked-modal');
+        const body = document.getElementById('who-liked-body');
+        modal.classList.add('show');
+        body.innerHTML = '<div class="fb-loading"></div>';
+        
+        fetch('/ajax/forum/post/' + postId + '/likes', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.users.length > 0) {
+                body.innerHTML = data.users.map(function(u) {
+                    return '<div class="fb-like-user" style="cursor:pointer" onclick="window.location=\'/profile/' + u.id + '\'">' +
+                        '<div class="fb-avatar">' + u.name.charAt(0).toUpperCase() + '</div>' +
+                        '<div><div style="font-weight:600">' + u.name + '</div>' +
+                        '<div style="font-size:0.8rem;color:var(--muted)">' + u.email + '</div></div></div>';
+                }).join('');
+            } else {
+                body.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted)">Aucun like</div>';
+            }
+        })
+        .catch(() => {
+            body.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--muted)">Erreur de chargement</div>';
+        });
+    };
+    
+    window.closeWhoLikedModal = function(event) {
+        if (event && event.target !== event.currentTarget) return;
+        document.getElementById('who-liked-modal').classList.remove('show');
+    };
+
+    loadComments();
+
+    // Voice Recognition (Web Speech API)
+    (function() {
+        const voiceBtn = document.getElementById('voice-btn');
+        const commentInput = document.getElementById('comment-input');
+        
+        if (!voiceBtn) return;
+        
+        const SpeechAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechAPI) {
+            voiceBtn.disabled = true;
+            voiceBtn.title = 'Reconnaissance vocale non supportée';
+            voiceBtn.style.opacity = '0.5';
+            return;
+        }
+        
+        const recognition = new SpeechAPI();
+        let isRecording = false;
+        
+        // Configuration
+        recognition.lang = 'fr-FR';
+        recognition.interimResults = true;
+        recognition.continuous = true;
+        recognition.maxAlternatives = 1;
+        
+        // UI Update function
+        function updateUI(recording) {
+            if (recording) {
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '<i class="fa fa-stop"></i>';
+                voiceBtn.title = 'Arrêter';
+            } else {
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '<i class="fa fa-microphone"></i>';
+                voiceBtn.title = 'Dicter';
+            }
+        }
+        
+        // Start listening
+        voiceBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!isRecording) {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error('Start error:', e);
+                }
+            } else {
+                recognition.stop();
+            }
+        };
+        
+        // Recognition started
+        recognition.onstart = function() {
+            isRecording = true;
+            updateUI(true);
+            showToast('🎙️ Écoute en cours... Parlez!', 'success');
+            console.log('Voice recognition started');
+        };
+        
+        let finalTranscript = '';
+        
+        // Recognition results
+        recognition.onresult = function(event) {
+            const results = event.results;
+            console.log('Result index:', event.resultIndex);
+            
+            for (let i = event.resultIndex; i < results.length; i++) {
+                const result = results[i];
+                console.log('Result', i, ':', result[0].transcript, '- isFinal:', result.isFinal);
+                if (result.isFinal) {
+                    finalTranscript += result[0].transcript + ' ';
+                }
+            }
+            
+            if (finalTranscript.trim()) {
+                commentInput.value = (commentInput.value + ' ' + finalTranscript.trim()).trim();
+                finalTranscript = '';
+                showToast('✅ Texte ajouté!', 'success');
+            }
+            
+            if (isRecording && recognition.state === 'active') {
+                try {
+                    recognition.stop();
+                    setTimeout(() => {
+                        if (isRecording) recognition.start();
+                    }, 100);
+                } catch(e) {}
+            }
+        };
+        
+        // Recognition ended - restart if still recording
+        recognition.onend = function() {
+            console.log('Voice recognition ended');
+            if (isRecording) {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error('Restart error:', e);
+                    isRecording = false;
+                    updateUI(false);
+                }
+            } else {
+                updateUI(false);
+            }
+        };
+        
+        // Error handler
+        recognition.onerror = function(event) {
+            console.error('Speech error:', event.error);
+            isRecording = false;
+            updateUI(false);
+            
+            const errors = {
+                'no-speech': 'Aucun speech détecté',
+                'not-allowed': 'Microphone refusé - cliquez sur l\'icône 🔇 dans la barre d\'adresse',
+                'network': 'Erreur réseau',
+                'aborted': 'Arrêté par l\'utilisateur'
+            };
+            
+            showToast('❌ ' + (errors[event.error] || 'Erreur: ' + event.error), 'error');
+        };
+        
+        console.log('Voice recognition initialized');
+    })();
+});
+
+// Translation functions
+function togglePostMenu() {
+    const menu = document.getElementById('post-menu-dropdown');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.fb-post-menu')) {
+        document.getElementById('post-menu-dropdown').style.display = 'none';
+    }
+});
+
+async function translatePost(postId, targetLang) {
+    console.log('translatePost called: postId=' + postId + ', targetLang=' + targetLang);
+    const translatedEl = document.getElementById('translated-post');
+    translatedEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Traduction en cours...';
+    translatedEl.style.display = 'block';
+    try {
+        console.log('Calling API...');
+        const res = await fetch('/api/forum/post/' + postId + '/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+            body: 'target=' + targetLang
+        });
+        console.log('Response status: ' + res.status);
+        const data = await res.json();
+        console.log('Response data:', data);
+        if (data.success) {
+            const langNames = {'en': 'English', 'ar': 'العربية', 'fr': 'Français', 'de': 'Deutsch', 'es': 'Español'};
+            translatedEl.innerHTML = '<strong>Traduction en ' + (langNames[targetLang] || targetLang) + ':</strong><br>' + 
+                '<div style="margin-bottom:.5rem;font-weight:700">' + data.translated.title + '</div>' +
+                data.translated.content.replace(/\n/g, '<br>') +
+                '<div style="margin-top:.5rem;font-size:.7rem;color:var(--muted)"><a href="#" onclick="showPostTranslation(event);return false;">Masquer la traduction</a></div>';
+        } else {
+            translatedEl.innerHTML = 'Erreur: ' + (data.message || 'Traduit pas réussie');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+        translatedEl.innerHTML = 'Erreur réseau: ' + e.message;
+    }
+}
+
+function showPostTranslation() {
+    const translatedEl = document.getElementById('translated-post');
+    const titleEl = document.querySelector('.fb-post-title');
+    const textEl = document.querySelector('.fb-post-text');
+    
+    if (translatedEl.style.display === 'block' && !arguments.length) {
+        translatedEl.style.display = 'none';
+        return;
+    }
+    
+    const originalTitle = titleEl.dataset.original || titleEl.textContent;
+    const originalText = textEl.dataset.original || textEl.innerText;
+    
+    if (!titleEl.dataset.original) {
+        titleEl.dataset.original = originalTitle;
+        textEl.dataset.original = originalText;
+        titleEl.dataset.detectedLang = 'auto';
+    }
+    
+    translatedEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Traduction...';
+    translatedEl.style.display = 'block';
+    
+    fetch('/api/forum/detect-language', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'text=' + encodeURIComponent(originalText)
+    })
+    .then(r => r.json())
+    .then(detectData => {
+        const detectedLang = detectData.language || 'fr';
+        const translateTo = (detectedLang === 'fr' ? 'en' : detectedLang === 'en' ? 'fr' : 'en');
+        titleEl.dataset.detectedLang = translateTo;
+        
+        return fetch('/api/forum/post/{{ post.id }}/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'target=' + translateTo
+        });
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const langNames = {'en': 'English', 'ar': 'العربية', 'fr': 'Français'};
+            translatedEl.innerHTML = '<strong>Traduction en ' + langNames[data.language] + ':</strong><br>' + 
+                '<div style="margin-bottom:.5rem;font-weight:700">' + data.translated.title + '</div>' +
+                data.translated.content.replace(/\n/g, '<br>') +
+                '<div style="margin-top:.5rem;font-size:.7rem;color:var(--muted)"><a href="#" onclick="showPostTranslation(event)">Voir en autre langue</a></div>';
+        } else {
+            translatedEl.innerHTML = 'Erreur de traduction';
+        }
+    })
+    .catch(() => {
+        translatedEl.innerHTML = 'Erreur de traduction';
+    });
+}
+
+let currentTranslateComment = null;
+
+function showCommentTranslation(commentId, targetLang) {
+    const translatedEl = document.getElementById('translated-' + commentId);
+    const textEl = document.querySelector('[data-comment-id="' + commentId + '"] .fb-comment-text');
+    
+    if (translatedEl.style.display === 'block' && !targetLang) {
+        translatedEl.style.display = 'none';
+        return;
+    }
+    
+    const originalText = textEl.dataset.original || textEl.innerText;
+    if (!textEl.dataset.original) {
+        textEl.dataset.original = originalText;
+        textEl.dataset.detectedLang = 'auto';
+    }
+    
+    const lang = targetLang || textEl.dataset.detectedLang;
+    
+    translatedEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Traduction...';
+    translatedEl.style.display = 'block';
+    
+    fetch('/api/forum/detect-language', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'text=' + encodeURIComponent(originalText)
+    })
+    .then(r => r.json())
+    .then(detectData => {
+        const detectedLang = detectData.language || 'fr';
+        const translateTo = (detectedLang === 'fr' ? 'en' : 'fr');
+        textEl.dataset.detectedLang = translateTo;
+        
+        return fetch('/api/forum/comment/' + commentId + '/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'target=' + translateTo
+        });
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const langNames = {'en': 'English', 'ar': 'العربية', 'fr': 'Français'};
+            translatedEl.innerHTML = '<strong>Traduction en ' + langNames[data.language] + ':</strong><br>' + data.translated.replace(/\n/g, '<br>') + 
+                '<div style="margin-top:.5rem;font-size:.7rem;color:var(--muted)"><a href="#" onclick="showCommentTranslation(event, ' + commentId + ')">Voir en autre langue</a></div>';
+        } else {
+            translatedEl.innerHTML = 'Erreur de traduction';
+        }
+    })
+    .catch(() => {
+        translatedEl.innerHTML = 'Erreur de traduction';
+    });
+}
+
+function showCommentTranslationLang(e, commentId) {
+    e.preventDefault();
+    e.stopPropagation();
+    const langs = ['en', 'ar', 'fr'];
+    const names = {'en': 'English', 'ar': 'العربية', 'fr': 'Français'};
+    let currentLang = 'en';
+    
+    const el = e.target.closest('.translated-content');
+    if (el.dataset.lang) currentLang = el.dataset.lang;
+    
+    let nextIdx = (langs.indexOf(currentLang) + 1) % langs.length;
+    el.dataset.lang = langs[nextIdx];
+    
+    showCommentTranslation(commentId, langs[nextIdx]);
+}
+
+function previewCommentImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('comment-image-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeCommentImage() {
+    document.getElementById('comment-image-input').value = '';
+    document.getElementById('comment-image-preview').style.display = 'none';
+    document.getElementById('preview-img').src = '';
+}
+
+// ==================== FRIEND REQUEST & SHARE FUNCTIONS ====================
+
+function showNotification(title, text) {
+    var notif = document.createElement('div');
+    notif.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;background:#1B3A6B;color:white;border-radius:8px;z-index:9999;font-size:14px;animation:fadeIn 0.3s';
+    notif.innerHTML = '<strong>' + title + '</strong><br><span style="font-size:12px">' + text + '</span>';
+    document.body.appendChild(notif);
+    setTimeout(function() { notif.remove(); }, 3500);
+}
+
+function handleAddFriend(postId, authorName) {
+    console.log('handleAddFriend called:', postId, authorName);
+    
+    var btn = document.getElementById('add-friend-btn-' + postId);
+    var textEl = document.getElementById('friend-btn-text-' + postId);
+    
+    if (!btn) {
+        console.error('Button not found:', 'add-friend-btn-' + postId);
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    // First, search for the user by name to get their ID
+    fetch('/api/friend/search?name=' + encodeURIComponent(authorName), {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { 
+        console.log('Search response status:', r.status);
+        return r.json(); 
+    })
+    .then(function(data) {
+        console.log('Search data:', data);
+        
+        if (!data.users || data.users.length === 0) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            showNotification('Erreur', 'Utilisateur "' + authorName + '" non trouvé');
+            return null;
+        }
+        
+        var user = data.users[0];
+        console.log('Found user:', user);
+        
+        // Now send friend request
+        return fetch('/api/friend/request/' + user.id, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+    })
+    .then(function(r) { 
+        if (!r) return null;
+        console.log('Friend request response status:', r.status);
+        return r.json(); 
+    })
+    .then(function(data) {
+        console.log('Friend request data:', data);
+        
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        
+        if (data && data.success) {
+            if (data.status === 'accepted') {
+                textEl.textContent = '✓ Amis';
+                btn.style.background = 'var(--success, #10B981)';
+                showNotification('Ami ajouté !', authorName + ' est maintenant votre ami.');
+            } else {
+                textEl.textContent = '⏳ Envoyé';
+                btn.style.background = 'var(--gold, #FFB700)';
+                btn.style.color = '#000';
+                showNotification('Demande envoyée', 'Votre demande a été envoyée à ' + authorName + '.');
+            }
+        } else {
+            showNotification('Erreur', data?.error || 'Impossible d\'envoyer la demande');
+        }
+    })
+    .catch(function(err) {
+        console.error('Error:', err);
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        showNotification('Erreur', 'Problème de connexion');
+    });
+}
+
+// Direct friend request using author ID
+function sendFriendRequestDirect(authorId, postId) {
+    console.log('sendFriendRequestDirect called:', authorId, postId);
+    
+    var btn = document.getElementById('add-friend-btn-' + postId);
+    var textEl = document.getElementById('friend-btn-text-' + postId);
+    
+    if (!btn || !authorId) {
+        console.error('Button or authorId not found');
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    fetch('/api/friend/request/' + authorId, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { 
+        console.log('Friend request response status:', r.status);
+        return r.json(); 
+    })
+    .then(function(data) {
+        console.log('Friend request data:', data);
+        
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        
+        if (data && data.success) {
+            if (data.status === 'accepted') {
+                textEl.textContent = '✓ Amis';
+                btn.style.background = '#10B981';
+                showNotification('Ami ajouté !', 'Vous êtes maintenant amis.');
+            } else {
+                textEl.textContent = '⏳ Envoyé';
+                btn.style.background = '#FFB700';
+                btn.style.color = '#000';
+                showNotification('Demande envoyée', 'Votre demande a été envoyée.');
+            }
+        } else {
+            showNotification('Erreur', data ? data.error : 'Impossible d\'envoyer la demande');
+        }
+    })
+    .catch(function(err) {
+        console.error('Error:', err);
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        showNotification('Erreur', 'Problème de connexion');
+    });
+}
+
+// Search user by name then send friend request
+function handleAddFriend(postId, authorName) {
+    console.log('handleAddFriend called:', postId, authorName);
+    
+    var btn = document.getElementById('add-friend-btn-' + postId);
+    var textEl = document.getElementById('friend-btn-text-' + postId);
+    
+    if (!btn) {
+        console.error('Button not found');
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    fetch('/api/friend/search?name=' + encodeURIComponent(authorName), {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { 
+        console.log('Search response status:', r.status);
+        return r.json(); 
+    })
+    .then(function(data) {
+        console.log('Search data:', data);
+        
+        if (!data.users || data.users.length === 0) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            showNotification('Erreur', 'Utilisateur non trouvé');
+            return null;
+        }
+        
+        var user = data.users[0];
+        console.log('Found user:', user);
+        
+        return fetch('/api/friend/request/' + user.id, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+    })
+    .then(function(r) { 
+        if (!r) return null;
+        console.log('Friend request response status:', r.status);
+        return r.json(); 
+    })
+    .then(function(data) {
+        console.log('Friend request data:', data);
+        
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        
+        if (data && data.success) {
+            if (data.status === 'accepted') {
+                textEl.textContent = '✓ Amis';
+                btn.style.background = '#10B981';
+                showNotification('Ami ajouté !', authorName + ' est maintenant votre ami.');
+            } else {
+                textEl.textContent = '⏳ Envoyé';
+                btn.style.background = '#FFB700';
+                btn.style.color = '#000';
+                showNotification('Demande envoyée', 'Votre demande a été envoyée à ' + authorName + '.');
+            }
+        } else {
+            showNotification('Erreur', data ? data.error : 'Impossible d\'envoyer la demande');
+        }
+    })
+    .catch(function(err) {
+        console.error('Error:', err);
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        showNotification('Erreur', 'Problème de connexion');
+    });
+}
+
+function showNotification(title, text) {
+    var notif = document.createElement('div');
+    notif.style.cssText = 'position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,#1B3A6B,#00B4D8);color:white;padding:1rem 1.5rem;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:3000;font-size:.9rem;max-width:300px;animation:slideUp .3s ease';
+    notif.innerHTML = '<div style="font-weight:700;margin-bottom:.25rem">' + title + '</div><div style="opacity:.9">' + text + '</div>';
+    document.body.appendChild(notif);
+    
+    setTimeout(function() { 
+        notif.style.animation = 'fadeOut .3s ease forwards'; 
+        setTimeout(function() { notif.remove(); }, 300); 
+    }, 3000);
+}
+
+function showCopySuccess() {
+    var msg = document.getElementById('copySuccessMsg');
+    if (msg) {
+        msg.style.display = 'block';
+        setTimeout(function() {
+            msg.style.display = 'none';
+        }, 2500);
+    }
+    showNotification('Lien copié !', 'Le lien a été copié dans le presse-papiers.');
+}
+
+document.addEventListener('click', function(e) {
+    var modal = document.getElementById('shareModal');
+    if (e.target === modal) closeShareModal();
+});
+</script>
+<script src="{{ asset('js/share-system.js') }}?v=2"></script>
+{% endblock %}

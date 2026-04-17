@@ -1,0 +1,24 @@
+vich_uploader:
+    db_driver: orm
+    storage: file_system
+    mappings:
+        activity_image:
+            upload_destination: activity_image_destination
+            namer: vich_uploader.namer_uniqid
+            delete_on_update: true
+            delete_on_remove: true
+        activity_document:
+            upload_destination: activity_document_destination
+            namer: vich_uploader.namer_uniqid
+            delete_on_update: true
+            delete_on_remove: true
+        circuit_document:
+            upload_destination: circuit_document_destination
+            namer: vich_uploader.namer_uniqid
+            delete_on_update: true
+            delete_on_remove: true
+        circuit_image:
+            upload_destination: circuit_image_destination
+            namer: vich_uploader.namer_uniqid
+            delete_on_update: true
+            delete_on_remove: true

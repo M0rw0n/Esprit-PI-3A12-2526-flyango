@@ -1,0 +1,424 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Fly&Go — Votre Agence de Voyage en Tunisie{% endblock %}
+{% block body %}
+
+<section class="hero">
+    <div class="hero__bg">
+        <div class="hero__slide hero__slide--1 on"></div>
+        <div class="hero__slide hero__slide--2"></div>
+        <div class="hero__slide hero__slide--3"></div>
+    </div>
+    <div class="hero__overlay"></div>
+    <div class="hero__content">
+        <div class="hero__badge">✈ Expérience premium · Tunisie &amp; Monde · Support 24/7</div>
+        <h1 class="hero__title">Réservez plus vite,<br>voyagez mieux avec <em>Fly&amp;Go</em></h1>
+        <p class="hero__sub">Un parcours de réservation inspiré des meilleures plateformes : recherche claire, filtres utiles, scénarios pensés pour les couples, familles et voyageurs solo.</p>
+        <div class="hero__search">
+            <div class="hero__field"><i class="fa fa-map-marker-alt"></i><input type="text" id="heroQ" placeholder="Destination ou hébergement"></div>
+            <div class="hero__field"><i class="fa fa-calendar"></i><input type="date" id="heroDate"></div>
+            <div class="hero__field"><i class="fa fa-users"></i><select id="heroGuests"><option>1 personne</option><option selected>2 personnes</option><option>3 personnes</option><option>4+ personnes</option></select></div>
+            <button onclick="heroSearch()" class="btn btn-gold btn-lg"><i class="fa fa-search"></i> Rechercher</button>
+        </div>
+        <div class="hero__stats">
+            <div class="hero__stat"><strong><span data-target="{{ totalHebergements }}" data-suffix="+">0+</span></strong><span>Hébergements</span></div>
+            <div class="hero__sep"></div>
+            <div class="hero__stat"><strong><span data-target="{{ totalCircuits }}" data-suffix="+">0+</span></strong><span>Circuits</span></div>
+            <div class="hero__sep"></div>
+            <div class="hero__stat"><strong><span data-target="{{ totalActivities }}" data-suffix="+">0+</span></strong><span>Activités</span></div>
+            <div class="hero__sep"></div>
+            <div class="hero__stat"><strong><span data-target="{{ totalPosts }}" data-suffix="+">0+</span></strong><span>Discussions</span></div>
+        </div>
+    </div>
+    <div class="hero__dots"><button class="hero__dot on" onclick="goS(0)"></button><button class="hero__dot" onclick="goS(1)"></button><button class="hero__dot" onclick="goS(2)"></button></div>
+    <a href="#booking-scenarios" class="hero__scroll"><i class="fa fa-chevron-down"></i></a>
+</section>
+
+<section id="booking-scenarios" style="background:#fff;border-bottom:1px solid var(--border)">
+    <div style="max-width:1380px;margin:0 auto;padding:1.25rem 2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem"><strong style="display:flex;align-items:center;gap:.55rem;color:var(--navy)"><i class="fa fa-check-circle" style="color:var(--green)"></i> Réservation simple</strong><p style="color:var(--muted);font-size:.84rem;margin-top:.45rem">Un parcours plus clair pour passer de la recherche à la confirmation en quelques clics.</p></div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem"><strong style="display:flex;align-items:center;gap:.55rem;color:var(--navy)"><i class="fa fa-sliders-h" style="color:var(--cyan-d)"></i> Filtres utiles</strong><p style="color:var(--muted);font-size:.84rem;margin-top:.45rem">Tri par prix, recherche par ville, type débergement et difficulté des circuits.</p></div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem"><strong style="display:flex;align-items:center;gap:.55rem;color:var(--navy)"><i class="fa fa-bolt" style="color:var(--gold-d)"></i> Scénarios prêts</strong><p style="color:var(--muted);font-size:.84rem;margin-top:.45rem">Couple, famille, aventure ou city-break : le contenu est mieux structuré pour guider le choix.</p></div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem"><strong style="display:flex;align-items:center;gap:.55rem;color:var(--navy)"><i class="fa fa-headset" style="color:#7C3AED"></i> Réassurance</strong><p style="color:var(--muted);font-size:.84rem;margin-top:.45rem">Messages de confiance, support visible et meilleure lisibilité sur les actions de réservation.</p></div>
+    </div>
+</section>
+
+{# Stories Section #}
+<section class="stories-section" style="padding: 2rem 0; background: #fff; border-bottom: 1px solid var(--border); overflow: hidden;">
+    <div style="max-width:1380px;margin:0 auto;padding:0 2rem; display: flex; align-items: center; gap: 1.5rem; overflow-x: auto; scrollbar-width: none;">
+        {# Add Story Button #}
+        <div class="story-item add-story" onclick="openStoryUploader()" style="flex-shrink: 0; cursor: pointer; text-align: center; width: 80px;">
+            <div style="width: 66px; height: 66px; border-radius: 50%; border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; position: relative;">
+                <i class="fa fa-plus" style="color: var(--muted); font-size: 1.2rem;"></i>
+                <div style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: white; width: 22px; height: 22px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">
+                    <i class="fa fa-camera"></i>
+                </div>
+            </div>
+            <span style="font-size: 0.75rem; font-weight: 600; color: var(--navy);">Ma Story</span>
+        </div>
+        
+        {# Stories List Container #}
+        <div id="storiesContainer" style="display: flex; gap: 1.5rem;">
+            {# Dynamic Content via JS #}
+        </div>
+    </div>
+</section>
+
+{# Story Viewer Overlay #}
+<div id="storyViewer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:5000; flex-direction:column; align-items:center; justify-content:center;">
+    <div id="storyProgressBar" style="position:absolute; top:10px; left:0; width:100%; display:flex; gap:4px; padding:0 10px; z-index:5001;"></div>
+    
+    <div style="position:absolute; top:30px; left:20px; display:flex; align-items:center; gap:10px; z-index:5001;">
+        <img id="viewerAvatar" src="" style="width:36px; height:36px; border-radius:50%; border:2px solid #fff; object-fit:cover;">
+        <div>
+            <div id="viewerName" style="color:#fff; font-weight:700; font-size:0.9rem; text-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>
+            <div id="viewerMeta" style="color:rgba(255,255,255,0.8); font-size:0.75rem;"></div>
+        </div>
+    </div>
+
+    <button onclick="closeStoryViewer()" style="position:absolute; top:30px; right:20px; background:none; border:none; color:#fff; font-size:1.8rem; cursor:pointer; z-index:5001; text-shadow:0 2px 4px rgba(0,0,0,0.5);">&times;</button>
+
+    <div id="viewerContent" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; position:relative;">
+        <img id="viewerImg" src="" style="max-width:100%; max-height:100%; object-fit:contain; display:none;">
+        <video id="viewerVid" style="max-width:100%; max-height:100%; display:none;" playsinline></video>
+        
+        {# Nav regions #}
+        <div onclick="prevStory()" style="position:absolute; top:0; left:0; width:30%; height:100%; cursor:pointer;"></div>
+        <div onclick="nextStory()" style="position:absolute; top:0; right:0; width:70%; height:100%; cursor:pointer;"></div>
+    </div>
+
+    <div id="viewerFooter" style="position:absolute; bottom:30px; left:0; width:100%; padding:0 20px; z-index:5001;">
+        <div id="viewerCaption" style="color:#fff; text-align:center; margin-bottom:1.5rem; font-size:1rem; text-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>
+        <div style="display:flex; gap:10px; align-items:center; justify-content:center;">
+            <div style="display:flex; gap:8px;">
+                <button onclick="reactToStory('❤️')" style="background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.3); border-radius:50%; width:40px; height:40px; font-size:1.3rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)';this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.2)';this.style.transform='scale(1)'">❤️</button>
+                <button onclick="reactToStory('😂')" style="background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.3); border-radius:50%; width:40px; height:40px; font-size:1.3rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)';this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.2)';this.style.transform='scale(1)'">😂</button>
+                <button onclick="reactToStory('😮')" style="background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.3); border-radius:50%; width:40px; height:40px; font-size:1.3rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)';this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.2)';this.style.transform='scale(1)'">😮</button>
+                <button onclick="reactToStory('😢')" style="background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.3); border-radius:50%; width:40px; height:40px; font-size:1.3rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)';this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.2)';this.style.transform='scale(1)'">😢</button>
+                <button onclick="reactToStory('🔥')" style="background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.3); border-radius:50%; width:40px; height:40px; font-size:1.3rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)';this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.2)';this.style.transform='scale(1)'">🔥</button>
+                <button onclick="reactToStory('😍')" style="background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.3); border-radius:50%; width:40px; height:40px; font-size:1.3rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)';this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.2)';this.style.transform='scale(1)'">😍</button>
+            </div>
+            <button onclick="shareCurrentStory()" style="background:var(--gold); color:#fff; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; margin-left:10px;"><i class="fa fa-share"></i></button>
+        </div>
+        <div style="margin-top:1rem; display:flex; gap:10px; align-items:center;">
+            <input type="text" id="storyReplyInput" placeholder="Envoyer un message..." style="flex:1; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); border-radius:25px; padding:0.7rem 1rem; color:#fff; outline:none; backdrop-filter:blur(10px); font-size:0.9rem;" onkeypress="if(event.key==='Enter')sendStoryReply()">
+            <button onclick="sendStoryReply()" style="background:var(--gold); color:#fff; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer;"><i class="fa fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+{# Story Upload Modal #}
+<div id="storyUploadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:6000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:20px; width:90%; max-width:400px; padding:2rem; position:relative;">
+        <h3 style="margin-bottom:1.5rem; font-weight:800; color:var(--navy); text-align:center;">Publier une Story</h3>
+        <button onclick="closeStoryUploader()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; color:var(--muted);">&times;</button>
+        
+        <div id="uploadPreview" style="width:100%; height:300px; background:#f8f9fa; border-radius:15px; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px dashed var(--border);">
+            <div id="uploadPlaceholder" style="text-align:center; color:var(--muted);">
+                <i class="fa fa-cloud-upload-alt" style="font-size:3rem; margin-bottom:1rem; display:block;"></i>
+                <span>Cliquez pour choisir un média</span>
+            </div>
+            <img id="uploadPreviewImg" style="display:none; width:100%; height:100%; object-fit:contain;">
+            <video id="uploadPreviewVid" style="display:none; width:100%; height:100%; object-fit:contain;" controls></video>
+        </div>
+
+        <input type="file" id="storyFileInput" accept="image/*,video/*" style="display:none" onchange="handleStoryFileSelect(this)">
+        <button onclick="document.getElementById('storyFileInput').click()" class="btn btn-outline" style="width:100%; margin-bottom:1rem;">Choisir Photo/Vidéo</button>
+        
+        <input type="text" id="storyCaptionInput" placeholder="Ajouter une légende..." style="width:100%; padding:0.8rem 1rem; border:1px solid var(--border); border-radius:10px; margin-bottom:1.5rem; outline:none;">
+        
+        <button id="publishStoryBtn" onclick="publishStory()" class="btn btn-gold" style="width:100%;" disabled>Publier maintenant</button>
+    </div>
+</div>
+
+<script>
+    const currentUserId = {{ app.user ? app.user.id : 'null' }};
+</script>
+<script src="{{ asset('js/stories.js') }}"></script>
+
+<section class="band"><div class="band__inner">
+    <a class="cat on" href="{{ path('hebergement_index') }}"><i class="fa fa-hotel"></i><span>Hébergements</span></a>
+    <a class="cat" href="{{ path('circuit_index') }}"><i class="fa fa-route"></i><span>Circuits</span></a>
+    <a class="cat" href="{{ path('activity_index') }}"><i class="fa fa-hiking"></i><span>Activités</span></a>
+    <a class="cat" href="{{ path('transport_index') }}"><i class="fa fa-plane"></i><span>Transport</span></a>
+    <a class="cat" href="{{ path('forum_index') }}"><i class="fa fa-comments"></i><span>Forum</span></a>
+    {% for v in villes|slice(0, 4) %}
+        <a class="cat" href="{{ path('hebergement_index', {ville: v}) }}"><i class="fa fa-map-pin"></i><span>{{ v }}</span></a>
+    {% endfor %}
+</div></section>
+
+<section class="sec" id="hebergements">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--cyan-d);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Hébergements</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Séjours <em style="color:var(--gold)">recommandés</em></h2>
+            </div>
+            <a href="{{ path('hebergement_index') }}" class="btn btn-outline">Voir tout <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem">
+            {% for h in hebergements %}
+            <div class="hcard anim">
+                <div class="hcard__img">
+                    <img src="{{ h.image ? asset(h.image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80' }}" alt="{{ h.nom }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80'">
+                    {% if loop.index <= 2 %}<span class="hcard__badge">🔥 Populaire</span>{% endif %}
+                    <button class="hcard__wish"><i class="fa fa-heart"></i></button>
+                </div>
+                <div class="hcard__body">
+                    <p class="hcard__loc"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ h.ville }}</p>
+                    <h3 class="hcard__name">{{ h.nom }}</h3>
+                    <div class="hcard__meta">
+                        <span><i class="fa fa-tag"></i> {{ h.type }}</span>
+                        {% if h.capacite %}<span><i class="fa fa-users"></i> {{ h.capacite }} pers.</span>{% endif %}
+                        {% if h.avis|length > 0 %}<span><i class="fa fa-star" style="color:var(--gold)"></i> {{ attribute(h, 'noteMoyenne')|default(h.moyenneNotes)|default(0) }}</span>{% endif %}
+                    </div>
+                    <div class="hcard__foot">
+                        <div class="price price--sm">
+                            <span class="price__val">{{ h.prixParNuit|number_format(3, ',', ' ') }}</span>
+                            <span class="price__cur">TND</span>
+                            <span class="price__per">/nuit</span>
+                        </div>
+                        <div class="hcard__actions">
+                            <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                            <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-gold btn-sm">Réserver</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="sec" style="background:var(--bg2)" id="circuits">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--cyan-d);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Circuits</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Voyages <em style="color:var(--gold)">organisés</em></h2>
+            </div>
+            <a href="{{ path('circuit_index') }}" class="btn btn-outline">Voir tout <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem">
+            {% for c in circuits %}
+            <div class="ccard anim">
+                <div class="ccard__img">
+                    <img src="{{ c.image ? asset(c.image) : 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=80' }}" alt="{{ c.titre }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=80'">
+                    {% if c.difficulte %}<span class="ccard__badge diff-badge diff-badge--{{ c.difficulte|lower }}">{{ c.difficulte }}</span>{% endif %}
+                </div>
+                <div class="ccard__body">
+                    {% if c.destination %}<p class="ccard__loc"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ c.depart }} → {{ c.destination }}</p>{% endif %}
+                    <h3 class="ccard__name">{{ c.titre }}</h3>
+                    <div class="ccard__meta">
+                        {% if c.duree %}<span><i class="fa fa-clock"></i> {{ c.duree }}</span>{% endif %}
+                        {% if c.placesDisponibles %}<span><i class="fa fa-users"></i> {{ c.placesDisponibles }} places</span>{% endif %}
+                    </div>
+                    <div class="ccard__foot">
+                        <div class="price price--sm">
+                            <span class="price__val">{{ c.prix|number_format(3, ',', ' ') }}</span>
+                            <span class="price__cur">TND</span>
+                            <span class="price__per">/pers.</span>
+                        </div>
+                        <div class="ccard__actions">
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-gold btn-sm">Réserver</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% if topCircuits %}
+<section class="sec" id="top-circuits" style="background:var(--bg)">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Les plus appréciés</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Top <em style="color:var(--gold)">Circuits</em></h2>
+            </div>
+            <a href="{{ path('circuit_index') }}" class="btn btn-outline">Explorer <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem">
+            {% for c in topCircuits %}
+            <div class="ccard anim">
+                <div class="ccard__img">
+                    <img src="{{ c.image ? asset(c.image) : 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=80' }}" alt="{{ c.titre }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=80'">
+                    <span class="ccard__badge" style="background:var(--gold);color:var(--navy)">⭐ Top #{{ loop.index }}</span>
+                </div>
+                <div class="ccard__body">
+                    {% if c.destination %}<p class="ccard__loc"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ c.depart }} → {{ c.destination }}</p>{% endif %}
+                    <h3 class="ccard__name">{{ c.titre }}</h3>
+                    <div class="ccard__meta">
+                        {% if c.noteMoyenne %}<span><i class="fa fa-star" style="color:var(--gold)"></i> {{ c.noteMoyenne|number_format(1) }}</span>{% endif %}
+                        {% if c.duree %}<span><i class="fa fa-clock"></i> {{ c.duree }}</span>{% endif %}
+                    </div>
+                    <div class="ccard__foot">
+                        <div class="price price--sm">
+                            <span class="price__val">{{ c.prix|number_format(3, ',', ' ') }}</span>
+                            <span class="price__cur">TND</span>
+                        </div>
+                        <div class="ccard__actions">
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-gold btn-sm">Découvrir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="sec" id="activities">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--cyan-d);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Activités</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Expériences <em style="color:var(--gold)">uniques</em></h2>
+            </div>
+            <a href="{{ path('activity_index') }}" class="btn btn-outline">Voir tout <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem">
+            {% for a in activities %}
+            <div class="acard anim" data-id="{{ a.id }}">
+                <div class="acard__img">
+                    {% if a.image %}<img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=500&q=80'">
+                    {% else %}<img src="https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=500&q=80" alt="{{ a.title }}">{% endif %}
+                    {% if loop.index <= 2 %}<span class="acard__badge">🔥 Tendance</span>{% endif %}
+                </div>
+                <div class="acard__body">
+                    {% if a.lieu %}<p class="acard__loc"><i class="fa fa-map-marker-alt"></i> {{ a.lieu }}</p>{% endif %}
+                    <h3 class="acard__name">{{ a.title }}</h3>
+                    <p class="acard__desc">{{ a.description|length > 80 ? a.description|slice(0,80)~'…' : a.description }}</p>
+                    <div class="acard__meta">
+                        {% if a.duration %}<span><i class="fa fa-clock"></i> {{ a.duration }}</span>{% endif %}
+                        <span><i class="fa fa-users"></i> {{ a.capacity }} places</span>
+                    </div>
+                    <div class="acard__foot">
+                        <div class="price price--sm">
+                            <span class="price__val">{{ a.price|number_format(3, ',', ' ') }}</span>
+                            <span class="price__cur">TND</span>
+                            <span class="price__per">/pers.</span>
+                        </div>
+                        <div class="acard__actions">
+                            <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                            <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-gold btn-sm">Réserver</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% if topActivities %}
+<section class="sec" id="top-activities" style="background:var(--bg2)">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Favoris de la communauté</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Top <em style="color:var(--gold)">Activités</em></h2>
+            </div>
+            <a href="{{ path('activity_index') }}" class="btn btn-outline">Explorer <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem">
+            {% for a in topActivities %}
+            <div class="acard anim" data-id="{{ a.id }}">
+                <div class="acard__img">
+                    {% if a.image %}<img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=500&q=80'">
+                    {% else %}<img src="https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=500&q=80" alt="{{ a.title }}">{% endif %}
+                    <span class="acard__badge" style="background:var(--gold);color:var(--navy)">⭐ Top #{{ loop.index }}</span>
+                </div>
+                <div class="acard__body">
+                    {% if a.lieu %}<p class="acard__loc"><i class="fa fa-map-marker-alt"></i> {{ a.lieu }}</p>{% endif %}
+                    <h3 class="acard__name">{{ a.title }}</h3>
+                    <div class="acard__meta">
+                        {% if a.duration %}<span><i class="fa fa-clock"></i> {{ a.duration }}</span>{% endif %}
+                        <span><i class="fa fa-heart" style="color:var(--red)"></i> {{ a.nbAvis }} avis</span>
+                    </div>
+                    <div class="acard__foot">
+                        <div class="price price--sm">
+                            <span class="price__val">{{ a.price|number_format(3, ',', ' ') }}</span>
+                            <span class="price__cur">TND</span>
+                        </div>
+                        <div class="acard__actions">
+                            <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-gold btn-sm">Découvrir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if posts %}
+<section class="sec" style="background:var(--navy-dd)">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p style="font-size:.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Communauté</p>
+                <h2 style="font-size:1.8rem;font-weight:900;color:#fff;letter-spacing:-.02em">Forum des <em style="color:var(--gold)">voyageurs</em></h2>
+            </div>
+            <a href="{{ path('forum_index') }}" class="btn btn-gold">Rejoindre <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem">
+            {% for p in posts %}
+            <a href="{{ path('forum_show', {id: p.id}) }}" class="fpost anim" style="text-decoration:none">
+                {% if p.categorie %}<div class="fpost__head"><span class="fpost__cat">{{ p.categorie }}</span></div>{% endif %}
+                <div class="fpost__title">{{ p.title }}</div>
+                <div class="fpost__excerpt">{{ p.content|length > 100 ? p.content|slice(0,100)~'…' : p.content }}</div>
+                <div class="fpost__foot">
+                    <div class="fpost__meta">
+                        <span><i class="fa fa-user"></i> {{ p.author }}</span>
+                        <span><i class="fa fa-comment"></i> {{ p.comments|length }}</span>
+                        <span><i class="fa fa-eye"></i> {{ p.vues }}</span>
+                    </div>
+                    <span style="font-size:.73rem;color:var(--muted)">{{ p.createdAt|date('d/m/Y') }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section style="background:linear-gradient(135deg,var(--navy),var(--cyan-d));padding:4rem 0">
+    <div style="max-width:980px;margin:0 auto;padding:0 2rem;text-align:center;color:#fff">
+        <h2 style="font-size:2rem;font-weight:900;margin-bottom:1rem">Un projet plus proche des standards Booking &amp; OTA</h2>
+        <p style="opacity:.88;margin-bottom:2rem;font-size:1.05rem">Tri, filtres, scénarios de réservation, messages de réassurance, données de démonstration réalistes et logo Fly&amp;Go conservé.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+            <a href="{{ path('hebergement_index') }}" class="btn btn-gold btn-xl"><i class="fa fa-hotel"></i> Voir les hébergements</a>
+            <a href="{{ path('circuit_index') }}" class="btn btn-outline btn-xl" style="border-color:rgba(255,255,255,0.4);color:#fff"><i class="fa fa-route"></i> Explorer les circuits</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+let slide = 0;
+const slides = document.querySelectorAll('.hero__slide');
+const dots = document.querySelectorAll('.hero__dot');
+function goS(n) {
+    slides.forEach(s => s.classList.remove('on'));
+    dots.forEach(d => d.classList.remove('on'));
+    slide = n;
+    slides[n]?.classList.add('on');
+    dots[n]?.classList.add('on');
+}
+setInterval(() => goS((slide + 1) % slides.length), 5000);
+function heroSearch() {
+    const q = document.getElementById('heroQ')?.value.trim();
+    window.location.href = '{{ path("hebergement_index") }}' + (q ? '?q=' + encodeURIComponent(q) : '');
+}
+document.getElementById('heroQ')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') heroSearch();
+});
+</script>
+{% endblock %}

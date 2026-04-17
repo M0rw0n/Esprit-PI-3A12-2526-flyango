@@ -1,0 +1,268 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Hébergements — Fly&Go{% endblock %}
+{% block body %}
+
+{# Hero + Search #}
+<section class="circuit-hero" style="background:linear-gradient(135deg,rgba(27,58,107,0.92),rgba(0,180,216,0.85)),url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80');background-size:cover;background-position:center;padding:4rem 0">
+    <div class="container">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff">
+            <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:.5rem;letter-spacing:-.02em">Hébergements en Tunisie</h1>
+            <p style="font-size:1.15rem;opacity:.9;margin-bottom:2rem">Découvrez les meilleurs hôtels, appartements et villas aux meilleurs prix</p>
+            
+            {# Search Bar - Professional Design #}
+            <form method="GET" action="{{ path('hebergement_index') }}" style="width:100%;max-width:1000px">
+                <div style="background:#fff;padding:.5rem;border-radius:50px;display:flex;align-items:center;gap:.25rem;box-shadow:0 10px 40px rgba(0,0,0,.25)">
+                    <div style="flex:1;display:flex;align-items:center;padding:.5rem 1.25rem">
+                        <i class="fa fa-search" style="color:var(--gold);margin-right:.75rem;font-size:1rem"></i>
+                        <input type="text" name="q" placeholder="Nom, ville, mots clés..." value="{{ q|default('') }}" 
+                               style="border:none;outline:none;width:100%;font-size:.95rem;padding:.25rem 0">
+                    </div>
+                    
+                    <div style="width:1px;height:35px;background:#e5e7eb"></div>
+                    
+                    <select name="ville" onchange="this.form.submit()" style="border:none;outline:none;padding:.5rem;font-size:.9rem;color:#374151;cursor:pointer;background:transparent">
+                        <option value="">Toutes les villes</option>
+                        {% for v in villes %}<option value="{{ v }}" {{ ville == v ? 'selected' : '' }}>{{ v }}</option>{% endfor %}
+                    </select>
+                    
+                    <div style="width:1px;height:35px;background:#e5e7eb"></div>
+                    
+                    <select name="type" onchange="this.form.submit()" style="border:none;outline:none;padding:.5rem;font-size:.9rem;color:#374151;cursor:pointer;background:transparent">
+                        <option value="">Tous les types</option>
+                        <option value="Hôtel" {{ type == 'Hôtel' ? 'selected' : '' }}>Hôtel</option>
+                        <option value="Appartement" {{ type == 'Appartement' ? 'selected' : '' }}>Appartement</option>
+                        <option value="Villa" {{ type == 'Villa' ? 'selected' : '' }}>Villa</option>
+                        <option value="Riad" {{ type == 'Riad' ? 'selected' : '' }}>Riad</option>
+                    </select>
+                    
+                    <div style="width:1px;height:35px;background:#e5e7eb"></div>
+                    
+                    <select name="tri" onchange="this.form.submit()" style="border:none;outline:none;padding:.5rem;font-size:.9rem;color:#374151;cursor:pointer;background:transparent">
+                        <option value="recent" {{ tri|default('recent') == 'recent' ? 'selected' : '' }}>Trier</option>
+                        <option value="price_asc" {{ tri == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                        <option value="price_desc" {{ tri == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+                    </select>
+                    
+                    <button type="button" onclick="startVoiceSearch()" style="background:linear-gradient(135deg,var(--gold),#f59e0b);border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center" title="Recherche vocale">
+                        <i class="fa fa-microphone"></i>
+                    </button>
+                    
+                    <button type="submit" style="background:linear-gradient(135deg,var(--navy),#1e40af);color:#fff;border:none;padding:.65rem 1.5rem;border-radius:30px;font-weight:600;cursor:pointer;font-size:.95rem">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </form>
+            
+            {# Quick Links #}
+            <div style="display:flex;gap:1.5rem;margin-top:1.5rem;flex-wrap:wrap;justify-content:center">
+                <a href="{{ path('hebergement_index', {type: 'Hôtel'}) }}" style="color:#fff;opacity:.85;font-size:.9rem;text-decoration:none;padding:.4rem .75rem;background:rgba(255,255,255,.15);border-radius:20px">Hôtel</a>
+                <a href="{{ path('hebergement_index', {type: 'Appartement'}) }}" style="color:#fff;opacity:.85;font-size:.9rem;text-decoration:none;padding:.4rem .75rem;background:rgba(255,255,255,.15);border-radius:20px">Appartement</a>
+                <a href="{{ path('hebergement_index', {type: 'Villa'}) }}" style="color:#fff;opacity:.85;font-size:.9rem;text-decoration:none;padding:.4rem .75rem;background:rgba(255,255,255,.15);border-radius:20px">Villa</a>
+                <a href="{{ path('hebergement_index', {type: 'Riad'}) }}" style="color:#fff;opacity:.85;font-size:.9rem;text-decoration:none;padding:.4rem .75rem;background:rgba(255,255,255,.15);border-radius:20px">Riad</a>
+            </div>
+            
+            {# AI Button #}
+            <button type="button" onclick="openAiCompareModal()" style="background:linear-gradient(135deg,var(--gold),#f59e0b);border:none;padding:.65rem 1.5rem;border-radius:25px;font-weight:600;cursor:pointer;color:#fff;margin-top:1.5rem;box-shadow:0 4px 15px rgba(245,158,11,.4)">
+                <i class="fa fa-robot"></i> Assistant IA
+            </button>
+        </div>
+    </div>
+</section>
+
+{# Main Content #}
+<div style="max-width:1400px;margin:0 auto;padding:2.5rem">
+    {# Header #}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #e5e7eb">
+        <div>
+            <h2 style="font-size:1.5rem;font-weight:700;color:#1f2937;margin:0">{{ hebergements|length }} hébergement{{ hebergements|length > 1 ? 's' : '' }} disponible{{ hebergements|length > 1 ? 's' : '' }}</h2>
+        </div>
+        <div style="display:flex;gap:.5rem">
+            <span style="font-size:.85rem;color:#6b7280">{{ tri == 'price_asc' ? 'Prix croissant' : (tri == 'price_desc' ? 'Prix décroissant' : 'Plus récents') }}</span>
+        </div>
+    </div>
+    
+    {# Cards Grid - Professional #}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem">
+        {% for h in hebergements %}
+        <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:all .3s;cursor:pointer" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,.12)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 1px 3px rgba(0,0,0,.08)'">
+            <a href="{{ path('hebergement_show', {id: h.id}) }}" style="text-decoration:none;color:inherit;display:block">
+                <div style="position:relative;height:160px;overflow:hidden">
+                    <img src="{{ h.image ? asset(h.image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80' }}" alt="{{ h.nom }}" style="width:100%;height:100%;object-fit:cover;transition:transform .3s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <span style="position:absolute;top:.75rem;left:.75rem;background:rgba(27,58,107,.9);color:#fff;padding:.3rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600">{{ h.type }}</span>
+                    {% if h.note %}
+                    <span style="position:absolute;top:.75rem;right:.75rem;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#fff;padding:.3rem .6rem;border-radius:20px;font-size:.75rem;font-weight:700">
+                        <i class="fa fa-star"></i> {{ h.note|number_format(1, '.', '') }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div style="padding:1.25rem">
+                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+                        <div>
+                            <p style="font-size:.8rem;color:#6b7280;margin:0 0 .25rem 0"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ h.ville }}</p>
+                            <h3 style="font-size:1rem;font-weight:700;color:#1f2937;margin:0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ h.nom }}</h3>
+                        </div>
+                    </div>
+                    
+                    {# Quick Info #}
+                    <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap">
+                        {% if h.capacite %}
+                        <span style="background:#f3f4f6;color:#4b5563;padding:.25rem .5rem;border-radius:6px;font-size:.7rem">
+                            <i class="fa fa-users"></i> {{ h.capacite }} pers.
+                        </span>
+                        {% endif %}
+                        {% if h.chambresDisponibles is not null %}
+                        <span style="background:#ecfdf5;color:#065f46;padding:.25rem .5rem;border-radius:6px;font-size:.7rem">
+                            <i class="fa fa-bed"></i> {{ h.chambresDisponibles }} dispo.
+                        </span>
+                        {% endif %}
+                        {% if h.localisation %}
+                        <span style="background:#e0f2fe;color:#0369a1;padding:.25rem .5rem;border-radius:6px;font-size:.7rem">
+                            <i class="fa fa-location-arrow"></i> {{ h.localisation }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    {# Equipements #}
+                    {% set eq = h.equipements|default([]) %}
+                    {% if eq|length > 0 %}
+                    <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid #f3f4f6">
+                        {% if 'wifi' in eq or 'WiFi' in eq %}<span style="background:#ede9fe;color:#5b21b6;padding:.2rem .4rem;border-radius:4px;font-size:.65rem"><i class="fa fa-wifi"></i> WiFi</span>{% endif %}
+                        {% if 'piscine' in eq or 'Piscine' in eq %}<span style="background:#e0f2fe;color:#0369a1;padding:.2rem .4rem;border-radius:4px;font-size:.65rem"><i class="fa fa-swimming-pool"></i> Piscine</span>{% endif %}
+                        {% if 'parking' in eq or 'Parking' in eq %}<span style="background:#f3f4f6;color:#1f2937;padding:.2rem .4rem;border-radius:4px;font-size:.65rem"><i class="fa fa-car"></i> Parking</span>{% endif %}
+                        {% if 'climatisation' in eq or 'Climatisation' in eq %}<span style="background:#fef3c7;color:#92400e;padding:.2rem .4rem;border-radius:4px;font-size:.65rem"><i class="fa fa-snowflake-o"></i> Clim</span>{% endif %}
+                        {% if 'petit_dejeuner' in eq or 'Petit-déjeuner' in eq %}<span style="background:#fef3c7;color:#92400e;padding:.2rem .4rem;border-radius:4px;font-size:.65rem"><i class="fa fa-coffee"></i> Petit-déj</span>{% endif %}
+                        {% if 'restaurant' in eq or 'Restaurant' in eq %}<span style="background:#fee2e2;color:#991b1b;padding:.2rem .4rem;border-radius:4px;font-size:.65rem"><i class="fa fa-cutlery"></i> Restaurant</span>{% endif %}
+                        {% if 'spa' in eq or 'Spa' in eq %}<span style="background:#fce7f3;color:#9d174d;padding:.2rem .4rem;border-radius:4px;font-size:.65rem"><i class="fa fa-spa"></i> Spa</span>{% endif %}
+                        {% if 'telephone' in eq or 'Téléphone' in eq %}<span style="background:#f3f4f6;color:#1f2937;padding:.2rem .4rem;border-radius:4px;font-size:.65rem"><i class="fa fa-phone"></i> Téléphone</span>{% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:.5rem;border-top:1px solid #f3f4f6">
+                        <div>
+                            <span style="font-size:1.35rem;font-weight:800;color:var(--navy)">{{ h.prixParNuit|number_format(0, '', ' ') }}</span>
+                            <span style="font-size:.8rem;color:#6b7280">TND</span>
+                            <span style="font-size:.75rem;color:#9ca3af">/nuit</span>
+                        </div>
+                        <span style="background:linear-gradient(135deg,var(--navy),#1e40af);color:#fff;padding:.4rem .85rem;border-radius:8px;font-size:.8rem;font-weight:600">Voir</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% else %}
+        <div style="grid-column:1/-1;text-align:center;padding:4rem;color:#9ca3af">
+            <i class="fa fa-hotel" style="font-size:3.5rem;margin-bottom:1rem;opacity:.5"></i>
+            <p style="font-size:1.1rem">Aucun hébergement trouvé</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {# Pagination #}
+    {% if hebergements|length > 9 %}
+    <div style="display:flex;justify-content:center;gap:.5rem;margin-top:3rem">
+        <a href="{{ path('hebergement_index', {page: 1, type: type}) }}" class="btn btn-outline btn-sm">1</a>
+        <a href="{{ path('hebergement_index', {page: 2, type: type}) }}" class="btn btn-outline btn-sm">2</a>
+    </div>
+    {% endif %}
+</div>
+
+{# Voice Modal #}
+<div id="voiceModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:2.5rem;text-align:center;max-width:350px">
+        <div style="font-size:3.5rem;margin-bottom:1rem;color:var(--navy)"><i class="fa fa-microphone fa-spin"></i></div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem">Écoute en cours...</p>
+        <p style="font-size:.9rem;color:#6b7280">Parlez maintenant</p>
+        <button onclick="closeVoiceModal()" style="margin-top:1.5rem;padding:.6rem 1.5rem;background:#1f2937;color:#fff;border:none;border-radius:8px;cursor:pointer">Arrêter</button>
+    </div>
+</div>
+
+{# AI Compare Modal #}
+<div id="aiCompareModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:2rem;max-width:480px;width:90%;max-height:85vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+            <h3 style="margin:0;font-size:1.25rem;font-weight:700;color:#1f2937"><i class="fa fa-robot" style="color:var(--gold)"></i> Assistant IA</h3>
+            <button onclick="closeAiCompareModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#6b7280">&times;</button>
+        </div>
+        
+        <p style="color:#6b7280;font-size:.9rem;margin-bottom:1rem">Sélectionnez 2+ hébergements à comparer:</p>
+        
+        <div style="max-height:280px;overflow-y:auto;margin-bottom:1rem;border:1px solid #e5e7eb;border-radius:12px">
+            {% for h in hebergements|slice(0, 15) %}
+            <label style="display:flex;align-items:center;gap:1rem;padding:.85rem;border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .2s" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
+                <input type="checkbox" class="ai-compare-check" data-nom="{{ h.nom }}" data-ville="{{ h.ville }}" data-prix="{{ h.prixParNuit }}">
+                <div style="flex:1">
+                    <div style="font-weight:600;color:#1f2937;font-size:.95rem">{{ h.nom }}</div>
+                    <div style="font-size:.8rem;color:#6b7280">{{ h.ville }} • {{ h.prixParNuit }} TND</div>
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+        
+        <button id="aiCompareBtn" onclick="runAiCompare()" style="width:100%;padding:.85rem;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer">
+            <i class="fa fa-robot"></i> Comparer avec l'IA
+        </button>
+        
+        <div id="aiResultInModal" style="margin-top:1.25rem;display:none">
+            <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);padding:1.25rem;border-radius:12px">
+                <p id="aiResultText" style="margin:0;font-size:.95rem;line-height:1.6;color:#065f46"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Voice Search
+const voiceModal = document.getElementById('voiceModal');
+function startVoiceSearch(){
+    if('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
+        voiceModal.style.display='flex';
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new Recognition();
+        recognition.lang = 'fr-FR';
+        recognition.start();
+        recognition.onresult = function(event){
+            document.querySelector('input[name="q"]').value = event.results[0][0].transcript;
+            document.querySelector('form').submit();
+        };
+        recognition.onerror = function(){ voiceModal.style.display='none'; };
+    }
+}
+function closeVoiceModal(){ voiceModal.style.display='none'; }
+
+// AI Modal
+const aiModal = document.getElementById('aiCompareModal');
+function openAiCompareModal(){ aiModal.style.display='flex'; document.getElementById('aiResultInModal').style.display='none'; }
+function closeAiCompareModal(){ aiModal.style.display='none'; }
+aiModal.addEventListener('click',e=>{if(e.target===aiModal)closeAiCompareModal()});
+
+// Compare Function
+async function runAiCompare(){
+    const checked = document.querySelectorAll('.ai-compare-check:checked');
+    if(checked.length < 2){alert('Sélectionnez au moins 2!');return;}
+    const btn = document.getElementById('aiCompareBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Analyse...';
+    
+    const hotels = Array.from(checked).map(c=>({nom:c.dataset.nom,ville:c.dataset.ville,prix:parseFloat(c.dataset.prix)}));
+    const prompt = 'Compare ces hébergements et dis-moi le meilleur choix:\n\n' + hotels.map((h,i)=>`${i+1}. ${h.nom} — ${h.prix} TND`).join('\n');
+    
+    try{
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+            method:'POST',
+            headers:{'Authorization':'Bearer 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','Content-Type':'application/json','HTTP-Referer':'https://flyandgo.tn'},
+            body:JSON.stringify({model:'openai/gpt-3.5-turbo',messages:[{role:'user',content:prompt}]})
+        });
+        const data = await res.json();
+        if(data.choices && data.choices[0]?.message?.content){
+            document.getElementById('aiResultText').innerHTML = data.choices[0].message.content.replace(/\n/g,'<br>');
+            document.getElementById('aiResultInModal').style.display = 'block';
+        }else{fallback(hotels);}
+    }catch(e){fallback(hotels);}
+    btn.disabled = false; btn.innerHTML = '<i class="fa fa-robot"></i> Comparer avec l\'IA';
+}
+function fallback(hotels){
+    const best = hotels.reduce((a,b)=>a.prix<b.prix?a:b);
+    document.getElementById('aiResultText').innerHTML = '<strong>'+best.nom+'</strong> — '+best.prix+' TND (meilleur prix)';
+    document.getElementById('aiResultInModal').style.display = 'block';
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,485 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Circuit personnalisé — Fly&Go{% endblock %}
+{% block body %}
+<div style="background:linear-gradient(135deg,var(--navy-dd),var(--navy));padding:3rem 0;color:#fff">
+    <div style="max-width:1180px;margin:0 auto;padding:0 2rem">
+        <h1 style="font-size:2rem;font-weight:900;margin-bottom:.5rem"><i class="fa fa-map-marked-alt" style="margin-right:.5rem"></i> Circuit personnalisé</h1>
+        <p style="opacity:.85;max-width:760px">Créez votre circuit sur mesure avec étapes détaillées et positions gps.</p>
+    </div>
+</div>
+
+<div style="max-width:1100px;margin:0 auto;padding:2rem">
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:2rem">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:20px;padding:2rem;box-shadow:var(--s1)">
+            <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+                <span class="tag tag--navy"><i class="fa fa-map-pin"></i> Étape 1</span>
+                <span class="tag"><i class="fa fa-calendar"></i> Étape 2</span>
+                <span class="tag"><i class="fa fa-wallet"></i> Étape 3</span>
+                <span class="tag"><i class="fa fa-check"></i> Générer</span>
+            </div>
+            
+            <form method="POST" id="circuitAIForm">
+                <h3 style="margin-bottom:1rem;color:var(--navy)"><i class="fa fa-magic" style="color:var(--gold)"></i> Circuits prédéfinis</h3>
+                <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+                    <button type="button" class="tag tag--navy" onclick="applyPreset('djerba4')" title="Djerba 4 jours"><i class="fa fa-sun"></i> Djerba - 4 jours</button>
+                    <button type="button" class="tag" onclick="applyPreset('djerba7')" title="Djerba 7 jours"><i class="fa fa-sun"></i> Djerba - 7 jours</button>
+                    <button type="button" class="tag" onclick="applyPreset('tozeur3')" title="Tozeur 3 jours"><i class="fa fa-tree"></i> Tozeur - 3 jours</button>
+                    <button type="button" class="tag" onclick="applyPreset('tunis2')" title="Tunis 2 jours"><i class="fa fa-university"></i> Tunis - 2 jours</button>
+                </div>
+                
+                <h3 style="margin-bottom:1.5rem;color:var(--navy)"><i class="fa fa-map-pin" style="color:var(--gold)"></i> Analyse du lieu</h3>
+                
+                <div style="margin-bottom:1.5rem">
+                    <label class="fg-label">Destination principale *</label>
+                    <div style="position:relative">
+                        <input type="text" name="destination" id="destination" class="fg-input" placeholder="Ex: Djerba, Sfax, Tozeur..." required minlength="2" maxlength="100" oninput="searchLocation(this.value, 'destinationResults')">
+                        <i class="fa fa-search" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted)"></i>
+                    </div>
+                    <div id="destinationResults" style="position:absolute;z-index:100;background:#fff;border:1px solid var(--border);border-radius:8px;width:calc(100% - 40px);max-height:200px;overflow-y:auto;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.1)"></div>
+                </div>
+                
+                <div style="margin-bottom:1.5rem">
+                    <label class="fg-label">Étapes du circuit (optionnel)</label>
+                    <div id="stopsContainer">
+                        <div class="stop-item" style="display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center">
+                            <span style="background:var(--navy);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700">1</span>
+                            <input type="text" class="fg-input stop-input" placeholder="Ex: Hammamet, Kairouan..." style="flex:1" oninput="searchLocation(this.value, this.parentElement.querySelector('.stopResults'))">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="addStop()"><i class="fa fa-plus"></i></button>
+                            <div class="stopResults" style="position:absolute;right:60px;background:#fff;border:1px solid var(--border);border-radius:8px;width:200px;max-height:150px;overflow-y:auto;display:none;z-index:50"></div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="stops" id="stopsData" value="">
+                </div>
+
+                <div class="form-row" style="margin-bottom:1rem">
+                    <div>
+                        <label class="fg-label">Ville de départ</label>
+                        <input type="text" name="depart" id="depart" class="fg-input" value="Tunis">
+                    </div>
+                    <div>
+                        <label class="fg-label">Coordonnées GPS (auto)</label>
+                        <div style="display:flex;gap:.5rem">
+                            <input type="text" id="latResult" class="fg-input" placeholder="Latitude" readonly style="width:50%">
+                            <input type="text" id="lngResult" class="fg-input" placeholder="Longitude" readonly style="width:50%">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="locationInfo" style="display:none;background:var(--bg);border-radius:12px;padding:1rem;margin-bottom:1.5rem">
+                    <div style="display:flex;align-items:center;gap:1rem">
+                        <div id="locationIcon" style="width:50px;height:50px;border-radius:12px;background:var(--gold);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem"></div>
+                        <div>
+                            <div id="locationName" style="font-weight:700;color:var(--navy);font-size:1.1rem"></div>
+                            <div id="locationDetails" style="font-size:.8rem;color:var(--muted)"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom:1.5rem;color:var(--navy);margin-top:2rem"><i class="fa fa-calendar" style="color:var(--gold)"></i> Dates du voyage</h3>
+                
+                <div class="form-row" style="margin-bottom:1rem">
+                    <div>
+                        <label class="fg-label">Date de départ *</label>
+                        <input type="date" name="date_depart" id="dateDepart" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required onchange="updateDateRetourMin(); calcJours();">
+                    </div>
+                    <div>
+                        <label class="fg-label">Date de retour *</label>
+                        <input type="date" name="date_retour" id="dateRetour" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required onchange="updateDateRetourMin(); calcJours();">
+                    </div>
+                </div>
+                
+                <div class="form-row" style="margin-bottom:1rem">
+                    <div>
+                        <label class="fg-label">Durée</label>
+                        <input type="text" id="joursDisplay" class="fg-input" readonly style="background:var(--bg);color:var(--navy);font-weight:700">
+                        <input type="hidden" name="jours" id="jours" value="7">
+                    </div>
+                    <div>
+                        <label class="fg-label">Voyageurs *</label>
+                        <input type="number" name="participants" id="participants" class="fg-input" min="1" max="20" value="2" required>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom:1.5rem;color:var(--navy);margin-top:2rem"><i class="fa fa-sliders-h" style="color:var(--gold)"></i> Préférences</h3>
+                
+                <div class="form-row" style="margin-bottom:1rem">
+                    <div>
+                        <label class="fg-label">Style de voyage</label>
+                        <select name="style" id="styleSelect" class="fg-input">
+                            <option value="Découverte" selected>🔍 Découverte</option>
+                            <option value="Famille">👨‍👩‍👧‍👦 Famille</option>
+                            <option value="Romantique">❤️ Romantique</option>
+                            <option value="Aventure">🏔️ Aventure</option>
+                            <option value="Détente">🧘 Détente</option>
+                            <option value="Culturel">🏛️ Culturel</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="fg-label">Niveau de confort</label>
+                        <select name="budget" id="budgetSelect" class="fg-input">
+                            <option value="Économique">💰 Économique</option>
+                            <option value="Moyen" selected>⭐⭐ Moyen</option>
+                            <option value="Premium">💎 Premium</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom:1.5rem">
+                    <div>
+                        <label class="fg-label">Type de transport</label>
+                        <select name="transport" id="transportSelect" class="fg-input">
+                            <option value="Voiture" selected>🚗 Voiture</option>
+                            <option value="Autocar">🚌 Autocar</option>
+                            <option value="Avion">✈️ Avion</option>
+                            <option value="Bateau">🚢 Bateau</option>
+                            <option value="Mixte">🔄 Mixte</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="fg-label">Type d'hébergement</label>
+                        <select name="hebergement" id="hebergementSelect" class="fg-input">
+                            <option value="Hôtel" selected>🏨 Hôtel</option>
+                            <option value="Riad">🏛️ Riad</option>
+                            <option value="Camp">⛺ Camp</option>
+                            <option value="Guesthouse">🏠 Guesthouse</option>
+                            <option value="Mixte">🔄 Mixte</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="validationMsg" style="display:none;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem"></div>
+                
+                <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #fcd34d;border-radius:14px;padding:1rem;margin-bottom:1.5rem;color:#92400e">
+                    <i class="fa fa-magic"></i> <strong>Génération intelligente :</strong> Votre circuit inclura des étapes détaillées avec coordonnées GPS, temps de trajet estimés et points d'intérêt.
+                </div>
+                
+                <div style="display:flex;justify-content:flex-end;gap:1rem;flex-wrap:wrap">
+                    <a href="{{ path('circuit_index') }}" class="btn btn-outline">Annuler</a>
+                    <button class="btn btn-gold" type="submit" id="submitBtn" style="padding:.75rem 2rem">
+                        <i class="fa fa-brain"></i> Générer mon circuit
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div style="position:sticky;top:2rem">
+            <div style="background:#fff;border:1px solid var(--border);border-radius:20px;padding:1.5rem;box-shadow:var(--s1)">
+                <h4 style="margin-bottom:1rem;color:var(--navy)"><i class="fa fa-map"></i> Aperçu carte</h4>
+                <div id="mapPreview" style="width:100%;height:250px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted)">
+                    <div style="text-align:center">
+                        <i class="fa fa-map-marked-alt" style="font-size:3rem;margin-bottom:.5rem;display:block;opacity:.3"></i>
+                        <span>Votre circuit apparaîtra ici</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+                    <h4 style="margin-bottom:1rem;color:var(--navy)"><i class="fa fa-info-circle"></i> Conseils</h4>
+                    <ul style="font-size:.85rem;color:var(--muted);padding-left:1.2rem">
+                        <li style="margin-bottom:.5rem">Ajoutez des étapes intermédiaires</li>
+                        <li style="margin-bottom:.5rem">Vérifiez les dates de voyage</li>
+                        <li style="margin-bottom:.5rem">Choisissez votre style de voyage</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block stylesheets %}
+<style>
+#validationMsg.error{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
+#validationMsg.success{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
+#validationMsg.warning{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+.stop-item{position:relative}
+</style>
+{% endblock %}
+{% block javascripts %}
+<script>
+const TunisiaLocations = {
+    'djerba': { name: 'Djerba', lat: 33.8074, lng: 10.8588, region: 'Médenine', type: 'Île' },
+    'tunis': { name: 'Tunis', lat: 36.8065, lng: 10.1815, region: 'Tunis', type: 'Capitale' },
+    'sousse': { name: 'Sousse', lat: 35.8254, lng: 10.6087, region: 'Sousse', type: 'Ville côtière' },
+    'hammamet': { name: 'Hammamet', lat: 36.4071, lng: 10.6198, region: 'Nabeul', type: 'Station balnéaire' },
+    'sfax': { name: 'Sfax', lat: 34.7406, lng: 10.7603, region: 'Sfax', type: 'Ville du sud' },
+    'kairouan': { name: 'Kairouan', lat: 35.6741, lng: 10.1033, region: 'Kairouan', type: 'Ville sacrée' },
+    'tozeur': { name: 'Tozeur', lat: 33.9197, lng: 8.1335, region: 'Tozeur', type: 'Oasis' },
+    'douz': { name: 'Douz', lat: 33.4613, lng: 9.0286, region: 'Kébili', type: 'Porta du désert' },
+    'matmata': { name: 'Matmata', lat: 33.5428, lng: 9.9688, region: 'Gabès', type: 'Village troglodyte' },
+    'monastir': { name: 'Monastir', lat: 35.7826, lng: 10.8263, region: 'Monastir', type: 'Ville côtière' },
+    'mahdia': { name: 'Mahdia', lat: 35.5037, lng: 11.0622, region: 'Mahdia', type: 'Ville côtière' },
+    'sfax': { name: 'Sfax', lat: 34.7406, lng: 10.7603, region: 'Sfax', type: 'Deuxième ville' },
+    'gabès': { name: 'Gabès', lat: 33.8815, lng: 10.0986, region: 'Gabès', type: 'Ville côtière sud' },
+    'bizerte': { name: 'Bizerte', lat: 37.2744, lng: 9.7939, region: 'Bizerte', type: 'Ville du nord' },
+    'tabarka': { name: 'Tabarka', lat: 36.9554, lng: 8.7580, region: 'Jendouba', type: 'Station balnéaire nord' },
+    'ain draghma': { name: 'Aïn Draham', lat: 36.7236, lng: 8.6860, region: 'Jendouba', type: 'Forêt' },
+    'nabeul': { name: 'Nabeul', lat: 36.4561, lng: 10.7376, region: 'Nabeul', type: 'Cap Bon' },
+    'kelibia': { name: 'Kélibia', lat: 36.8491, lng: 11.0934, region: 'Nabeul', type: 'Ville côtière' },
+    'chenini': { name: 'Chenini', lat: 32.9808, lng: 10.0663, region: 'Tataouine', type: 'Village berbère' },
+    'tataouine': { name: 'Tataouine', lat: 32.9300, lng: 10.4518, region: 'Tataouine', type: 'KSAR' },
+    'ksar ghilane': { name: 'Ksar Ghilane', lat: 32.9808, lng: 10.0663, region: 'Tataouine', type: 'Oasis' },
+    'chebika': { name: 'Chebika', lat: 35.8637, lng: 10.3182, region: 'Sidi Bouzid', type: 'Oasis' },
+    'tamerza': { name: 'Tamerza', lat: 34.4133, lng: 7.9183, region: 'Tozeur', type: 'Oasis abandonnée' },
+    'mides': { name: 'Mides', lat: 34.4536, lng: 7.9183, region: 'Tozeur', type: 'Canyon' },
+    'sidi bou said': { name: 'Sidi Bou Saïd', lat: 36.7279, lng: 10.3353, region: 'Tunis', type: 'Village artistique' },
+    'carthage': { name: 'Carthage', lat: 36.8525, lng: 10.3233, region: 'Tunis', type: 'Site archéologique' },
+    'bardo': { name: 'Le Bardo', lat: 36.8103, lng: 10.1340, region: 'Tunis', type: 'Musée' },
+    'ougarta': { name: 'Ong Jmel', lat: 32.0111, lng: 9.8650, region: 'Tataouine', type: 'KSAR' },
+};
+
+let stopCount = 1;
+
+function showMsg(text, type) {
+    const msg = document.getElementById('validationMsg');
+    msg.textContent = text;
+    msg.className = type;
+    msg.style.display = 'block';
+}
+
+function updateDateRetourMin() {
+    const dateDepart = document.getElementById('dateDepart').value;
+    const dateRetour = document.getElementById('dateRetour');
+    if (dateDepart) {
+        dateRetour.min = dateDepart;
+        if (dateRetour.value && dateRetour.value < dateDepart) {
+            dateRetour.value = '';
+            showMsg('Date de retour réinitialisée', 'warning');
+        }
+    }
+}
+
+function calcJours() {
+    const dateDepart = document.getElementById('dateDepart').value;
+    const dateRetour = document.getElementById('dateRetour').value;
+    const joursDisplay = document.getElementById('joursDisplay');
+    const joursInput = document.getElementById('jours');
+    
+    if (dateDepart && dateRetour) {
+        const d1 = new Date(dateDepart);
+        const d2 = new Date(dateRetour);
+        const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+        
+        if (diff > 0) {
+            joursDisplay.value = diff + ' jour(s)';
+            joursInput.value = diff;
+        } else if (diff === 0) {
+            joursDisplay.value = '1 jour(s)';
+            joursInput.value = 1;
+        }
+    }
+}
+
+function searchLocation(query, resultsId) {
+    const resultsDiv = document.getElementById(resultsId);
+    if (!resultsDiv || query.length < 2) {
+        if (resultsDiv) resultsDiv.style.display = 'none';
+        return;
+    }
+    
+    const q = query.toLowerCase();
+    const matches = [];
+    
+    for (const [key, loc] of Object.entries(TunisiaLocations)) {
+        if (loc.name.toLowerCase().includes(q) || key.includes(q) || loc.region.toLowerCase().includes(q)) {
+            matches.push(loc);
+        }
+    }
+    
+    if (matches.length > 0) {
+        resultsDiv.innerHTML = matches.slice(0, 6).map(loc => `
+            <div class="location-result" onclick="selectLocation('${loc.name}', ${loc.lat}, ${loc.lng}, '${loc.region}', '${loc.type}', '${resultsId}')" 
+                 style="padding:.75rem;cursor:pointer;border-bottom:1px solid #f1f2f6;display:flex;align-items:center;gap:.75rem"
+                 onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
+                <div style="width:35px;height:35px;border-radius:8px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center">
+                    <i class="fa fa-map-marker-alt"></i>
+                </div>
+                <div>
+                    <div style="font-weight:600;font-size:.85rem">${loc.name}</div>
+                    <div style="font-size:.7rem;color:var(--muted)">${loc.region} • ${loc.type}</div>
+                </div>
+            </div>
+        `).join('');
+        resultsDiv.style.display = 'block';
+    } else {
+        resultsDiv.innerHTML = '<div style="padding:.75rem;color:var(--muted);font-size:.85rem">Aucun résultat</div>';
+        resultsDiv.style.display = 'block';
+    }
+}
+
+function selectLocation(name, lat, lng, region, type, resultsId) {
+    document.getElementById('destination').value = name;
+    document.getElementById('latResult').value = lat.toFixed(4);
+    document.getElementById('lngResult').value = lng.toFixed(4);
+    document.getElementById('destinationResults').style.display = 'none';
+    
+    document.getElementById('locationInfo').style.display = 'block';
+    document.getElementById('locationName').textContent = name;
+    document.getElementById('locationDetails').textContent = region + ' • ' + type + ' • GPS: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+    
+    updateMapPreview(lat, lng, name);
+}
+
+function updateMapPreview(lat, lng, name) {
+    const mapDiv = document.getElementById('mapPreview');
+    mapDiv.innerHTML = '<iframe width="100%" height="100%" frameborder="0" style="border-radius:12px" src="https://www.openstreetmap.org/export/embed.html?bbox=' + (lng - 0.5) + '%2C' + (lat - 0.5) + '%2C' + (lng + 0.5) + '%2C' + (lat + 0.5) + '&layer=mapnik&marker=' + lat + '%2C' + lng + '"></iframe>';
+}
+
+function addStop() {
+    stopCount++;
+    const container = document.getElementById('stopsContainer');
+    const stopHtml = `
+        <div class="stop-item" style="display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center;position:relative">
+            <span style="background:var(--gold);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700">${stopCount}</span>
+            <input type="text" class="fg-input stop-input" placeholder="Étape ${stopCount}..." style="flex:1" oninput="searchLocation(this.value, this.parentElement.querySelector('.stopResults'))">
+            <button type="button" class="btn btn-outline btn-sm" onclick="removeStop(this)"><i class="fa fa-times"></i></button>
+            <div class="stopResults" style="position:absolute;top:100%;left:30px;background:#fff;border:1px solid var(--border);border-radius:8px;width:250px;max-height:150px;overflow-y:auto;display:none;z-index:50"></div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', stopHtml);
+}
+
+function removeStop(btn) {
+    btn.parentElement.remove();
+    updateStopNumbers();
+}
+
+function updateStopNumbers() {
+    const items = document.querySelectorAll('.stop-item');
+    items.forEach((item, index) => {
+        item.querySelector('span').textContent = index + 1;
+    });
+    stopCount = items.length;
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('stop-input') && !e.target.classList.contains('location-result')) {
+        document.querySelectorAll('.stopResults, #destinationResults').forEach(el => el.style.display = 'none');
+    }
+});
+
+document.getElementById('circuitAIForm').addEventListener('submit', function(e) {
+    const destination = document.getElementById('destination').value.trim();
+    const depart = document.getElementById('depart').value.trim();
+    const dateDepart = document.getElementById('dateDepart').value;
+    const dateRetour = document.getElementById('dateRetour').value;
+    const jours = parseInt(document.getElementById('jours').value);
+    const participants = parseInt(document.getElementById('participants').value);
+    
+    const errors = [];
+    
+    if (!destination || destination.length < 2) {
+        errors.push('Destination invalide');
+    }
+    
+    if (!depart) {
+        errors.push('Ville de départ requise');
+    }
+    
+    if (!dateDepart || !dateRetour) {
+        errors.push('Dates requises');
+    }
+    
+    if (dateDepart && dateRetour) {
+        const d1 = new Date(dateDepart);
+        const d2 = new Date(dateRetour);
+        if (d2 <= d1) {
+            errors.push('Date de retour après départ');
+        }
+    }
+    
+    if (!jours || jours < 1 || jours > 30) {
+        errors.push('Durée invalide (1-30 jours)');
+    }
+    
+    if (!participants || participants < 1) {
+        errors.push('Nombre voyageurs invalide');
+    }
+    
+    if (errors.length > 0) {
+        e.preventDefault();
+        showMsg(errors.join(' • '), 'error');
+        return false;
+    }
+    
+    // Collect stops
+    const stops = [];
+    document.querySelectorAll('.stop-item').forEach(item => {
+        const input = item.querySelector('.stop-input');
+        if (input.value.trim()) {
+            stops.push(input.value.trim());
+        }
+    });
+    document.getElementById('stopsData').value = JSON.stringify(stops);
+    
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').innerHTML = '<i class="fa fa-spinner fa-spin"></i> Création en cours...';
+    return true;
+});
+
+calcJours();
+
+function applyPreset(preset) {
+    const presets = {
+        'djerba4': {
+            destination: 'Djerba',
+            depart: 'Tunis',
+            jours: 4,
+            stops: ['Sfax', 'Gabès'],
+            hebergement: 'Hôtel',
+            style: 'Découverte',
+            budget: 'Moyen',
+            participants: 2
+        },
+        'djerba7': {
+            destination: 'Djerba',
+            depart: 'Tunis',
+            jours: 7,
+            stops: ['Sfax', 'Gabès', 'Tozeur', 'Kairouan'],
+            hebergement: 'Hôtel',
+            style: 'Immersion',
+            budget: 'Élevé',
+            participants: 2
+        },
+        'tozeur3': {
+            destination: 'Tozeur',
+            depart: 'Tunis',
+            jours: 3,
+            stops: ['Kairouan', 'Gafsa'],
+            hebergement: 'Boutique Hotel',
+            style: 'Aventure',
+            budget: 'Moyen',
+            participants: 2
+        },
+        'tunis2': {
+            destination: 'Tunis',
+            depart: 'Tunis',
+            jours: 2,
+            stops: ['Carthage', 'Sidi Bou Said'],
+            hebergement: 'Riad',
+            style: 'Culturel',
+            budget: 'Économique',
+            participants: 2
+        }
+    };
+    
+    const p = presets[preset];
+    if (p) {
+        document.getElementById('destination').value = p.destination;
+        document.getElementById('depart').value = p.depart;
+        document.getElementById('jours').value = p.jours;
+        document.getElementById('style').value = p.style;
+        document.getElementById('budget').value = p.budget;
+        document.getElementById('participants').value = p.participants;
+        document.getElementById('hebergement').value = p.hebergement;
+        
+        // Update stops
+        const container = document.getElementById('stopsContainer');
+        container.innerHTML = '';
+        p.stops.forEach((stop, idx) => {
+            addStop(stop);
+        });
+        
+        showMsg('Circuit prédéfini appliqué: ' + p.destination + ' - ' + p.jours + ' jours', 'success');
+    }
+}
+</script>
+{% endblock %}

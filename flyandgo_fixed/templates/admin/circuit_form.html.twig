@@ -1,0 +1,220 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ circuit ? 'Modifier' : 'Nouveau' }} circuit — Admin{% endblock %}
+{% block breadcrumb %}{{ circuit ? 'Modifier circuit' : 'Nouveau circuit' }}{% endblock %}
+{% block admin_body %}
+<div class="form-wrap">
+    <div style="margin-bottom:1.5rem">
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">{{ circuit ? '✏️ ' ~ circuit.titre : '➕ Nouveau circuit' }}</h2>
+        <a href="{{ path('admin_circuits') }}" style="font-size:.85rem;color:var(--muted)"><i class="fa fa-arrow-left"></i> Retour</a>
+    </div>
+    <form action="{{ circuit ? path('admin_circuit_edit', {id: circuit.id}) : path('admin_circuit_new') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateCircuitForm()">
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-route"></i> Informations du circuit</div>
+            <div class="fgrid">
+                <div class="ffield fgrid--full">
+                    <label>Titre du circuit <span class="required">*</span></label>
+                    <input type="text" name="titre" id="titre" value="{{ circuit ? circuit.titre : '' }}" required minlength="5" maxlength="200" placeholder="Ex: Circuit désert du Sahara 5 jours">
+                    <span class="fhint">5-200 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Départ <span class="required">*</span></label>
+                    <input type="text" name="depart" id="depart" value="{{ circuit ? circuit.depart : '' }}" required minlength="2" maxlength="100" placeholder="Ex: Tunis">
+                    <span class="fhint">2-100 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Destination <span class="required">*</span></label>
+                    <input type="text" name="destination" id="destination" value="{{ circuit ? circuit.destination : '' }}" required minlength="2" maxlength="150" placeholder="Ex: Douz, Tozeur">
+                    <span class="fhint">2-150 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Durée (jours) <span class="required">*</span></label>
+                    <input type="number" name="duree" id="duree" value="{{ circuit ? circuit.duree : '' }}" required min="1" max="365" placeholder="5">
+                    <span class="fhint">1-365 jours</span>
+                </div>
+                <div class="ffield">
+                    <label>Date de début <span class="required">*</span></label>
+                    <input type="date" name="startDate" id="startDate" value="{{ circuit and circuit.startDate ? circuit.startDate|date('Y-m-d') : '' }}" required min="{{ 'now'|date('Y-m-d') }}">
+                    <span class="fhint">Date future obligatoire</span>
+                </div>
+                <div class="ffield">
+                    <label>Prix par personne (TND) <span class="required">*</span></label>
+                    <input type="number" name="prix" id="prix" step="0.001" value="{{ circuit ? circuit.prix : '' }}" required min="0" max="100000" placeholder="0.000">
+                    <span class="fhint">Entre 0 et 100 000 TND</span>
+                </div>
+                <div class="ffield">
+                    <label>Difficulté <span class="required">*</span></label>
+                    <select name="difficulte" id="difficulte" required>
+                        <option value="">-- Choisir --</option>
+                        {% for d in ['Facile', 'Modéré', 'Difficile', 'Extrême'] %}
+                        <option value="{{ d }}" {{ circuit and circuit.difficulte == d ? 'selected' : '' }}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ffield">
+                    <label>Places disponibles</label>
+                    <input type="number" name="places" id="places" value="{{ circuit ? circuit.placesDisponibles : '' }}" min="1" max="5000" placeholder="20">
+                    <span class="fhint">1-5000 personnes</span>
+                </div>
+                <div class="ffield">
+                    <label>Type de circuit</label>
+                    <select name="sourceType">
+                        <option value="admin" {{ circuit and circuit.sourceType == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="custom" {{ circuit and circuit.sourceType == 'custom' ? 'selected' : '' }}>Personnalisé</option>
+                    </select>
+                </div>
+                <div class="ffield">
+                    <label>Statut</label>
+                    <select name="actif">
+                        <option value="1" {{ (circuit and circuit.actif) or (not circuit) ? 'selected' : '' }}>Actif</option>
+                        <option value="0" {{ circuit and not circuit.actif ? 'selected' : '' }}>Inactif</option>
+                    </select>
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Description</label>
+                    <textarea name="description" id="description" rows="5" maxlength="5000" placeholder="Décrivez le circuit...">{{ circuit ? circuit.description : '' }}</textarea>
+                    <span class="fhint">Maximum 5000 caractères</span>
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Plan B (Alternative météo)</label>
+                    <textarea name="planB" id="planB" rows="3" maxlength="2000" placeholder="Décrivez les alternatives en cas de mauvais temps...">{{ circuit ? circuit.planB : '' }}</textarea>
+                    <span class="fhint">Cette info sera affichée aux clients (ex: Si mauvais temps → visite musée, marchélocal...)</span>
+                </div>
+            </div>
+        </div>
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-image"></i> Image <span class="required">*</span></div>
+            {% if circuit and circuit.image %}<div class="img-prev"><img src="{{ asset(circuit.image) }}" alt="{{ circuit.titre }}"></div>{% endif %}
+            <div class="ffield">
+                <label>Image {% if not circuit %}<span class="required">*</span>{% endif %}</label>
+                <input type="file" name="image" id="imageInput" accept="image/jpeg,image/png,image/webp,image/gif" {{ not circuit ? 'required' : '' }}>
+                <span class="fhint">JPG, PNG, WebP — Max 5MB</span>
+                <div id="imagePreview" style="margin-top:.5rem;color:var(--red);font-size:.85rem;display:none"></div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-navy btn-lg"><i class="fa fa-save"></i> {{ circuit ? 'Mettre à jour' : 'Créer le circuit' }}</button>
+            <a href="{{ path('admin_circuits') }}" class="btn btn-outline">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function validateCircuitForm() {
+    let valid = true;
+    const errors = [];
+    
+    const titre = document.getElementById('titre');
+    if (titre.value.trim().length < 5) {
+        errors.push('Le titre doit contenir au moins 5 caractères');
+        valid = false;
+    }
+    
+    const depart = document.getElementById('depart');
+    if (depart.value.trim().length < 2) {
+        errors.push('Le départ est obligatoire (minimum 2 caractères)');
+        valid = false;
+    }
+    
+    const destination = document.getElementById('destination');
+    if (destination.value.trim().length < 2) {
+        errors.push('La destination est obligatoire (minimum 2 caractères)');
+        valid = false;
+    }
+    
+    const duree = document.getElementById('duree');
+    if (!duree.value) {
+        errors.push('La durée est obligatoire');
+        valid = false;
+    } else if (parseInt(duree.value) < 1 || parseInt(duree.value) > 365) {
+        errors.push('La durée doit être entre 1 et 365 jours');
+        valid = false;
+    }
+    
+    const startDate = document.getElementById('startDate');
+    if (!startDate.value) {
+        errors.push('La date de début est obligatoire');
+        valid = false;
+    } else {
+        const selectedDate = new Date(startDate.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+            errors.push('La date de début ne peut pas être dans le passé');
+            valid = false;
+        }
+    }
+    
+    const difficulte = document.getElementById('difficulte');
+    if (!difficulte.value) {
+        errors.push('La difficulté est obligatoire');
+        valid = false;
+    }
+    
+    const prix = document.getElementById('prix');
+    if (parseFloat(prix.value) < 0 || parseFloat(prix.value) > 100000) {
+        errors.push('Le prix doit être entre 0 et 100 000 TND');
+        valid = false;
+    }
+    
+    const places = document.getElementById('places');
+    if (places.value && (parseInt(places.value) < 1 || parseInt(places.value) > 5000)) {
+        errors.push('Les places doivent être entre 1 et 5000');
+        valid = false;
+    }
+    
+    const fileInput = document.getElementById('imageInput');
+    const preview = document.getElementById('imagePreview');
+    
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        
+        if (!validTypes.includes(file.type)) {
+            errors.push('Type de fichier non valide. Utilisez JPG, PNG, WebP ou GIF.');
+            valid = false;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            errors.push('L\'image est trop grande. Maximum 5MB.');
+            valid = false;
+        }
+    }
+    
+    if (!valid) {
+        alert(errors.join('\n'));
+    }
+    
+    return valid;
+}
+
+document.getElementById('imageInput')?.addEventListener('change', function() {
+    const preview = document.getElementById('imagePreview');
+    if (this.files.length > 0 && this.files[0].size > 5 * 1024 * 1024) {
+        preview.textContent = 'L\'image est trop grande (max 5MB)';
+        preview.style.display = 'block';
+        this.value = '';
+    } else {
+        preview.style.display = 'none';
+    }
+});
+
+document.getElementById('titre')?.addEventListener('input', function() {
+    const hint = this.nextElementSibling;
+    if (this.value.trim().length < 5) {
+        hint.style.color = 'var(--red)';
+    } else {
+        hint.style.color = 'var(--muted)';
+    }
+});
+
+document.getElementById('startDate')?.addEventListener('change', function() {
+    const selectedDate = new Date(this.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+        alert('La date de début ne peut pas être dans le passé');
+        this.value = '';
+    }
+});
+</script>
+{% endblock %}

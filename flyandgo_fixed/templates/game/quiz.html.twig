@@ -1,0 +1,136 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Quiz Hébergements — Fly&Go{% endblock %}
+{% block body %}
+ 
+<div style="max-width:800px;margin:0 auto;padding:2rem">
+    <a href="{{ path('games_index') }}" style="color:var(--navy);text-decoration:none;font-size:.9rem">
+        <i class="fa fa-arrow-left"></i> Retour aux jeux
+    </a>
+    
+    <h1 style="font-size:2rem;font-weight:900;color:var(--navy);margin:1rem 0;text-align:center">
+        <i class="fa fa-question-circle"></i> Quiz Hébergements
+    </h1>
+    <p style="text-align:center;color:var(--muted);margin-bottom:2rem">Testez vos connaissances sur les hébergements en Tunisie!</p>
+    
+    <div id="quizContainer" style="background:#fff;border-radius:16px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,0.1)">
+        <div id="question1" style="display:block">
+            <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Question 1/5</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem">Quel type d'hébergement traditionnelles tunisien est construit en pis érine?</div>
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+                <button onclick="selectAnswer(1, 0, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer;transition:all .2s">
+                    Hôtel
+                </button>
+                <button onclick="selectAnswer(1, 1, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer;transition:all .2s">
+                    Riad
+                </button>
+                <button onclick="selectAnswer(1, 2, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer;transition:all .2s">
+                    Appartement
+                </button>
+                <button onclick="selectAnswer(1, 3, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer;transition:all .2s">
+                    Villa
+                </button>
+            </div>
+        </div>
+        
+        <div id="question2" style="display:none">
+            <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Question 2/5</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem">Quelle est la célèbre île tunisienne connue pour ses plages保?</div>
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+                <button onclick="selectAnswer(2, 0, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Djerba</button>
+                <button onclick="selectAnswer(2, 1, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Kerkennah</button>
+                <button onclick="selectAnswer(2, 2, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Galite</button>
+                <button onclick="selectAnswer(2, 3, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Zarzis</button>
+            </div>
+        </div>
+        
+        <div id="question3" style="display:none">
+            <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Question 3/5</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem">Le petit-déjeuner tunisien typique inclut généralement:</div>
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+                <button onclick="selectAnswer(3, 0, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Cacap</button>
+                <button onclick="selectAnswer(3, 1, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Loukou</button>
+                <button onclick="selectAnswer(3, 2, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Brika</button>
+                <button onclick="selectAnswer(3, 3, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Slither</button>
+            </div>
+        </div>
+        
+        <div id="question4" style="display:none">
+            <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Question 4/5</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem">Which hotel chain is popular in Tunisia?</div>
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+                <button onclick="selectAnswer(4, 0, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Mövenpick</button>
+                <button onclick="selectAnswer(4, 1, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">El Mouradi</button>
+                <button onclick="selectAnswer(4, 2, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Tunisia Palace</button>
+                <button onclick="selectAnswer(4, 3, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">All of them</button>
+            </div>
+        </div>
+        
+        <div id="question5" style="display:none">
+            <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Question 5/5</div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem">What does "All Inclusive" mean in Tunisia?</div>
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+                <button onclick="selectAnswer(5, 0, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Logement seulement</button>
+                <button onclick="selectAnswer(5, 1, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Tout inclus ( repas, boissons, activités)</button>
+                <button onclick="selectAnswer(5, 2, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Petit-déjeuner seulement</button>
+                <button onclick="selectAnswer(5, 3, this)" style="padding:1rem;border:2px solid var(--border);border-radius:8px;background:#fff;text-align:left;cursor:pointer">Demi-pension</button>
+            </div>
+        </div>
+        
+        <div id="results" style="display:none;text-align:center">
+            <i class="fa fa-trophy" style="font-size:4rem;color:var(--gold);margin-bottom:1rem"></i>
+            <h2 style="font-size:1.5rem;font-weight:800;color:var(--navy);margin-bottom:.5rem">Quiz terminé!</h2>
+            <div id="scoreDisplay" style="font-size:2rem;font-weight:900;color:var(--cyan);margin-bottom:1rem"></div>
+            <div id="pointsEarned" style="font-size:1.25rem;color:var(--gold);margin-bottom:2rem"></div>
+            <a href="{{ path('games_quiz') }}" class="btn btn-navy">Rejouer</a>
+            <a href="{{ path('games_index') }}" class="btn btn-outline" style="margin-left:.5rem">Retour</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const answers = {};
+const correctAnswers = [1, 0, 1, 3, 1];
+let currentQuestion = 1;
+
+function selectAnswer(qNum, answer, btn) {
+    answers[qNum] = answer;
+    
+    const buttons = btn.parentElement.querySelectorAll('button');
+    buttons.forEach(b => {
+        b.style.background = '#fff';
+        b.style.borderColor = 'var(--border)';
+    });
+    btn.style.background = 'var(--navy)';
+    btn.style.borderColor = 'var(--navy)';
+    btn.style.color = '#fff';
+    
+    setTimeout(() => {
+        if (qNum < 5) {
+            document.getElementById('question' + qNum).style.display = 'none';
+            document.getElementById('question' + (qNum + 1)).style.display = 'block';
+            currentQuestion = qNum + 1;
+        } else {
+            showResults();
+        }
+    }, 500);
+}
+
+function showResults() {
+    let score = 0;
+    for (let i = 1; i <= 5; i++) {
+        if (answers[i] === correctAnswers[i-1]) {
+            score++;
+        }
+    }
+    
+    for (let i = 1; i <= 5; i++) {
+        document.getElementById('question' + i).style.display = 'none';
+    }
+    document.getElementById('results').style.display = 'block';
+    
+    document.getElementById('scoreDisplay').textContent = score + '/5';
+    document.getElementById('pointsEarned').textContent = '+' + (score * 10) + ' points gagnés!';
+}
+</script>
+
+{% endblock %}

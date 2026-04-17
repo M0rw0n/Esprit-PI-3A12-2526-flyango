@@ -1,0 +1,32 @@
+api_platform:
+    title: Fly&Go API
+    description: API de la plateforme de voyage Fly&Go - Activités et Circuits
+    version: 1.0.0
+    show_webby: true
+    enable_docs: true
+    enable_entrypoint: true
+    mapping:
+        paths:
+            - "%kernel.project_dir%/src/Entity"
+    formats:
+        json:
+            mime_types: ['application/json', 'text/json']
+        jsonld:
+            mime_types: ['application/ld+json']
+        xml:
+            mime_types: ['application/xml', 'text/xml']
+        html:
+            mime_types: ['text/html']
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
+    graphql:
+        enabled: true
+    collection:
+        pagination:
+            enabled: true
+    eager_loading:
+        max_joins: 100
+        force_eager: true

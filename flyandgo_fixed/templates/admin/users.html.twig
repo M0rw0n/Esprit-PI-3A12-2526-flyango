@@ -1,0 +1,130 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Utilisateurs — Admin{% endblock %}
+{% block breadcrumb %}Utilisateurs{% endblock %}
+{% block admin_body %}
+{% set q = app.request.query.get('q', '') %}
+{% set role = app.request.query.get('role', '') %}
+<div style="margin-bottom:1.5rem">
+    <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Gestion des utilisateurs</h2>
+    <p style="color:var(--muted);font-size:.85rem">{{ users.totalItemCount }} utilisateurs inscrits</p>
+</div>
+
+<div class="admin-toolbar">
+    <form method="GET" action="{{ path('admin_users') }}" id="filterForm">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="Nom, email..." data-auto-submit>
+            </div>
+            <div class="admin-toolbar__select">
+                <select name="role" data-auto-submit>
+                    <option value="">Tous rôles</option>
+                    <option value="ROLE_ADMIN" {{ role == 'ROLE_ADMIN' ? 'selected' : '' }}>Administrateurs</option>
+                    <option value="ROLE_USER" {{ role == 'ROLE_USER' ? 'selected' : '' }}>Utilisateurs</option>
+                </select>
+            </div>
+            <div class="admin-toolbar__select">
+                <select name="active" data-auto-submit>
+                    <option value="">Tous statuts</option>
+                    <option value="1" {{ app.request.query.get('active') == '1' ? 'selected' : '' }}>Actifs</option>
+                    <option value="0" {{ app.request.query.get('active') == '0' ? 'selected' : '' }}>Inactifs</option>
+                </select>
+            </div>
+            <select name="tri" class="admin-toolbar__sort" data-auto-submit>
+                <option value="recent" {{ tri|default('recent') == 'recent' ? 'selected' : '' }}>Plus récents</option>
+                <option value="oldest" {{ tri|default('recent') == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+            </select>
+            {% if q or role or app.request.query.get('active') %}
+            <a href="{{ path('admin_users') }}" class="btn btn-outline btn-sm"><i class="fa fa-times"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="acard-wrap">
+    <div class="bookings-list">
+        {% for u in users %}
+        <div class="booking-card">
+            <div class="booking-card__av" style="background:{{ 'ROLE_ADMIN' in u.roles ? 'linear-gradient(135deg,var(--gold),#FF9500)' : 'linear-gradient(135deg,var(--navy),var(--cyan))' }}">
+                {{ u.prenom|slice(0,1)|upper }}
+            </div>
+            <div class="booking-card__info">
+                <div class="booking-card__name">{{ u.fullName }}</div>
+                <div class="booking-card__meta">
+                    <span><i class="fa fa-envelope fa-xs"></i> {{ u.email }}</span>
+                    {% if u.telephone %}<span><i class="fa fa-phone fa-xs"></i> {{ u.telephone }}</span>{% endif %}
+                    <span><i class="fa fa-calendar fa-xs"></i> {{ u.createdAt|date('d/m/Y') }}</span>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:.2rem;align-items:flex-end">
+                {% for r in u.roles %}
+                <span class="tag {{ r == 'ROLE_ADMIN' ? 'tag--gold' : 'tag--navy' }}">{{ r }}</span>
+                {% endfor %}
+            </div>
+            <span class="status status--{{ u.isActive ? 'confirmed' : 'cancelled' }}">{{ u.isActive ? 'Actif' : 'Inactif' }}</span>
+            <div class="booking-card__actions">
+                <a href="{{ path('admin_user_edit', {id: u.id}) }}" class="btn btn-outline btn-sm" title="Modifier"><i class="fa fa-edit"></i></a>
+                <button onclick="toggleRole({{ u.id }})" class="btn btn-outline btn-sm" title="Changer rôle"><i class="fa fa-user-shield"></i></button>
+                <button onclick="toggleUser({{ u.id }})" class="btn btn-outline btn-sm" title="Activer/Désactiver"><i class="fa fa-{{ u.isActive ? 'lock' : 'unlock' }}"></i></button>
+                <form action="{{ path('admin_user_delete', {id: u.id}) }}" method="POST" onsubmit="return confirm('Supprimer ?')">
+                    <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty" style="padding:3rem"><i class="fa fa-users"></i><h3>Aucun utilisateur</h3></div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if users.totalItemCount > users.itemNumberPerPage %}
+<div class="admin-pagination">
+    <div class="admin-pagination__info">
+        {{ (users.currentPageNumber - 1) * users.itemNumberPerPage + 1 }} - {{ min(users.currentPageNumber * users.itemNumberPerPage, users.totalItemCount) }} sur {{ users.totalItemCount }}
+    </div>
+    <div class="admin-pagination__pages">
+        {% if users.currentPageNumber > 1 %}
+        <a href="{{ path('admin_users', {page: users.currentPageNumber - 1, q: q, role: role, tri: tri|default('recent')}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page in users.paginationData.pagesInRange %}
+            {% if page == users.currentPageNumber %}
+                <span class="admin-pagination__current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path('admin_users', {page: page, q: q, role: role, tri: tri|default('recent')}) }}" class="admin-pagination__btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if users.currentPageNumber < users.pageCount %}
+        <a href="{{ path('admin_users', {page: users.currentPageNumber + 1, q: q, role: role, tri: tri|default('recent')}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block javascripts %}
+<script>
+function toggleUser(id) {
+    $.post('{{ path("admin_user_toggle", {"id": "__ID__"}) }}'.replace('__ID__', id))
+     .done(()=>{ showToast('✅ Statut mis à jour !'); setTimeout(()=>location.reload(),900); })
+     .fail(()=>showToast('Erreur','error'));
+}
+function toggleRole(id) {
+    if(!confirm('Changer le rôle ?')) return;
+    $.post('{{ path("admin_user_role", {"id": "__ID__"}) }}'.replace('__ID__', id))
+     .done(()=>{ showToast('✅ Rôle mis à jour !'); setTimeout(()=>location.reload(),900); })
+     .fail(()=>showToast('Erreur','error'));
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+            let timeout;
+            el.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => filterForm.submit(), 600);
+            });
+            el.addEventListener('change', () => filterForm.submit());
+        });
+    }
+});
+</script>
+{% endblock %}

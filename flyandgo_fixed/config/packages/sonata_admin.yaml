@@ -1,0 +1,23 @@
+sonata_admin:
+    title: 'Fly&Go Admin'
+    title_logo: '/build/images/logo.svg'
+    options:
+        html5_validate: true
+        form_type: 'standard'
+        skin: 'skin-blue'
+        use_select2: true
+    templates:
+        layout: '@SonataAdmin/standard_layout.html.twig'
+        ajax: '@SonataAdmin/ajax_layout.html.twig'
+        dashboard: '@SonataAdmin/Core/dashboard.html.twig'
+        search: '@SonataAdmin/Core/search.html.twig'
+        list: '@SonataAdmin/CRUD/list.html.twig'
+        show: '@SonataAdmin/CRUD/show.html.twig'
+        show_compare: '@SonataAdmin/CRUD/show_compare.html.twig'
+        edit: '@SonataAdmin/CRUD/edit.html.twig'
+        preview: '@SonataAdmin/CRUD/preview.html.twig'
+        list_block: '@SonataAdmin/Block/block_admin_list.html.twig'
+        search_result_block: '@SonataAdmin/Block/block_search_result.html.twig'
+        short_object_description: '@SonataAdmin/Helper/short-object-description.html.twig'
+        history: '@SonataAdmin/CRUD/history.html.twig'
+        action: '@SonataAdmin/CRUD/action.html.twig'

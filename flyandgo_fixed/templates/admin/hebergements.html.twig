@@ -1,0 +1,265 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Hébergements — Admin{% endblock %}
+{% block breadcrumb %}Hébergements{% endblock %}
+{% block admin_body %}
+{% set q = app.request.query.get('q', '') %}
+{% set ville = app.request.query.get('ville', '') %}
+{% set type = app.request.query.get('type', '') %}
+{% set disponible = app.request.query.get('disponible', '') %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+    <div>
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Gestion des hébergements</h2>
+        <p style="color:var(--muted);font-size:.85rem">{{ hebergements.totalItemCount }} hébergements</p>
+    </div>
+    <div style="display:flex;gap:.5rem">
+        <button type="button" class="btn btn-success" onclick="showImportModal()"><i class="fa fa-download"></i> Importer</button>
+        <a href="{{ path('admin_hebergement_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Nouvel hébergement</a>
+    </div>
+</div>
+
+<div id="importModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:var(--card);border-radius:16px;padding:2rem;width:100%;max-width:600px;box-shadow:0 25px 80px rgba(0,0,0,0.4);animation:modalIn .3s ease">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+            <div>
+                <h3 style="margin:0;font-size:1.3rem;font-weight:700;color:var(--text)">Importer des hôtels</h3>
+                <p style="margin:.3rem 0 0;color:var(--muted);font-size:.85rem">Via Hotels.com Provider API</p>
+            </div>
+            <button type="button" onclick="closeImportModal()" style="background:none;border:none;font-size:1.75rem;cursor:pointer;color:var(--muted);line-height:1">&times;</button>
+        </div>
+        
+        <div style="background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(99,102,241,0.1));border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;border:1px solid rgba(59,130,246,0.2)">
+            <div style="display:flex;align-items:center;gap:.75rem">
+                <div style="width:40px;height:40px;background:var(--cyan);border-radius:10px;display:flex;align-items:center;justify-content:center">
+                    <i class="fa fa-hotel" style="color:white;font-size:1.1rem"></i>
+                </div>
+                <div>
+                    <div style="font-weight:600;font-size:.95rem;color:var(--text)">Recherche automatique</div>
+                    <div style="font-size:.8rem;color:var(--muted)">Entrez une ville pour rechercher les hôtels réels</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-bottom:1.25rem">
+            <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.5rem;color:var(--text)">Ville de destination <span style="color:var(--red)">*</span></label>
+            <input type="text" id="importCity" placeholder="Ex: Tunis, Djerba, Paris, London, Marrakech..." 
+                style="width:100%;padding:.85rem 1rem;border:2px solid var(--border);border-radius:10px;font-size:1rem;background:var(--bg);transition:border-color .2s"
+                onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'">
+            <p style="font-size:.75rem;color:var(--muted);margin:.4rem 0 0">Entrez n'importe quelle ville (Paris, London, Tunis, Djerba, etc.)</p>
+        </div>
+        
+        <button type="button" id="searchBtn" class="btn btn-navy" style="width:100%;padding:.9rem;font-size:1rem;font-weight:600" onclick="searchAndImport()">
+            <i class="fa fa-download"></i> Rechercher & Importer
+        </button>
+        
+        <div id="importStatus" style="display:none;margin-top:1.5rem;padding:1.25rem;border-radius:12px;background:var(--bg)">
+            <div style="text-align:center">
+                <i class="fa fa-spin fa-spinner fa-2x" style="color:var(--cyan);margin-bottom:1rem"></i>
+                <div id="statusText" style="font-weight:600;font-size:1rem">Recherche en cours...</div>
+                <div id="statusCount" style="font-size:.85rem;color:var(--muted);margin-top:.5rem"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes modalIn { from {opacity:0;transform:translateY(-20px)} to {opacity:1;transform:translateY(0)} }
+</style>
+
+<script>
+function showImportModal() {
+    document.getElementById('importModal').style.display = 'flex';
+    document.getElementById('importCity').value = '';
+    document.getElementById('importStatus').style.display = 'none';
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').style.display = 'none';
+}
+
+function searchAndImport() {
+    var city = document.getElementById('importCity').value.trim();
+    if (!city) {
+        document.getElementById('importCity').style.borderColor = 'var(--red)';
+        document.getElementById('importCity').focus();
+        return;
+    }
+    document.getElementById('importCity').style.borderColor = 'var(--border)';
+    
+    var btn = document.getElementById('searchBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spin fa-spinner"></i> Recherche & Import en cours...';
+    
+    var statusDiv = document.getElementById('importStatus');
+    statusDiv.style.display = 'block';
+    document.getElementById('statusText').textContent = 'Recherche des hôtels à ' + city + '...';
+    document.getElementById('statusCount').textContent = '';
+    
+    var checkin = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    var checkout = new Date(Date.now() + 259200000).toISOString().split('T')[0];
+    
+    var url = '/admin/hebergements/search-rapidapi?ville=' + encodeURIComponent(city) + '&checkin=' + checkin + '&checkout=' + checkout;
+    
+    fetch(url)
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success || !data.hotels || data.hotels.length === 0) {
+            document.getElementById('statusText').textContent = 'Aucun hôtel trouvé pour ' + city;
+            document.getElementById('statusCount').innerHTML = '<span style="color:var(--muted)">Essayez une autre ville</span>';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-search"></i> Réessayer';
+            return;
+        }
+        
+        var count = data.hotels.length;
+        document.getElementById('statusText').textContent = count + ' hôtels trouvés !';
+        document.getElementById('statusCount').textContent = 'Importation en cours...';
+        
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/hebergement/import-rapidapi';
+        
+        var hotelIds = data.hotels.map(function(h) { return h.hotel_id; }).join(',');
+        
+        form.innerHTML = '<input type="hidden" name="ville" value="' + city + '">' +
+            '<input type="hidden" name="hotels" value="' + hotelIds + '">';
+        
+        document.body.appendChild(form);
+        form.submit();
+    })
+    .catch(e => {
+        document.getElementById('statusText').textContent = 'Erreur de connexion';
+        document.getElementById('statusCount').textContent = 'Veuillez réessayer';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-search"></i> Réessayer';
+    });
+}
+</script>
+
+<div class="admin-toolbar">
+    <form method="GET" action="{{ path('admin_hebergements') }}" id="filterForm">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un hébergement..." data-auto-submit>
+            </div>
+            <div class="admin-toolbar__select">
+                <select name="ville" data-auto-submit>
+                    <option value="">Toutes villes</option>
+                    {% for v in ['Tunis','Sousse','Sfax','Djerba','Hammamet','Tozeur','Kairouan','Mahdia','Tabarka'] %}
+                    <option value="{{ v }}" {{ ville == v ? 'selected' : '' }}>{{ v }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="admin-toolbar__select">
+                <select name="type" data-auto-submit>
+                    <option value="">Tous types</option>
+                    {% for t in ['Hôtel','Appartement','Villa','Riad','Resort','Maison d\'hôtes','Auberge'] %}
+                    <option value="{{ t }}" {{ type == t ? 'selected' : '' }}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="admin-toolbar__select">
+                <select name="disponible" data-auto-submit>
+                    <option value="">Tous statuts</option>
+                    <option value="1" {{ disponible == '1' ? 'selected' : '' }}>Disponibles</option>
+                    <option value="0" {{ disponible == '0' ? 'selected' : '' }}>Indisponibles</option>
+                </select>
+            </div>
+            <select name="tri" class="admin-toolbar__sort" data-auto-submit>
+                <option value="recent" {{ tri|default('recent') == 'recent' ? 'selected' : '' }}>Plus récents</option>
+                <option value="oldest" {{ tri|default('recent') == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                <option value="price_asc" {{ tri|default('recent') == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                <option value="price_desc" {{ tri|default('recent') == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+            </select>
+            {% if q or ville or type or disponible %}
+            <a href="{{ path('admin_hebergements') }}" class="btn btn-outline btn-sm"><i class="fa fa-times"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="admin-acts">
+    {% for h in hebergements %}
+    <div class="adm-act">
+        <div class="adm-act__img">
+            {% if h.image %}
+            <img src="{{ asset(h.image) }}" alt="{{ h.nom }}" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&q=70'">
+            {% else %}
+            <div style="height:130px;background:var(--bg2);display:flex;align-items:center;justify-content:center"><i class="fa fa-hotel" style="font-size:2rem;color:var(--border)"></i></div>
+            {% endif %}
+            <div style="position:absolute;top:.5rem;right:.5rem">
+                <span class="status status--{{ h.disponible ? 'confirmed' : 'cancelled' }}">{{ h.disponible ? 'Disponible' : 'Indisponible' }}</span>
+            </div>
+        </div>
+        <div class="adm-act__body">
+            <div class="adm-act__title">{{ h.nom }}</div>
+            <div class="adm-act__meta">
+                <span><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ h.ville }}</span>
+                <span><i class="fa fa-tag" style="color:var(--muted)"></i> {{ h.type }}</span>
+                {% if h.capacite %}<span><i class="fa fa-users" style="color:var(--muted)"></i> {{ h.capacite }} pers.</span>{% endif %}
+            </div>
+            <div class="adm-act__foot">
+                <div class="price price--sm">
+                    <span class="price__val">{{ h.prixParNuit|number_format(3, ',', ' ') }}</span>
+                    <span class="price__cur">TND</span>
+                    <span class="price__per">/nuit</span>
+                </div>
+                <div class="adm-act__actions">
+                    <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-outline btn-sm" target="_blank"><i class="fa fa-eye"></i></a>
+                    <a href="{{ path('admin_hebergement_edit', {id: h.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-edit"></i></a>
+                    <form action="{{ path('admin_hebergement_delete', {id: h.id}) }}" method="POST" onsubmit="return confirm('Supprimer ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_heb_'~h.id) }}">
+                        <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1"><i class="fa fa-hotel"></i><h3>Aucun hébergement</h3>
+        <a href="{{ path('admin_hebergement_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Ajouter</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if hebergements.totalItemCount > hebergements.itemNumberPerPage %}
+<div class="admin-pagination">
+    <div class="admin-pagination__info">
+        {{ (hebergements.currentPageNumber - 1) * hebergements.itemNumberPerPage + 1 }} - {{ min(hebergements.currentPageNumber * hebergements.itemNumberPerPage, hebergements.totalItemCount) }} sur {{ hebergements.totalItemCount }}
+    </div>
+    <div class="admin-pagination__pages">
+        {% if hebergements.currentPageNumber > 1 %}
+        <a href="{{ path('admin_hebergements', {page: hebergements.currentPageNumber - 1, q: q, ville: ville, type: type, disponible: disponible, tri: tri|default('recent')}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page in hebergements.paginationData.pagesInRange %}
+            {% if page == hebergements.currentPageNumber %}
+                <span class="admin-pagination__current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path('admin_hebergements', {page: page, q: q, ville: ville, type: type, disponible: disponible, tri: tri|default('recent')}) }}" class="admin-pagination__btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if hebergements.currentPageNumber < hebergements.pageCount %}
+        <a href="{{ path('admin_hebergements', {page: hebergements.currentPageNumber + 1, q: q, ville: ville, type: type, disponible: disponible, tri: tri|default('recent')}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+            let timeout;
+            el.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => filterForm.submit(), 600);
+            });
+            el.addEventListener('change', () => filterForm.submit());
+        });
+    }
+});
+</script>
+{% endblock %}

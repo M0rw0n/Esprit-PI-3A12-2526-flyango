@@ -1,0 +1,227 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ hebergement ? 'Modifier' : 'Nouvel' }} hébergement — Admin{% endblock %}
+{% block breadcrumb %}{{ hebergement ? 'Modifier hébergement' : 'Nouvel hébergement' }}{% endblock %}
+{% block admin_body %}
+<div class="form-wrap">
+    <div style="margin-bottom:1.5rem">
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">
+            {{ hebergement ? '✏️ Modifier : ' ~ hebergement.nom : '➕ Nouvel hébergement' }}
+        </h2>
+        <a href="{{ path('admin_hebergements') }}" style="font-size:.85rem;color:var(--muted)"><i class="fa fa-arrow-left"></i> Retour</a>
+    </div>
+
+    <form action="{{ hebergement ? path('admin_hebergement_edit', {id: hebergement.id}) : path('admin_hebergement_new') }}" method="POST" enctype="multipart/form-data">
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-info-circle"></i> Informations générales</div>
+            <div class="fgrid">
+                <div class="ffield fgrid--full">
+                    <label>Nom de l'hébergement <span class="required">*</span></label>
+                    <input type="text" name="nom" id="nom" class="ffield input" value="{{ hebergement ? hebergement.nom : '' }}" placeholder="Ex: Hôtel Sidi Bou Said Palace">
+                    <span class="fhint" id="nomHint">3-150 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Ville <span class="required">*</span></label>
+                    <input type="text" name="ville" id="ville" value="{{ hebergement ? hebergement.ville : '' }}" placeholder="Ex: Tunis, Djerba...">
+                    <span class="fhint" id="villeHint">2-100 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Type <span class="required">*</span></label>
+                    <select name="type" id="type">
+                        <option value="">-- Choisir --</option>
+                        {% for t in ['Hôtel', 'Appartement', 'Villa', 'Riad', 'Resort', 'Maison d\'hôtes', 'Auberge'] %}
+                        <option value="{{ t }}" {{ hebergement and hebergement.type == t ? 'selected' : '' }}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ffield">
+                    <label>Prix par nuit (TND) <span class="required">*</span></label>
+                    <input type="number" name="prix_par_nuit" id="prixParNuit" step="0.001" value="{{ hebergement ? hebergement.prixParNuit : '' }}" placeholder="150.000">
+                    <span class="fhint">Entre 0 et 10 000 TND</span>
+                </div>
+                <div class="ffield">
+                    <label>Capacité (personnes)</label>
+                    <input type="number" name="capacite" id="capacite" value="{{ hebergement ? hebergement.capacite : '' }}" placeholder="2">
+                    <span class="fhint">Entre 1 et 50 personnes</span>
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Adresse complète <span class="required">*</span></label>
+                    <input type="text" name="adresse" id="adresse" value="{{ hebergement ? hebergement.adresse : '' }}" placeholder="Rue, quartier, ville...">
+                    <span class="fhint">5-200 caractères</span>
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Description</label>
+                    <textarea name="description" id="description" rows="5" placeholder="Décrivez cet hébergement...">{{ hebergement ? hebergement.description : '' }}</textarea>
+                    <span class="fhint">Maximum 1000 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Disponible</label>
+                    <select name="disponible">
+                        <option value="1" {{ (hebergement and hebergement.disponible) or (not hebergement) ? 'selected' : '' }}>Oui - Disponible</option>
+                        <option value="0" {{ hebergement and not hebergement.disponible ? 'selected' : '' }}>Non - Indisponible</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-image"></i> Image</div>
+            {% if hebergement and hebergement.image %}
+            <div class="img-prev" id="currentImagePreview"><img src="{{ asset(hebergement.image) }}?v={{ date().timestamp }}" alt="{{ hebergement.nom }}"></div>
+            {% endif %}
+            <div class="ffield">
+                <label>Image actuelle (conserver)</label>
+                <select name="existing_image" id="existingImage" onchange="updateImagePreview(this.value)">
+                    <option value="">-- Choisir une autre image --</option>
+                    {% if hebergement and hebergement.image %}
+                    <option value="{{ hebergement.image }}" selected>Image actuelle</option>
+                    {% endif %}
+                    <option value="uploads/hebergements/heb_69d45a385f9fa.jpeg">Hôtel Djerba (1)</option>
+                    <option value="uploads/hebergements/heb_69d4c140ebb3e.jpg">Hôtel Djerba (2)</option>
+                </select>
+            </div>
+            <div class="ffield">
+                <label>Ou télécharger une nouvelle image</label>
+                <input type="file" name="image" id="imageInput" accept="image/jpeg,image/png,image/webp,image/gif">
+                <span class="fhint">JPG, PNG, WebP — Max 5MB</span>
+                <div id="imagePreview" style="margin-top:.5rem;color:var(--red);font-size:.85rem;display:none"></div>
+            </div>
+        </div>
+
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-images"></i> Galerie photos</div>
+            <div class="ffield">
+                <label>Ajouter des photos (plusieurs)</label>
+                <input type="file" name="galerie_photos[]" id="galeriePhotos" accept="image/jpeg,image/png,image/webp,image/gif" multiple onchange="previewGalerieMultiple(this)">
+                <span class="fhint">Plusieurs images possible - JPG, PNG, WebP</span>
+            </div>
+            {% if hebergement and hebergement.galeriePhotos|length > 0 %}
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+                {% for photo in hebergement.galeriePhotos %}
+                <div style="position:relative;width:100px;height:100px" class="gallery-item">
+                    <img src="{{ asset(photo) }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
+                    <button type="button" class="delete-gallery-photo" onclick="deleteGaleriePhoto('{{ photo }}', this)"
+                            style="position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border:none;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:10px">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="galerie_to_delete" id="galerieToDelete" value="">
+            {% endif %}
+        </div>
+
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-map-marker"></i> Localisation</div>
+            <div class="fgrid">
+                <div class="ffield fgrid--full">
+                    <label>Adresse (pour géocodage)</label>
+                    <div style="display:flex;gap:.5rem">
+                        <input type="text" name="adresse" id="adresse" value="{{ hebergement ? hebergement.adresse : '' }}" required minlength="5" maxlength="200" placeholder="Rue, quartier, ville..." style="flex:1">
+                        <button type="button" class="btn btn-cyan" onclick="geocodeAddress()"><i class="fa fa-crosshairs"></i> Localiser</button>
+                    </div>
+                    <span class="fhint">Cliquez sur "Localiser" pour obtenir automatiquement les coordonnées</span>
+                </div>
+                <div class="ffield">
+                    <label>Latitude</label>
+                    <input type="number" step="0.000001" name="latitude" id="latitude" value="{{ hebergement ? hebergement.latitude : '' }}" placeholder="36.806496">
+                </div>
+                <div class="ffield">
+                    <label>Longitude</label>
+                    <input type="number" step="0.000001" name="longitude" id="longitude" value="{{ hebergement ? hebergement.longitude : '' }}" placeholder="10.181532">
+                </div>
+                <div class="ffield">
+                    <label>Chambres disponibles</label>
+                    <input type="number" name="chambres_disponibles" min="0" value="{{ hebergement ? (hebergement.chambresDisponibles ?: 1) : 1 }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-navy btn-lg"><i class="fa fa-save"></i> {{ hebergement ? 'Mettre à jour' : 'Créer l\'hébergement' }}</button>
+            <a href="{{ path('admin_hebergements') }}" class="btn btn-outline">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateImagePreview(imagePath) {
+    const preview = document.getElementById('currentImagePreview');
+    if (imagePath && preview) {
+        preview.querySelector('img').src = '{{ asset('') }}' + imagePath + '?v=' + Date.now();
+    }
+}
+
+async function geocodeAddress() {
+    const address = document.getElementById('adresse')?.value;
+    const ville = document.getElementById('ville')?.value;
+    const fullAddress = address && ville ? address + ', ' + ville + ', Tunisia' : address;
+    
+    if (!fullAddress) {
+        alert('Veuillez entrer une adresse');
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ path("admin_geocode") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'address=' + encodeURIComponent(fullAddress)
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Localisation non trouvée: ' + data.error);
+        } else {
+            document.getElementById('latitude').value = data.latitude;
+            document.getElementById('longitude').value = data.longitude;
+            alert('Coordonnées trouvées! ' + data.latitude.toFixed(4) + ', ' + data.longitude.toFixed(4));
+        }
+    } catch (e) {
+        alert('Erreur lors de la géolocalisation');
+    }
+}
+
+function deleteGaleriePhoto(photo, btn) {
+    if (!confirm('Supprimer cette photo?')) return;
+    
+    const input = document.getElementById('galerieToDelete');
+    const current = input.value ? input.value.split(',') : [];
+    current.push(photo);
+    input.value = current.join(',');
+    
+    btn.closest('.gallery-item').remove();
+    
+    const remaining = document.querySelectorAll('.gallery-item');
+    if (remaining.length === 0) {
+        const container = input.closest('div');
+        if (container) container.style.display = 'none';
+    }
+}
+
+function previewGalerieMultiple(input) {
+    const preview = document.getElementById('imagePreview');
+    if (!input.files || input.files.length === 0) return;
+    
+    let html = '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">';
+    for (let i = 0; i < Math.min(input.files.length, 10); i++) {
+        const file = input.files[i];
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.querySelector('[data-preview-id="' + input.id + '"]');
+                if (img) img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            html += '<img data-preview-id="' + input.id + '" src="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;background:var(--bg)">';
+        }
+    }
+    html += '</div>';
+    
+    if (preview) {
+        preview.innerHTML = html;
+        preview.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

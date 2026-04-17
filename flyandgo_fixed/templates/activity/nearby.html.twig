@@ -1,0 +1,499 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}📍 Activités Autour de Moi - Fly&Go{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}">
+    <style>
+        :root {
+            --primary: #C5A059;
+            --secondary: #1A1A1A;
+            --bg-light: #F8F9FA;
+            --text-dark: #2D3436;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --r: 16px;
+        }
+
+        .nearby-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 80px);
+            background: var(--bg-light);
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .activities-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .panel-title h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 0;
+        }
+
+        .panel-title p {
+            color: #636e72;
+            margin-top: 0.5rem;
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.2rem;
+            background: white;
+            border: 1px solid #dfe6e9;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .activity-card {
+            background: white;
+            border-radius: var(--r);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .activity-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .card-img {
+            height: 200px;
+            position: relative;
+        }
+
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-badges {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-rec { background: #FFD700; color: #000; }
+        .badge-close { background: #00B894; color: white; }
+        .badge-price { position: absolute; bottom: 1rem; right: 1rem; background: white; color: var(--secondary); padding: 0.5rem 1rem; border-radius: 12px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-cat {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 0.8rem;
+            color: var(--secondary);
+        }
+
+        .card-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #636e72;
+            font-size: 0.9rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-info span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn-go {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-itinerary {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f2f6;
+            color: var(--secondary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-itinerary:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            grid-column: 1 / -1;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #dfe6e9;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (min-width: 992px) {
+            .nearby-container {
+                flex-direction: row;
+            }
+            #map {
+                height: 100%;
+                width: 50%;
+                order: 2;
+            }
+            .activities-panel {
+                width: 50%;
+                order: 1;
+                margin: 0;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="nearby-container">
+        <div id="map"></div>
+
+        <div class="activities-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <h1>📍 Autour de moi</h1>
+                    <p id="location-text">Recherche de votre position...</p>
+                </div>
+                <div class="transport-modes">
+                    <button class="filter-btn active" onclick="setMode('walking')"><i class="fa fa-walking"></i> Marche</button>
+                    <button class="filter-btn" onclick="setMode('driving')"><i class="fa fa-car"></i> Voiture</button>
+                </div>
+            </div>
+
+            <div class="filters-bar">
+                <button class="filter-btn active" onclick="filterBy('all')">Tout</button>
+                <button class="filter-btn" onclick="filterBy('recommended')"><i class="fa fa-magic"></i> Recommandé</button>
+                <button class="filter-btn" onclick="filterBy('close')"><i class="fa fa-map-marker-alt"></i> À moins de 5km</button>
+                <button class="filter-btn" onclick="filterBy('price')"><i class="fa fa-tag"></i> Moins de 100 TND</button>
+            </div>
+
+            <div id="activity-list" class="activity-grid">
+                <div class="loader-container">
+                    <div class="loader"></div>
+                    <p style="margin-top: 1rem; color: #636e72;">Chargement des activités à proximité...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <script>
+        let map, userMarker;
+        let userPos = { lat: 36.8065, lng: 10.1815 }; // Default Tunis
+        let allActivities = [];
+        let currentFilter = 'all';
+        let transportMode = 'walking';
+        let routingControl = null;
+        let activityMarkers = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            getUserLocation();
+        });
+
+        function initMap() {
+            map = L.map('map').setView([userPos.lat, userPos.lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            userMarker = L.marker([userPos.lat, userPos.lng], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            }).addTo(map).bindPopup("<b>Vous êtes ici</b>");
+        }
+
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userPos.lat = position.coords.latitude;
+                        userPos.lng = position.coords.longitude;
+                        updateUserMarker();
+                        fetchNearbyActivities();
+                        document.getElementById('location-text').innerText = "Activités détectées autour de votre position";
+                    },
+                    (error) => {
+                        console.error("Geolocation error:", error);
+                        document.getElementById('location-text').innerText = "Géolocalisation refusée. Affichage de Tunis par défaut.";
+                        fetchNearbyActivities();
+                    }
+                );
+            } else {
+                fetchNearbyActivities();
+            }
+        }
+
+        function updateUserMarker() {
+            userMarker.setLatLng([userPos.lat, userPos.lng]);
+            map.setView([userPos.lat, userPos.lng], 13);
+        }
+
+        async function fetchNearbyActivities() {
+            try {
+                const response = await fetch(`/api/activities/nearby?lat=${userPos.lat}&lng=${userPos.lng}&distance=30`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allActivities = data.results;
+                    renderActivities();
+                    addMarkers();
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                document.getElementById('activity-list').innerHTML = '<p>Erreur lors du chargement des données.</p>';
+            }
+        }
+
+        function addMarkers() {
+            // Clear existing markers
+            activityMarkers.forEach(m => map.removeLayer(m));
+            activityMarkers = [];
+
+            allActivities.forEach(act => {
+                if (!act.lat || !act.lng) return;
+
+                const marker = L.marker([act.lat, act.lng], {
+                    icon: L.icon({
+                        iconUrl: act.isRecommended ? 
+                            'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png' : 
+                            'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowSize: [41, 41]
+                    })
+                }).addTo(map);
+
+                marker.bindPopup(`
+                    <div style="width: 200px">
+                        <img src="${act.image || 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=200'}" style="width: 100%; border-radius: 8px; margin-bottom: 0.5rem">
+                        <h4 style="margin: 0 0 0.5rem">${act.title}</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center">
+                            <span style="font-weight: 800; color: #C5A059">${act.price} TND</span>
+                            <a href="/activites/${act.id}" style="font-size: 0.8rem; color: #2D3436; font-weight: 700">Détails</a>
+                        </div>
+                    </div>
+                `);
+
+                activityMarkers.push(marker);
+            });
+        }
+
+        function renderActivities() {
+            const list = document.getElementById('activity-list');
+            list.innerHTML = '';
+
+            const filtered = allActivities.filter(act => {
+                if (currentFilter === 'recommended') return act.isRecommended;
+                if (currentFilter === 'close') return act.distance <= 5;
+                if (currentFilter === 'price') return act.price < 100;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="loader-container"><p>Aucune activité ne correspond à vos critères.</p></div>';
+                return;
+            }
+
+            filtered.forEach(act => {
+                const card = document.createElement('div');
+                card.className = 'activity-card';
+                card.innerHTML = `
+                    <div class="card-img">
+                        <img src="${act.image || 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500'}" alt="${act.title}">
+                        <div class="card-badges">
+                            ${act.isRecommended ? '<span class="badge badge-rec">🔥 Recommandé IA</span>' : ''}
+                            ${act.isClose ? '<span class="badge badge-close">📍 Très proche</span>' : ''}
+                        </div>
+                        <span class="badge-price">${act.price} TND</span>
+                    </div>
+                    <div class="card-content">
+                        <p class="card-cat">${act.category || 'Aventure'}</p>
+                        <h3 class="card-title">${act.title}</h3>
+                        <div class="card-info">
+                            <span><i class="fa fa-star" style="color: #FFD700"></i> ${act.rating}</span>
+                            <span><i class="fa fa-map-marker-alt"></i> ${act.distance} km</span>
+                        </div>
+                        <div class="card-actions">
+                            <a href="/activites/${act.id}" class="btn-go">Voir Détails</a>
+                            <button class="btn-itinerary" onclick="showItinerary(${act.lat}, ${act.lng})" title="Itinéraire">
+                                <i class="fa fa-directions"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function filterBy(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filters-bar .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(type) || (type === 'all' && btn.textContent === 'Tout')) {
+                    btn.classList.add('active');
+                }
+            });
+            renderActivities();
+        }
+
+        function setMode(mode) {
+            transportMode = mode;
+            document.querySelectorAll('.transport-modes .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.onclick.toString().includes(mode)) btn.classList.add('active');
+            });
+            // Re-render itinerary if active
+            if (routingControl) {
+                const waypoints = routingControl.getWaypoints();
+                showItinerary(waypoints[1].latLng.lat, waypoints[1].latLng.lng);
+            }
+        }
+
+        function showItinerary(destLat, destLng) {
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(userPos.lat, userPos.lng),
+                    L.latLng(destLat, destLng)
+                ],
+                routeWhileDragging: false,
+                router: L.Routing.osrmv1({
+                    serviceUrl: 'https://router.project-osrm.org/route/v1',
+                    profile: transportMode === 'walking' ? 'foot' : 'car'
+                }),
+                lineOptions: {
+                    styles: [{ color: '#C5A059', weight: 6, opacity: 0.8 }]
+                },
+                createMarker: function() { return null; } // Don't add extra markers
+            }).addTo(map);
+
+            // Scroll to map on mobile
+            if (window.innerWidth < 992) {
+                document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+{% endblock %}

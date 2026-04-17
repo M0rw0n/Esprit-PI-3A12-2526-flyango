@@ -1,0 +1,48 @@
+<div class="sonata-ba-show-row" style="margin-bottom: 20px;">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="small-box bg-aqua">
+                <div class="inner">
+                    <h3>{{ data.total_reservations|default(0) }}</h3>
+                    <p>Réservations</p>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-bag"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="small-box bg-green">
+                <div class="inner">
+                    <h3>{{ data.total_revenue|default(0)|number_format(2, '.', ',') }} TND</h3>
+                    <p>Revenus totaux</p>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-cash"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="small-box bg-yellow">
+                <div class="inner">
+                    <h3>{{ data.average_rating|default(0) }}/5</h3>
+                    <p>Note moyenne ({{ data.total_avis|default(0) }} avis)</p>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-star"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="small-box bg-red">
+                <div class="inner">
+                    <h3>{{ data.places_reservees|default(0) }}</h3>
+                    <p>Places disponibles</p>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-person-stalker"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
