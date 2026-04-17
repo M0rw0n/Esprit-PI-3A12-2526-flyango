@@ -1,0 +1,50 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Circuits — Admin{% endblock %}
+{% block breadcrumb %}Circuits{% endblock %}
+{% block admin_body %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+    <div>
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Gestion des circuits</h2>
+        <p style="color:var(--muted);font-size:.85rem">{{ circuits|length }} circuits au total</p>
+    </div>
+    <a href="{{ path('admin_circuit_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Nouveau circuit</a>
+</div>
+<div class="admin-acts">
+    {% for c in circuits %}
+    <div class="adm-act">
+        <div class="adm-act__img">
+            {% if c.image %}<img src="{{ asset(c.image) }}" alt="{{ c.titre }}" onerror="this.src='https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=300&q=70'">
+            {% else %}<div style="height:130px;background:var(--bg2);display:flex;align-items:center;justify-content:center"><i class="fa fa-route" style="font-size:2rem;color:var(--border)"></i></div>{% endif %}
+        </div>
+        <div class="adm-act__body">
+            <div class="adm-act__title">{{ c.titre }}</div>
+            <div class="adm-act__meta">
+                {% if c.destination %}<span><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ c.destination }}</span>{% endif %}
+                {% if c.duree %}<span><i class="fa fa-clock"></i> {{ c.duree }}</span>{% endif %}
+                {% if c.difficulte %}
+                <span class="diff-badge diff-badge--{{ c.difficulte|lower }}">{{ c.difficulte }}</span>
+                {% endif %}
+            </div>
+            <div class="adm-act__foot">
+                <div class="price price--sm">
+                    <span class="price__val">{{ c.prix|number_format(3, ',', ' ') }}</span>
+                    <span class="price__cur">TND</span>
+                    <span class="price__per">/pers.</span>
+                </div>
+                <div class="adm-act__actions">
+                    <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-outline btn-sm" target="_blank"><i class="fa fa-eye"></i></a>
+                    <a href="{{ path('admin_circuit_edit', {id: c.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-edit"></i></a>
+                    <form action="{{ path('admin_circuit_delete', {id: c.id}) }}" method="POST" onsubmit="return confirm('Supprimer ce circuit ?')">
+                        <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1"><i class="fa fa-route"></i><h3>Aucun circuit</h3>
+        <a href="{{ path('admin_circuit_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Créer</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

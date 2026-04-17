@@ -1,0 +1,195 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Hébergements — Fly&Go{% endblock %}
+{% block body %}
+
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Hébergements en Tunisie</h1>
+        <p class="hero-subtitle">Trouvez votre hébergement idéal parmi notre sélection premium</p>
+    </div>
+</section>
+
+<div class="fg-filter-sticky" id="filterSticky">
+    <div class="fg-filter-inner">
+        <form method="GET" action="{{ path('hebergement_index') }}" id="filterForm" class="fg-filter-form">
+            <div class="fg-filter-row">
+                <div class="fg-filter-search">
+                    <i class="fa fa-search"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Nom, ville, description..." data-auto-submit>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-map-marker-alt"></i>
+                    <select name="ville" data-auto-submit>
+                        <option value="">Toutes les villes</option>
+                        {% for v in villes %}<option value="{{ v }}" {{ ville == v ? 'selected' : '' }}>{{ v }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-building"></i>
+                    <select name="type" data-auto-submit>
+                        <option value="">Tous les types</option>
+                        <option value="Hôtel" {{ type == 'Hôtel' ? 'selected' : '' }}>Hôtel</option>
+                        <option value="Appartement" {{ type == 'Appartement' ? 'selected' : '' }}>Appartement</option>
+                        <option value="Villa" {{ type == 'Villa' ? 'selected' : '' }}>Villa</option>
+                        <option value="Riad" {{ type == 'Riad' ? 'selected' : '' }}>Riad</option>
+                        <option value="Resort" {{ type == 'Resort' ? 'selected' : '' }}>Resort</option>
+                        <option value="Maison d'hôtes" {{ type == "Maison d'hôtes" ? 'selected' : '' }}>Maison d'hôtes</option>
+                        <option value="Auberge" {{ type == 'Auberge' ? 'selected' : '' }}>Auberge</option>
+                    </select>
+                </div>
+                <div class="fg-filter-price">
+                    <i class="fa fa-tag"></i>
+                    <input type="number" step="0.001" min="0" name="prix_min" value="{{ prixMin }}" placeholder="Min TND" data-auto-submit>
+                    <span>—</span>
+                    <input type="number" step="0.001" min="0" name="prix_max" value="{{ prixMax }}" placeholder="Max TND" data-auto-submit>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-sort"></i>
+                    <select name="sort" data-auto-submit>
+                        <option value="recent" {{ sort|default('recent') == 'recent' ? 'selected' : '' }}>Plus récents</option>
+                        <option value="price_asc" {{ sort|default('recent') == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                        <option value="price_desc" {{ sort|default('recent') == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+                        <option value="ville" {{ sort|default('recent') == 'ville' ? 'selected' : '' }}>Ville A-Z</option>
+                    </select>
+                </div>
+                <a href="{{ path('hebergement_index') }}" class="btn btn-outline" title="Réinitialiser">
+                    <i class="fa fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container" id="resultsContainer">
+    <div class="fg-results-header">
+        <div class="fg-results-info">
+            <h2 class="fg-results-count">{{ hebergements|length }} hébergement{{ hebergements|length > 1 ? 's' : '' }} trouvé{{ hebergements|length > 1 ? 's' : '' }}</h2>
+            <p class="fg-results-sub">Réservation flexible · Confirmation instantanée · Meilleurs prix garantis</p>
+        </div>
+        <div class="fg-results-badges">
+            <span class="fg-badge"><i class="fa fa-shield-alt"></i> Réservation sécurisée</span>
+            <span class="fg-badge"><i class="fa fa-headset"></i> Support 24/7</span>
+        </div>
+    </div>
+
+    {% if hebergements %}
+    <div class="hcards" id="cardsGrid">
+        {% for h in hebergements %}
+        <article class="hcard anim" data-id="{{ h.id }}" onclick="window.location='{{ path('hebergement_show', {id: h.id}) }}'">
+            <div class="hcard__img">
+                <img src="{{ h.image ? asset(h.image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80' }}" alt="{{ h.nom }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80'">
+                <div class="hcard__badges">
+                    {% if loop.index <= 2 %}<span class="hcard__badge hcard__badge--popular"><i class="fa fa-fire"></i> Très demandé</span>{% endif %}
+                    {% if h.type == 'Resort' %}<span class="hcard__badge hcard__badge--deal"><i class="fa fa-star"></i> Premium</span>{% endif %}
+                </div>
+                <button class="hcard__wish" onclick="event.stopPropagation(); toggleWishlist(this, {{ h.id }}, 'hebergement')">
+                    <i class="fa fa-heart"></i>
+                </button>
+                {% if h.avis|length > 0 %}
+                <div class="hcard__rating">
+                    <i class="fa fa-star"></i>
+                    {{ h.getMoyenneNotes()|number_format(1, '.') }} · {{ h.avis|length }} avis
+                </div>
+                {% endif %}
+            </div>
+            <div class="hcard__body">
+                <div class="hcard__header">
+                    <div class="hcard__loc">
+                        <i class="fa fa-map-marker-alt"></i>
+                        {{ h.ville }}
+                    </div>
+                    <span class="hcard__type">{{ h.type }}</span>
+                </div>
+                <h3 class="hcard__name">{{ h.nom }}</h3>
+                {% if h.description %}<p class="hcard__desc">{{ h.description|length > 100 ? h.description|slice(0,100)~'…' : h.description }}</p>{% endif %}
+                <div class="hcard__meta">
+                    {% if h.capacite %}<span><i class="fa fa-users"></i> {{ h.capacite }} pers.</span>{% endif %}
+                    <span><i class="fa fa-wifi"></i> WiFi</span>
+                    <span><i class="fa fa-snowflake"></i> Clim.</span>
+                </div>
+                <div class="hcard__tags">
+                    <span class="hcard__tag"><i class="fa fa-check"></i> Annulation flexible</span>
+                    <span class="hcard__tag"><i class="fa fa-bolt"></i> Confirmation rapide</span>
+                </div>
+                <div class="hcard__foot">
+                    <div class="hcard__price">
+                        <span class="hcard__price-val">{{ h.prixParNuit|number_format(0, '', ' ') }}</span>
+                        <span class="hcard__price-cur">TND</span>
+                        <span class="hcard__price-per">/nuit</span>
+                    </div>
+                    <div class="hcard__actions" onclick="event.stopPropagation()">
+                        <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                        <a href="{{ path('hebergement_show', {id: h.id}) }}#booking" class="btn btn-navy btn-sm">Réserver</a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fg-empty">
+        <div class="fg-empty__icon"><i class="fa fa-hotel"></i></div>
+        <h3>Aucun hébergement trouvé</h3>
+        <p>Essayez de modifier vos critères de recherche</p>
+        <a href="{{ path('hebergement_index') }}" class="btn btn-navy">Voir tous les hébergements</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-filter-sticky{position:sticky;top:68px;z-index:50;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--s1);padding:.75rem 0}
+.fg-filter-inner{max-width:1380px;margin:0 auto;padding:0 2rem}
+.fg-filter-form{width:100%}
+.fg-filter-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.fg-filter-search{flex:1;min-width:200px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-search i{position:absolute;left:.85rem;color:var(--muted)}
+.fg-filter-search input{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font)}
+.fg-filter-select-wrap{flex:1;min-width:140px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-select-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-select-wrap i{position:absolute;left:.85rem;color:var(--muted);pointer-events:none}
+.fg-filter-select-wrap select{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+.fg-filter-price{flex:1;min-width:200px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-price:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-price i{position:absolute;left:.85rem;color:var(--muted)}
+.fg-filter-price span{color:var(--muted);font-size:.85rem;margin:0 .25rem}
+.fg-filter-price input{width:70px;border:none;background:none;outline:none;font-size:.85rem;font-family:var(--font);color:var(--text);padding:.2rem 0}
+.fg-results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.fg-results-count{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+.fg-results-sub{font-size:.85rem;color:var(--muted)}
+.fg-results-badges{display:flex;gap:.75rem;flex-wrap:wrap}
+.fg-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border-radius:100px;background:var(--bg);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted)}
+.fg-badge i{color:var(--cyan)}
+.fg-empty{text-align:center;padding:4rem 2rem}
+.fg-empty__icon{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)}
+.fg-empty h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.fg-empty p{color:var(--muted);margin-bottom:1.5rem}
+.hcard__type{font-size:.7rem;font-weight:700;color:var(--cyan-d);background:rgba(0,180,216,.1);padding:.2rem .5rem;border-radius:4px}
+@media (max-width:900px){
+    .fg-filter-row{flex-direction:column;align-items:stretch}
+    .fg-filter-search,.fg-filter-select-wrap,.fg-filter-price{min-width:100%}
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    
+    // Auto-submit on change for select and input with data-auto-submit
+    filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+        let timeout;
+        el.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 600);
+        });
+        el.addEventListener('change', () => {
+            filterForm.submit();
+        });
+    });
+});
+</script>
+{% endblock %}

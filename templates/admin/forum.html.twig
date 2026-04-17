@@ -1,0 +1,53 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Forum — Admin{% endblock %}
+{% block breadcrumb %}Forum{% endblock %}
+{% block admin_body %}
+<div style="margin-bottom:1.5rem">
+    <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Modération du forum</h2>
+    <p style="color:var(--muted);font-size:.85rem">{{ posts|length }} posts au total</p>
+</div>
+<div class="acard-wrap">
+    <div class="bookings-list">
+        {% for p in posts %}
+        <div class="booking-card">
+            <div class="booking-card__av" style="background:linear-gradient(135deg,#7C3AED,#4F46E5)">{{ p.author|slice(0,1)|upper }}</div>
+            <div class="booking-card__info">
+                <div class="booking-card__name">{{ p.title }}</div>
+                <div class="booking-card__meta">
+                    <span><i class="fa fa-user fa-xs"></i> {{ p.author }}</span>
+                    <span><i class="fa fa-calendar fa-xs"></i> {{ p.createdAt|date('d/m/Y') }}</span>
+                    <span><i class="fa fa-comment fa-xs"></i> {{ p.comments|length }} commentaires</span>
+                    {% if p.categorie %}<span class="tag tag--navy">{{ p.categorie }}</span>{% endif %}
+                </div>
+            </div>
+            <span class="status status--{{ p.status == 'APPROVED' ? 'confirmed' : (p.status == 'PENDING' ? 'pending' : 'cancelled') }}">
+                {{ p.status == 'APPROVED' ? 'Approuvé' : (p.status == 'PENDING' ? 'En attente' : 'Rejeté') }}
+            </span>
+            <div class="booking-card__actions">
+                <a href="{{ path('forum_show', {id: p.id}) }}" class="btn btn-outline btn-sm" target="_blank"><i class="fa fa-eye"></i></a>
+                {% if p.status != 'APPROVED' %}
+                <button onclick="moderate({{ p.id }}, 'APPROVED')" class="btn btn-green btn-sm"><i class="fa fa-check"></i></button>
+                {% endif %}
+                {% if p.status != 'REJECTED' %}
+                <button onclick="moderate({{ p.id }}, 'REJECTED')" class="btn btn-red btn-sm"><i class="fa fa-ban"></i></button>
+                {% endif %}
+                <form action="{{ path('admin_forum_delete', {id: p.id}) }}" method="POST" onsubmit="return confirm('Supprimer ?')">
+                    <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty" style="padding:3rem"><i class="fa fa-comments"></i><h3>Aucun post</h3></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+<script>
+function moderate(id, status) {
+    $.post('{{ path("admin_forum_moderate", {"id": "__ID__"}) }}'.replace('__ID__', id), {status})
+     .done(()=>{ showToast('✅ Post modéré !'); setTimeout(()=>location.reload(),900); })
+     .fail(()=>showToast('Erreur','error'));
+}
+</script>
+{% endblock %}

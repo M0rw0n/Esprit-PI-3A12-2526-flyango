@@ -1,0 +1,351 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ activity.title }} — Fly&Go{% endblock %}
+<<<<<<< HEAD
+{% block body %}
+<div style="max-width:1380px;margin:0 auto;padding:2rem">
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem">
+        <a href="{{ path('home') }}" style="color:var(--muted)">Accueil</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <a href="{{ path('activity_index') }}" style="color:var(--muted)">Activités</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <strong style="color:var(--text)">{{ activity.title }}</strong>
+    </div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900;color:var(--text);margin-bottom:.5rem;letter-spacing:-.02em">{{ activity.title }}</h1>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+                {% if activity.lieu %}<span style="font-size:.875rem;color:var(--muted)"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ activity.lieu }}</span>{% endif %}
+                {% if activity.duration %}<span class="tag tag--navy"><i class="fa fa-clock"></i> {{ activity.duration }}</span>{% endif %}
+                <span class="tag"><i class="fa fa-users"></i> {{ activity.capacity }} places</span>
+                {% if activity.reviews|length > 0 %}<span style="color:var(--gold-d);font-size:.875rem"><i class="fa fa-star"></i> {{ activity.getMoyenneNotes() }} ({{ activity.reviews|length }} avis)</span>{% endif %}
+                {% if activity.date %}<span class="tag"><i class="fa fa-calendar"></i> {{ activity.date|date('d/m/Y') }}</span>{% endif %}
+            </div>
+        </div>
+        <div class="price price--lg">
+            <span class="price__val">{{ activity.price|number_format(3, ',', ' ') }}</span>
+            <span class="price__cur">TND</span>
+            <span class="price__per">/pers.</span>
+        </div>
+    </div>
+    <div class="detail-layout">
+        <div>
+            <div class="detail-gallery" style="margin-bottom:2rem">
+                {% if activity.image %}<img src="{{ asset(activity.image) }}" alt="{{ activity.title }}" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=900&q=85'">
+                {% else %}<img src="https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=900&q=85" alt="{{ activity.title }}">{% endif %}
+            </div>
+            <div class="detail-tabs">
+                <button class="detail-tab on" data-tab="desc" onclick="switchTab('desc')">Description</button>
+                <button class="detail-tab" data-tab="reviews" onclick="switchTab('reviews')">Avis ({{ activity.reviews|length }})</button>
+                <button class="detail-tab" data-tab="add-review" onclick="switchTab('add-review')">Laisser un avis</button>
+            </div>
+            <div id="pane-desc" class="tab-pane on">
+                <p style="font-size:.95rem;line-height:1.85;color:var(--text)">{{ activity.description ?: 'Aucune description disponible.' }}</p>
+            </div>
+            <div id="pane-reviews" class="tab-pane">
+                {% for r in activity.reviews %}
+                <div class="review-item">
+                    <div class="review-item__head"><span class="review-item__author">{{ r.author }}</span><span class="review-item__date">{{ r.createdAt|date('d/m/Y') }}</span></div>
+                    <div class="review-item__stars">{% for i in 1..5 %}<i class="fa fa-star" style="color:{{ i <= r.rating ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}</div>
+                    <div class="review-item__text">{{ r.comment }}</div>
+                </div>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis encore</p></div>
+                {% endfor %}
+            </div>
+            <div id="pane-add-review" class="tab-pane">
+                <form action="{{ path('activity_review', {id: activity.id}) }}" method="POST">
+                    <div class="fg-group"><label class="fg-label">Votre nom</label><input type="text" name="author" class="fg-input" required placeholder="Votre prénom" value="{{ app.user ? app.user.fullName : '' }}"></div>
+                    <div class="fg-group">
+                        <label class="fg-label">Note</label>
+                        <div id="starPickAvis" style="display:flex;gap:.35rem;font-size:1.5rem;cursor:pointer;margin-bottom:.75rem">
+                            {% for i in 1..5 %}<i class="fa fa-star" onclick="setRatingAvis({{ i }})" style="color:#F59E0B"></i>{% endfor %}
+                        </div>
+                        <input type="hidden" name="rating" id="noteInput" value="5">
+                    </div>
+                    <div class="fg-group"><label class="fg-label">Commentaire</label><textarea name="comment" class="fg-input" rows="4" required placeholder="Partagez votre expérience..."></textarea></div>
+                    <button type="submit" class="btn btn-navy"><i class="fa fa-paper-plane"></i> Publier</button>
+                </form>
+            </div>
+        </div>
+        <div class="detail-sticky">
+            <div class="detail-info">
+                <div class="detail-price"><span class="amount">{{ activity.price|number_format(3, ',', ' ') }}</span><span class="per">TND/pers.</span></div>
+                <input type="hidden" id="prixActivity" value="{{ activity.price }}">
+                <form action="{{ path('activity_book', {id: activity.id}) }}" method="POST">
+                    <div class="book-form">
+                        <h4><i class="fa fa-hiking"></i> Réserver cette activité</h4>
+                        <div class="fg-group"><label class="fg-label">Nom complet *</label><input type="text" name="customer_name" class="fg-input" required placeholder="Prénom Nom" value="{{ app.user ? app.user.fullName : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Email *</label><input type="email" name="email" class="fg-input" required placeholder="email@example.com" value="{{ app.user ? app.user.email : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Téléphone</label><input type="tel" name="phone" class="fg-input" placeholder="+216 XX XXX XXX" value="{{ app.user ? app.user.telephone : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Date souhaitée</label><input type="date" name="booking_date" class="fg-input" min="{{ "now"|date('Y-m-d') }}" {% if activity.date %}value="{{ activity.date|date('Y-m-d') }}"{% endif %}></div>
+                        <div class="fg-group">
+                            <label class="fg-label">Nombre de personnes</label>
+                            <input type="number" name="persons" id="persons" class="fg-input" value="1" min="1" max="{{ activity.capacity }}" oninput="calcMontantBooking()">
+                        </div>
+                        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem">
+                            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;color:var(--navy)">
+                                <span>Total estimé</span><span id="montantBooking">{{ activity.price|number_format(3, ',', ' ') }} TND</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-navy btn-lg" style="width:100%"><i class="fa fa-check"></i> Réserver maintenant</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+=======
+
+{% block body %}
+<div class="fg-activity-detail">
+
+    {# ── Image Hero ── #}
+    <div class="fg-activity-detail__hero">
+        {% if activity.image %}
+            <img src="{{ asset(activity.image) }}"
+                 alt="{{ activity.title }}"
+                 onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80'">
+        {% else %}
+            <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80" alt="{{ activity.title }}">
+        {% endif %}
+        <div class="fg-activity-detail__hero-overlay">
+            <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--white fg-btn--sm">
+                <i class="fa fa-arrow-left"></i> Retour aux activités
+            </a>
+        </div>
+    </div>
+
+    <div class="fg-activity-detail__layout">
+
+        {# ── Left: Info ── #}
+        <div class="fg-activity-detail__info">
+            {% if activity.place %}
+                <span class="fg-card__location" style="font-size:1rem">
+                    <i class="fa fa-map-marker-alt"></i> {{ activity.place.name }}, {{ activity.place.city }}
+                </span>
+            {% endif %}
+
+            <h1 class="fg-activity-detail__title">{{ activity.title }}</h1>
+
+            {# Meta chips #}
+            <div class="fg-activity-detail__chips">
+                {% if activity.duration %}
+                    <span class="fg-chip"><i class="fa fa-clock"></i> {{ activity.duration }}</span>
+                {% endif %}
+                {% if activity.date %}
+                    <span class="fg-chip"><i class="fa fa-calendar"></i> {{ activity.date|date('d/m/Y') }}</span>
+                {% endif %}
+                {% if activity.capacity %}
+                    <span class="fg-chip"><i class="fa fa-users"></i> {{ activity.capacity }} places max</span>
+                {% endif %}
+                <span class="fg-chip fg-chip--green"><i class="fa fa-check-circle"></i> Disponible</span>
+            </div>
+
+            {# Rating #}
+            <div class="fg-activity-detail__rating">
+                <div class="fg-stars">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i><i class="fa fa-star-half-alt"></i>
+                </div>
+                <span>4.5/5</span>
+                <span>({{ reviews|length }} avis)</span>
+            </div>
+
+            {# Description #}
+            <div class="fg-activity-detail__desc">
+                <h3>Description</h3>
+                <p>{{ activity.description }}</p>
+            </div>
+
+            {# ── Reviews ── #}
+            <div class="fg-activity-detail__reviews">
+                <div class="fg-activity-detail__reviews-header">
+                    <h3><i class="fa fa-star"></i> Avis clients ({{ reviews|length }})</h3>
+                    <button class="fg-btn fg-btn--orange fg-btn--sm" onclick="openModal('reviewModal')">
+                        <i class="fa fa-pen"></i> Laisser un avis
+                    </button>
+                </div>
+
+                <div class="fg-reviews-list">
+                    {% for review in reviews %}
+                    <div class="fg-review-item">
+                        <div class="fg-review-item__header">
+                            <div class="fg-review-card__avatar">{{ review.author|slice(0,1)|upper }}</div>
+                            <div>
+                                <strong>{{ review.author }}</strong>
+                                <div class="fg-stars fg-stars--sm">
+                                    {% for i in 1..5 %}
+                                        <i class="fa fa-star{% if i > review.rating %}-o{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <span class="fg-review-item__date">{{ review.createdAt|date('d/m/Y') }}</span>
+                        </div>
+                        <p class="fg-review-item__comment">{{ review.comment }}</p>
+                    </div>
+                    {% else %}
+                    <div class="fg-empty-state" style="padding:2rem">
+                        <i class="fa fa-star"></i>
+                        <p>Aucun avis pour le moment. Soyez le premier !</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# ── Right: Booking Card ── #}
+        <div class="fg-activity-detail__booking">
+            <div class="fg-booking-card" id="bookingCard">
+                <div class="fg-booking-card__price">
+                    <span class="fg-booking-card__amount">{{ activity.price }} DT</span>
+                    <span class="fg-booking-card__per">/ personne</span>
+                </div>
+
+                <div class="fg-booking-card__rating">
+                    <i class="fa fa-star" style="color:#FF6B2C"></i> 4.5
+                    <span>· {{ reviews|length }} avis</span>
+                </div>
+
+                <form class="fg-booking-form" id="bookingForm" action="{{ path('booking_create', {activityId: activity.id}) }}" method="POST">
+                    <input type="hidden" name="_token" value="{{ csrf_token('booking') }}">
+                    <input type="hidden" name="activity_id" value="{{ activity.id }}">
+                    <input type="hidden" name="total_price" id="totalPriceInput" value="{{ activity.price }}">
+
+                    <div class="fg-booking-form__field">
+                        <label><i class="fa fa-user"></i> Votre nom</label>
+                        <input type="text" name="customer_name" placeholder="Prénom Nom" required>
+                    </div>
+                    <div class="fg-booking-form__field">
+                        <label><i class="fa fa-envelope"></i> Email</label>
+                        <input type="email" name="email" placeholder="vous@email.com" required>
+                    </div>
+                    <div class="fg-booking-form__field">
+                        <label><i class="fa fa-phone"></i> Téléphone</label>
+                        <input type="tel" name="client_phone" placeholder="+216 XX XXX XXX">
+                    </div>
+                    <div class="fg-booking-form__row">
+                        <div class="fg-booking-form__field">
+                            <label><i class="fa fa-calendar"></i> Date</label>
+                            <input type="date" name="booking_date" id="bookingDate"
+                                   min="{{ 'now'|date('Y-m-d') }}"
+                                   value="{{ activity.date ? activity.date|date('Y-m-d') : 'now'|date('Y-m-d') }}" required>
+                        </div>
+                        <div class="fg-booking-form__field">
+                            <label><i class="fa fa-users"></i> Personnes</label>
+                            <input type="number" name="persons" id="bookingPersons" value="1" min="1" max="{{ activity.capacity }}" required oninput="calcTotal()">
+                        </div>
+                    </div>
+
+                    <div class="fg-booking-card__total">
+                        <div><span>{{ activity.price }} DT × <span id="personsDisplay">1</span> pers.</span>
+                             <span id="totalDisplay">{{ activity.price }} DT</span></div>
+                        <div class="fg-booking-card__total-line">
+                            <strong>Total</strong>
+                            <strong id="totalFinal">{{ activity.price }} DT</strong>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="fg-btn fg-btn--orange" style="width:100%;justify-content:center;font-size:1rem;padding:1rem">
+                        <i class="fa fa-calendar-plus"></i> Confirmer la réservation
+                    </button>
+                    <p class="fg-booking-card__note"><i class="fa fa-shield-alt"></i> Paiement 100% sécurisé · Annulation gratuite</p>
+                </form>
+            </div>
+
+            {# Wishlist & Share #}
+            <div class="fg-activity-detail__quick-actions">
+                <button class="fg-btn fg-btn--ghost" style="flex:1;justify-content:center"
+                        onclick="toggleWishlistItem({{ activity.id }}, '{{ activity.title|e('js') }}', {{ activity.price }}, '{{ activity.image|e('js') }}')">
+                    <i class="fa fa-heart"></i> Wishlist
+                </button>
+                <button class="fg-btn fg-btn--ghost" style="flex:1;justify-content:center" onclick="shareActivity()">
+                    <i class="fa fa-share-alt"></i> Partager
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Review Modal ── #}
+<div class="fg-modal-overlay" id="reviewModal">
+    <div class="fg-modal">
+        <div class="fg-modal__header">
+            <h3>Laisser un avis</h3>
+            <button onclick="closeModal('reviewModal')"><i class="fa fa-times"></i></button>
+        </div>
+        <form action="{{ path('review_add', {activityId: activity.id}) }}" method="POST">
+            <input type="hidden" name="_token" value="{{ csrf_token('review') }}">
+            <div class="fg-modal__body">
+                <div class="fg-booking-form__field">
+                    <label>Votre nom</label>
+                    <input type="text" name="author" placeholder="Votre prénom" required>
+                </div>
+                <div class="fg-booking-form__field">
+                    <label>Note</label>
+                    <div class="fg-star-picker" id="starPicker">
+                        {% for i in 1..5 %}
+                        <i class="fa fa-star" data-val="{{ i }}" onclick="setRating({{ i }})"></i>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="rating" id="ratingInput" value="5">
+                </div>
+                <div class="fg-booking-form__field">
+                    <label>Commentaire</label>
+                    <textarea name="comment" rows="4" placeholder="Partagez votre expérience..." required></textarea>
+                </div>
+            </div>
+            <div class="fg-modal__footer">
+                <button type="button" class="fg-btn fg-btn--ghost" onclick="closeModal('reviewModal')">Annuler</button>
+                <button type="submit" class="fg-btn fg-btn--orange"><i class="fa fa-paper-plane"></i> Publier</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const pricePerPerson = {{ activity.price }};
+
+function calcTotal() {
+    const p = parseInt(document.getElementById('bookingPersons').value) || 1;
+    const total = pricePerPerson * p;
+    document.getElementById('personsDisplay').textContent = p;
+    document.getElementById('totalDisplay').textContent = total + ' DT';
+    document.getElementById('totalFinal').textContent = total + ' DT';
+    document.getElementById('totalPriceInput').value = total;
+}
+
+function setRating(n) {
+    document.getElementById('ratingInput').value = n;
+    document.querySelectorAll('#starPicker .fa').forEach((s, i) => {
+        s.style.color = i < n ? '#FF6B2C' : '#ccc';
+    });
+}
+
+function shareActivity() {
+    if (navigator.share) {
+        navigator.share({ title: '{{ activity.title|e('js') }}', url: window.location.href });
+    } else {
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Lien copié dans le presse-papier !');
+    }
+}
+
+// Init star picker
+setRating(5);
+
+// Sticky booking card on scroll
+window.addEventListener('scroll', () => {
+    const card = document.getElementById('bookingCard');
+    if (window.scrollY > 300) card.classList.add('fg-booking-card--sticky');
+    else card.classList.remove('fg-booking-card--sticky');
+});
+
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+document.querySelectorAll('.fg-modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) closeModal(o.id); }));
+</script>
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+{% endblock %}

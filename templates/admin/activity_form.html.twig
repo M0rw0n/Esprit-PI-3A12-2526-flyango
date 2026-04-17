@@ -1,0 +1,62 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ activity ? 'Modifier' : 'Nouvelle' }} activité — Admin{% endblock %}
+{% block breadcrumb %}{{ activity ? 'Modifier activité' : 'Nouvelle activité' }}{% endblock %}
+{% block admin_body %}
+<div class="form-wrap">
+    <div style="margin-bottom:1.5rem">
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">{{ activity ? '✏️ ' ~ activity.title : '➕ Nouvelle activité' }}</h2>
+        <a href="{{ path('admin_activities') }}" style="font-size:.85rem;color:var(--muted)"><i class="fa fa-arrow-left"></i> Retour</a>
+    </div>
+    <form action="{{ activity ? path('admin_activity_edit', {id: activity.id}) : path('admin_activity_new') }}" method="POST" enctype="multipart/form-data">
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-hiking"></i> Informations de l'activité</div>
+            <div class="fgrid">
+                <div class="ffield fgrid--full">
+                    <label>Titre <span class="required">*</span></label>
+                    <input type="text" name="title" value="{{ activity ? activity.title : '' }}" required placeholder="Ex: Randonnée au Djebel Zaghouan">
+                </div>
+                <div class="ffield">
+                    <label>Lieu</label>
+                    <input type="text" name="lieu" value="{{ activity ? activity.lieu : '' }}" placeholder="Ex: Zaghouan">
+                </div>
+                <div class="ffield">
+                    <label>Prix par personne (TND) <span class="required">*</span></label>
+                    <input type="number" name="price" step="0.001" value="{{ activity ? activity.price : '' }}" required min="0">
+                </div>
+                <div class="ffield">
+                    <label>Durée</label>
+                    <input type="text" name="duration" value="{{ activity ? activity.duration : '' }}" placeholder="Ex: 4h, 1 journée">
+                </div>
+                <div class="ffield">
+                    <label>Capacité (places)</label>
+                    <input type="number" name="capacity" value="{{ activity ? activity.capacity : 10 }}" min="1">
+                </div>
+                <div class="ffield">
+                    <label>Date de l'activité</label>
+                    <input type="date" name="date" value="{{ activity and activity.date ? activity.date|date('Y-m-d') : '' }}">
+                </div>
+                <div class="ffield">
+                    <label>Statut</label>
+                    <select name="actif">
+                        <option value="1" {{ (activity and activity.actif) or (not activity) ? 'selected' : '' }}>Actif</option>
+                        <option value="0" {{ activity and not activity.actif ? 'selected' : '' }}>Inactif</option>
+                    </select>
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Description</label>
+                    <textarea name="description" rows="4" placeholder="Décrivez l'activité...">{{ activity ? activity.description : '' }}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-image"></i> Image</div>
+            {% if activity and activity.image %}<div class="img-prev"><img src="{{ asset(activity.image) }}" alt="{{ activity.title }}"></div>{% endif %}
+            <div class="ffield"><input type="file" name="image" accept="image/*"></div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-navy btn-lg"><i class="fa fa-save"></i> {{ activity ? 'Mettre à jour' : 'Créer l\'activité' }}</button>
+            <a href="{{ path('admin_activities') }}" class="btn btn-outline">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

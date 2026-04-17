@@ -1,0 +1,50 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Circuits favoris — Fly&Go{% endblock %}
+
+{% block body %}
+<section class="page-header">
+    <div class="container">
+        <h1><i class="fa fa-route"></i> Circuits favoris</h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="favorites-tabs">
+            <a href="{{ path('favoris_all') }}" class="tab"><i class="fa fa-heart"></i> Tous</a>
+            <a href="{{ path('favoris_hebergements') }}" class="tab"><i class="fa fa-hotel"></i> Hébergements</a>
+            <a href="{{ path('favoris_circuits') }}" class="tab active"><i class="fa fa-route"></i> Circuits</a>
+            <a href="{{ path('favoris_activities') }}" class="tab"><i class="fa fa-hiking"></i> Activités</a>
+            <a href="{{ path('favoris_transports') }}" class="tab"><i class="fa fa-plane"></i> Transport</a>
+        </div>
+
+        {% if favorites is empty %}
+            <div class="empty-state">
+                <i class="fa fa-route"></i>
+                <h3>Aucun circuit favori</h3>
+                <a href="{{ path('circuit_index') }}" class="btn btn-gold"><i class="fa fa-search"></i> Explorer</a>
+            </div>
+        {% else %}
+            <div class="hebergements-grid">
+                {% for fav in favorites %}
+                    {% set c = fav.circuit %}
+                    <div class="hebergement-card" data-id="{{ c.id }}">
+                        <div class="hebergement-card__image">
+                            {% if c.image %}<img src="{{ asset(c.image) }}" alt="{{ c.titre }}">{% else %}<div class="placeholder-img"><i class="fa fa-route"></i></div>{% endif %}
+                            <button class="favorite-btn active" onclick="toggleFavorite({{ c.id }}, 'circuit', this)"><i class="fa fa-heart"></i></button>
+                            {% if c.promoPrix %}<span class="badge badge-red">-{{ c.reductionPercent }}%</span>{% endif %}
+                        </div>
+                        <div class="hebergement-card__body">
+                            <h3>{{ c.titre }}</h3>
+                            <p class="location"><i class="fa fa-map-marker-alt"></i> {{ c.destination }}</p>
+                            {% if c.promoPrix %}<div class="price"><s>{{ c.prix|number_format(3) }}</s> {{ c.promoPrix|number_format(3) }} TND</div>{% else %}<div class="price">{{ c.prix|number_format(3) }} TND</div>{% endif %}
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-gold btn-block"><i class="fa fa-eye"></i> Voir</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

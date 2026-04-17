@@ -1,0 +1,520 @@
+{% extends 'base/base.html.twig' %}
+<<<<<<< HEAD
+{% block title %}Activités & Excursions — Fly&Go{% endblock %}
+{% block body %}
+
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Activités & Excursions</h1>
+        <p class="hero-subtitle">{{ activities|length }} activités disponibles — Découvrez des expériences uniques</p>
+    </div>
+</section>
+
+<div class="fg-filter-sticky" id="filterSticky">
+    <div class="fg-filter-inner">
+        <form method="GET" action="{{ path('activity_index') }}" id="filterForm" class="fg-filter-form">
+            <div class="fg-filter-row">
+                <div class="fg-filter-search">
+                    <i class="fa fa-search"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Nom de l'activité..." data-auto-submit>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-map-marker-alt"></i>
+                    <select name="lieu" data-auto-submit>
+                        <option value="">Tous les lieux</option>
+                        {% for v in ['Tunis','Sousse','Sfax','Djerba','Hammamet','Tozeur','Kairouan','Bizerte','Monastir','Nabeul','Tabarka'] %}
+                        <option value="{{ v }}" {{ lieu|default('') == v ? 'selected' : '' }}>{{ v }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-sort"></i>
+                    <select name="sort" data-auto-submit>
+                        <option value="">Trier par</option>
+                        <option value="prix_asc" {{ sort|default('') == 'prix_asc' ? 'selected' : '' }}>Prix ↑ croissant</option>
+                        <option value="prix_desc" {{ sort|default('') == 'prix_desc' ? 'selected' : '' }}>Prix ↓ décroissant</option>
+                        <option value="date_asc" {{ sort|default('') == 'date_asc' ? 'selected' : '' }}>Date ↑ proche</option>
+                        <option value="date_desc" {{ sort|default('') == 'date_desc' ? 'selected' : '' }}>Date ↓ lointaine</option>
+                    </select>
+                </div>
+                <a href="{{ path('activity_index') }}" class="btn btn-outline btn-sm" title="Réinitialiser">
+                    <i class="fa fa-times"></i>
+                </a>
+            </div>
+            {# ── Ligne 2 : filtres avancés (prix + dates) ── #}
+            <div class="fg-filter-row" style="margin-top:.5rem">
+                <div class="fg-filter-field">
+                    <i class="fa fa-coins"></i>
+                    <input type="number" name="prix_min" value="{{ prix_min }}" placeholder="Prix min (TND)" min="0" step="1" data-auto-submit>
+                </div>
+                <div class="fg-filter-field">
+                    <i class="fa fa-coins"></i>
+                    <input type="number" name="prix_max" value="{{ prix_max }}" placeholder="Prix max (TND)" min="0" step="1" data-auto-submit>
+                </div>
+                <div class="fg-filter-field">
+                    <i class="fa fa-calendar"></i>
+                    <input type="date" name="date_debut" value="{{ date_debut }}" title="Date début" data-auto-submit>
+                </div>
+                <div class="fg-filter-field">
+                    <i class="fa fa-calendar-check"></i>
+                    <input type="date" name="date_fin" value="{{ date_fin }}" title="Date fin" data-auto-submit>
+                </div>
+            </div>
+            {# Chips filtres actifs #}
+            {% set hasFilters = q or lieu or prix_min or prix_max or date_debut or date_fin or sort %}
+            {% if hasFilters %}
+            <div class="fg-active-filters">
+                <span class="fg-active-label"><i class="fa fa-filter"></i> Filtres actifs :</span>
+                {% if q %}<span class="fg-chip">« {{ q }} » <a href="{{ path('activity_index', app.request.query.all|merge({q: null})) }}">×</a></span>{% endif %}
+                {% if lieu %}<span class="fg-chip"><i class="fa fa-map-pin"></i> {{ lieu }} <a href="{{ path('activity_index', app.request.query.all|merge({lieu: null})) }}">×</a></span>{% endif %}
+                {% if prix_min %}<span class="fg-chip">≥ {{ prix_min }} TND <a href="{{ path('activity_index', app.request.query.all|merge({prix_min: null})) }}">×</a></span>{% endif %}
+                {% if prix_max %}<span class="fg-chip">≤ {{ prix_max }} TND <a href="{{ path('activity_index', app.request.query.all|merge({prix_max: null})) }}">×</a></span>{% endif %}
+                {% if date_debut %}<span class="fg-chip"><i class="fa fa-calendar"></i> Dès {{ date_debut }} <a href="{{ path('activity_index', app.request.query.all|merge({date_debut: null})) }}">×</a></span>{% endif %}
+                {% if date_fin %}<span class="fg-chip"><i class="fa fa-calendar"></i> Jusqu'au {{ date_fin }} <a href="{{ path('activity_index', app.request.query.all|merge({date_fin: null})) }}">×</a></span>{% endif %}
+                {% if sort %}<span class="fg-chip"><i class="fa fa-sort"></i> {{ sort == 'prix_asc' ? 'Prix ↑' : (sort == 'prix_desc' ? 'Prix ↓' : (sort == 'date_asc' ? 'Date ↑' : 'Date ↓')) }} <a href="{{ path('activity_index', app.request.query.all|merge({sort: null})) }}">×</a></span>{% endif %}
+                <a href="{{ path('activity_index') }}" class="fg-clear-all"><i class="fa fa-trash-alt"></i> Tout effacer</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="container" id="resultsContainer">
+    <div class="fg-results-header">
+        <div class="fg-results-info">
+            <h2 class="fg-results-count">{{ activities|length }} activité{{ activities|length > 1 ? 's' : '' }} trouvée{{ activities|length > 1 ? 's' : '' }}</h2>
+            <p class="fg-results-sub">Réservation instantanée · Activités certifiées · Meilleurs prix</p>
+        </div>
+        <div class="fg-results-badges">
+            <span class="fg-badge"><i class="fa fa-shield-alt"></i> Réservation sécurisée</span>
+            <span class="fg-badge"><i class="fa fa-star"></i> Avis vérifiés</span>
+        </div>
+    </div>
+
+    {% if activities %}
+    <div class="hcards" id="cardsGrid">
+        {% for a in activities %}
+        <article class="hcard anim" data-id="{{ a.id }}" onclick="window.location='{{ path('activity_show', {id: a.id}) }}'">
+            <div class="hcard__img">
+                {% if a.image %}
+                <img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=600&q=80'">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=600&q=80" alt="{{ a.title }}">
+                {% endif %}
+                <div class="hcard__badges">
+                    {% if loop.index <= 2 %}<span class="hcard__badge hcard__badge--popular"><i class="fa fa-fire"></i> Populaire</span>{% elseif a.price < 50 %}<span class="hcard__badge hcard__badge--deal"><i class="fa fa-tag"></i> Bon plan</span>{% endif %}
+                </div>
+                <button class="hcard__wish" onclick="event.stopPropagation(); toggleFavorite({{ a.id }}, 'activity', this)">
+                    <i class="fa fa-heart"></i>
+                </button>
+                {% if a.reviews|length > 0 %}
+                <div class="hcard__rating">
+                    <i class="fa fa-star"></i>
+                    {{ a.getMoyenneNotes()|number_format(1, '.') }} · {{ a.reviews|length }} avis
+                </div>
+                {% endif %}
+            </div>
+            <div class="hcard__body">
+                <div class="hcard__header">
+                    <div class="hcard__loc">
+                        <i class="fa fa-map-marker-alt"></i>
+                        {{ a.lieu|default('—') }}
+                    </div>
+                </div>
+                <h3 class="hcard__name">{{ a.title }}</h3>
+                {% if a.description %}<p class="hcard__desc">{{ a.description|length > 100 ? a.description|slice(0,100)~'…' : a.description }}</p>{% endif %}
+                <div class="hcard__meta">
+                    {% if a.duration %}<span><i class="fa fa-clock"></i> {{ a.duration }}</span>{% endif %}
+                    <span><i class="fa fa-users"></i> {{ a.capacity }} places</span>
+                    {% if a.date %}<span><i class="fa fa-calendar"></i> {{ a.date|date('d/m/Y') }}</span>{% endif %}
+                </div>
+                <div class="hcard__tags">
+                    <span class="hcard__tag"><i class="fa fa-check"></i> Guide inclus</span>
+                    <span class="hcard__tag"><i class="fa fa-bolt"></i> Réservation rapide</span>
+                </div>
+                <div class="hcard__foot">
+                    <div class="hcard__price">
+                        <span class="hcard__price-val">{{ a.price|number_format(0, '', ' ') }}</span>
+                        <span class="hcard__price-cur">TND</span>
+                        <span class="hcard__price-per">/pers.</span>
+                    </div>
+                    <div class="hcard__actions" onclick="event.stopPropagation()">
+                        <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                        <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-navy btn-sm">Réserver</a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fg-empty">
+        <div class="fg-empty__icon"><i class="fa fa-hiking"></i></div>
+        <h3>Aucune activité trouvée</h3>
+        <p>Essayez de modifier vos critères de recherche</p>
+        <a href="{{ path('activity_index') }}" class="btn btn-navy">Voir toutes les activités</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-filter-sticky{position:sticky;top:68px;z-index:50;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--s1);padding:.75rem 0}
+.fg-filter-inner{max-width:1380px;margin:0 auto;padding:0 2rem}
+.fg-filter-form{width:100%}
+.fg-filter-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.fg-filter-search{flex:1;min-width:200px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-search i{position:absolute;left:.85rem;color:var(--muted)}
+.fg-filter-search input{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font)}
+.fg-filter-select-wrap{flex:1;min-width:140px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-select-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-select-wrap i{position:absolute;left:.85rem;color:var(--muted);pointer-events:none}
+.fg-filter-select-wrap select{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+/* New: filter field for inputs (prix, date) */
+.fg-filter-field{flex:1;min-width:130px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.55rem .85rem .55rem 2.3rem;transition:all var(--t)}
+.fg-filter-field:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-field i{position:absolute;left:.75rem;color:var(--muted);pointer-events:none;font-size:.85rem}
+.fg-filter-field input{border:none;background:none;outline:none;width:100%;font-size:.85rem;font-family:var(--font);color:var(--text)}
+.fg-filter-field input[type="number"]{-moz-appearance:textfield}
+.fg-filter-field input[type="number"]::-webkit-inner-spin-button,.fg-filter-field input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* Active filters chips */
+.fg-active-filters{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.65rem;padding-top:.55rem;border-top:1px dashed var(--border)}
+.fg-active-label{font-size:.78rem;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:.3rem}
+.fg-chip{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;background:rgba(13,91,215,.06);border:1px solid rgba(13,91,215,.15);border-radius:999px;font-size:.75rem;font-weight:600;color:var(--navy)}
+.fg-chip a{color:var(--navy);text-decoration:none;font-weight:800;opacity:.6;transition:opacity .15s}
+.fg-chip a:hover{opacity:1}
+.fg-chip i{font-size:.65rem}
+.fg-clear-all{font-size:.75rem;font-weight:600;color:#dc3545;text-decoration:none;display:inline-flex;align-items:center;gap:.25rem;margin-left:.5rem}
+.fg-clear-all:hover{text-decoration:underline}
+.fg-results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.fg-results-count{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+.fg-results-sub{font-size:.85rem;color:var(--muted)}
+.fg-results-badges{display:flex;gap:.75rem;flex-wrap:wrap}
+.fg-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border-radius:100px;background:var(--bg);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted)}
+.fg-badge i{color:var(--cyan)}
+.fg-empty{text-align:center;padding:4rem 2rem}
+.fg-empty__icon{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)}
+.fg-empty h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.fg-empty p{color:var(--muted);margin-bottom:1.5rem}
+@media(max-width:900px){
+    .fg-filter-row{flex-direction:column;align-items:stretch}
+    .fg-filter-search,.fg-filter-select-wrap,.fg-filter-field{min-width:100%}
+}
+</style>
+=======
+{% block title %}Activités — Fly&Go{% endblock %}
+
+{% block body %}
+
+{# ── Page Hero ── #}
+<div class="fg-page-hero">
+    <div class="fg-page-hero__overlay"></div>
+    <div class="fg-page-hero__content">
+        <p class="fg-page-hero__eyebrow">🎯 Nos Activités</p>
+        <h1>Découvrez nos <em>expériences</em></h1>
+        <p>{{ activities|length }} activité(s) disponible(s) en Tunisie et dans le monde</p>
+    </div>
+</div>
+
+<div class="fg-activities-layout">
+
+    {# ── Sidebar Filters ── #}
+    <aside class="fg-filters" id="filtersPanel">
+        <div class="fg-filters__header">
+            <h3><i class="fa fa-sliders-h"></i> Filtres</h3>
+            <button class="fg-filters__reset" onclick="resetFilters()">Réinitialiser</button>
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Recherche</label>
+            <div class="fg-filters__search-wrap">
+                <i class="fa fa-search"></i>
+                <input type="text" id="activitySearch" placeholder="Titre de l'activité..." autocomplete="off">
+                <div class="fg-spinner" id="searchSpinner"></div>
+            </div>
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Budget max : <strong id="priceLabel">500 DT</strong></label>
+            <input type="range" id="priceFilter" min="0" max="500" value="500" step="5"
+                   oninput="document.getElementById('priceLabel').textContent = this.value + ' DT'; applyFilters()">
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Date</label>
+            <input type="date" id="dateFilter" onchange="applyFilters()" class="fg-filters__input">
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Durée</label>
+            <div class="fg-filters__checkboxes">
+                <label><input type="checkbox" value="h" onchange="applyFilters()"> Moins de 1 jour</label>
+                <label><input type="checkbox" value="jour" onchange="applyFilters()"> 1 jour</label>
+                <label><input type="checkbox" value="jours" onchange="applyFilters()"> Plusieurs jours</label>
+            </div>
+        </div>
+
+        <div class="fg-filters__group">
+            <label>Trier par</label>
+            <select id="sortFilter" onchange="applyFilters()" class="fg-filters__select">
+                <option value="default">Par défaut</option>
+                <option value="price-asc">Prix croissant</option>
+                <option value="price-desc">Prix décroissant</option>
+                <option value="title">Titre A→Z</option>
+            </select>
+        </div>
+
+        <button class="fg-btn fg-btn--orange" style="width:100%;margin-top:.5rem" onclick="applyFilters()">
+            <i class="fa fa-filter"></i> Appliquer
+        </button>
+    </aside>
+
+    {# ── Main Content ── #}
+    <div class="fg-activities-main">
+
+        <div class="fg-activities-toolbar">
+            <div class="fg-activities-toolbar__left">
+                <span class="fg-activities-count" id="activityCount">{{ activities|length }} résultat(s)</span>
+            </div>
+            <div class="fg-activities-toolbar__right">
+                <button class="fg-view-btn active" id="viewGrid" onclick="setView('grid')" title="Vue grille"><i class="fa fa-th"></i></button>
+                <button class="fg-view-btn" id="viewList" onclick="setView('list')" title="Vue liste"><i class="fa fa-list"></i></button>
+                <button class="fg-btn fg-btn--ghost fg-btn--sm" onclick="toggleFilters()"><i class="fa fa-sliders-h"></i> Filtres</button>
+            </div>
+        </div>
+
+        <div class="fg-cards-grid fg-cards-grid--activities" id="activitiesGrid">
+            {% for activity in activities %}
+            <div class="fg-card fg-card--activity fg-anim-in"
+                 data-id="{{ activity.id }}"
+                 data-title="{{ activity.title|lower }}"
+                 data-price="{{ activity.price }}"
+                 data-duration="{{ activity.duration|lower }}"
+                 data-date="{{ activity.date ? activity.date|date('Y-m-d') : '' }}"
+                 style="animation-delay: {{ loop.index0 * 0.06 }}s">
+
+                <div class="fg-card__image">
+                    {% if activity.image %}
+                        <img src="{{ asset(activity.image) }}"
+                             alt="{{ activity.title }}"
+                             loading="lazy"
+                             onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80'">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80"
+                             alt="{{ activity.title }}" loading="lazy">
+                    {% endif %}
+
+                    {% if loop.index <= 2 %}
+                        <span class="fg-card__badge fg-card__badge--popular">🔥 Populaire</span>
+                    {% elseif activity.price < 50 %}
+                        <span class="fg-card__badge fg-card__badge--deal">💰 Bon plan</span>
+                    {% endif %}
+
+                    <button class="fg-card__wishlist"
+                            onclick="toggleWishlistItem({{ activity.id }}, '{{ activity.title|e('js') }}', {{ activity.price }}, '{{ activity.image|e('js') }}')"
+                            title="Ajouter à la wishlist">
+                        <i class="fa fa-heart"></i>
+                    </button>
+
+                    {% if activity.date %}
+                    <span class="fg-card__date-badge">
+                        <i class="fa fa-calendar"></i> {{ activity.date|date('d/m/Y') }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="fg-card__body">
+                    {% if activity.place %}
+                        <span class="fg-card__location"><i class="fa fa-map-marker-alt"></i> {{ activity.place.name }}</span>
+                    {% endif %}
+                    <h3 class="fg-card__title">{{ activity.title }}</h3>
+                    <p class="fg-card__desc">{{ activity.description|length > 90 ? activity.description|slice(0,90) ~ '...' : activity.description }}</p>
+
+                    <div class="fg-card__meta">
+                        {% if activity.duration %}<span><i class="fa fa-clock"></i> {{ activity.duration }}</span>{% endif %}
+                        {% if activity.capacity %}<span><i class="fa fa-users"></i> {{ activity.capacity }} places</span>{% endif %}
+                    </div>
+
+                    <div class="fg-card__rating">
+                        <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i><i class="fa fa-star-half-alt"></i>
+                        <span>(4.5)</span>
+                    </div>
+
+                    <div class="fg-card__footer">
+                        <div class="fg-card__price">
+                            <span class="fg-card__price-amount">{{ activity.price }} DT</span>
+                            <span class="fg-card__price-label">/pers.</span>
+                        </div>
+                        <div class="fg-card__actions">
+                            <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--blue fg-btn--sm">Détails</a>
+                            <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--orange fg-btn--sm">Réserver <i class="fa fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-empty-state" style="grid-column:1/-1">
+                <i class="fa fa-search"></i>
+                <h3>Aucune activité trouvée</h3>
+                <p>Essayez de modifier vos filtres</p>
+                <button onclick="resetFilters()" class="fg-btn fg-btn--orange">Réinitialiser</button>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="fg-empty-state" id="filteredEmpty" style="display:none;grid-column:1/-1">
+            <i class="fa fa-filter"></i>
+            <h3>Aucun résultat pour ces filtres</h3>
+            <p>Modifiez vos critères de recherche</p>
+            <button onclick="resetFilters()" class="fg-btn fg-btn--orange">Voir tout</button>
+        </div>
+    </div>
+</div>
+
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+{% endblock %}
+
+{% block javascripts %}
+<script>
+<<<<<<< HEAD
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+        let timeout;
+        el.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 800);
+        });
+        el.addEventListener('change', () => filterForm.submit());
+    });
+});
+=======
+let allCards = Array.from(document.querySelectorAll('.fg-card--activity'));
+let searchTimer = null;
+let currentView = 'grid';
+
+$('#activitySearch').on('input', function () {
+    clearTimeout(searchTimer);
+    const q = $(this).val().trim();
+    $('#searchSpinner').show();
+    searchTimer = setTimeout(function () {
+        if (q.length < 2) { $('#searchSpinner').hide(); applyFilters(); return; }
+        $.ajax({
+            url: '{{ path("activity_search") }}',
+            type: 'GET', data: { q: q }, dataType: 'json',
+            success: function (res) { if (res.success) renderActivitiesAjax(res.activities); },
+            error: function () { applyFilters(); },
+            complete: function () { $('#searchSpinner').hide(); }
+        });
+    }, 350);
+});
+
+function renderActivitiesAjax(activities) {
+    const grid = document.getElementById('activitiesGrid');
+    grid.innerHTML = '';
+    if (!activities.length) {
+        grid.innerHTML = '<div class="fg-empty-state" style="grid-column:1/-1"><i class="fa fa-search"></i><h3>Aucun résultat</h3></div>';
+        updateCount(0); return;
+    }
+    activities.forEach((a, i) => {
+        const img = a.image
+            ? `<img src="/${a.image}" alt="${escHtml(a.title)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80'">`
+            : `<img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=80" alt="${escHtml(a.title)}">`;
+        grid.innerHTML += `
+        <div class="fg-card fg-card--activity fg-anim-in" style="animation-delay:${i*0.06}s"
+             data-id="${a.id}" data-price="${a.price}" data-title="${a.title.toLowerCase()}">
+            <div class="fg-card__image">
+                ${img}
+                ${i < 2 ? '<span class="fg-card__badge fg-card__badge--popular">🔥 Populaire</span>' : ''}
+                <button class="fg-card__wishlist" onclick="toggleWishlistItem(${a.id},'${escHtml(a.title)}',${a.price},'${a.image||''}')"><i class="fa fa-heart"></i></button>
+            </div>
+            <div class="fg-card__body">
+                <h3 class="fg-card__title">${escHtml(a.title)}</h3>
+                <p class="fg-card__desc">${escHtml((a.description||'').slice(0,90))}${(a.description||'').length>90?'...':''}</p>
+                <div class="fg-card__meta">
+                    ${a.duration ? `<span><i class="fa fa-clock"></i> ${escHtml(a.duration)}</span>` : ''}
+                    ${a.capacity ? `<span><i class="fa fa-users"></i> ${a.capacity} places</span>` : ''}
+                </div>
+                <div class="fg-card__footer">
+                    <div class="fg-card__price"><span class="fg-card__price-amount">${a.price} DT</span><span class="fg-card__price-label">/pers.</span></div>
+                    <div class="fg-card__actions">
+                        <a href="/activity/${a.id}" class="fg-btn fg-btn--blue fg-btn--sm">Détails</a>
+                        <a href="/activity/${a.id}" class="fg-btn fg-btn--orange fg-btn--sm">Réserver <i class="fa fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    });
+    updateCount(activities.length);
+    allCards = Array.from(document.querySelectorAll('.fg-card--activity'));
+}
+
+function applyFilters() {
+    const q        = document.getElementById('activitySearch').value.toLowerCase().trim();
+    const maxPrice = parseInt(document.getElementById('priceFilter').value);
+    const date     = document.getElementById('dateFilter').value;
+    const sort     = document.getElementById('sortFilter').value;
+    const durs     = Array.from(document.querySelectorAll('.fg-filters__checkboxes input:checked')).map(c=>c.value);
+
+    let visible = allCards.filter(card => {
+        const title    = card.dataset.title || '';
+        const price    = parseFloat(card.dataset.price) || 0;
+        const duration = card.dataset.duration || '';
+        const cardDate = card.dataset.date || '';
+        if (q && !title.includes(q)) return false;
+        if (price > maxPrice) return false;
+        if (date && cardDate && cardDate < date) return false;
+        if (durs.length && !durs.some(d => duration.includes(d))) return false;
+        return true;
+    });
+
+    if (sort === 'price-asc')  visible.sort((a,b) => parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
+    if (sort === 'price-desc') visible.sort((a,b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
+    if (sort === 'title')      visible.sort((a,b) => a.dataset.title.localeCompare(b.dataset.title));
+
+    allCards.forEach(c => c.style.display = 'none');
+    visible.forEach((c,i) => { c.style.display=''; c.style.animationDelay = i*0.05+'s'; });
+
+    document.getElementById('filteredEmpty').style.display = visible.length ? 'none' : 'block';
+    updateCount(visible.length);
+}
+
+function resetFilters() {
+    document.getElementById('activitySearch').value = '';
+    document.getElementById('priceFilter').value = 500;
+    document.getElementById('priceLabel').textContent = '500 DT';
+    document.getElementById('dateFilter').value = '';
+    document.getElementById('sortFilter').value = 'default';
+    document.querySelectorAll('.fg-filters__checkboxes input').forEach(c => c.checked = false);
+    allCards.forEach(c => c.style.display = '');
+    document.getElementById('filteredEmpty').style.display = 'none';
+    updateCount(allCards.length);
+}
+
+function updateCount(n) { document.getElementById('activityCount').textContent = n + ' résultat(s)'; }
+
+function setView(mode) {
+    const grid = document.getElementById('activitiesGrid');
+    if (mode === 'list') {
+        grid.classList.add('fg-cards-grid--list');
+        document.getElementById('viewList').classList.add('active');
+        document.getElementById('viewGrid').classList.remove('active');
+    } else {
+        grid.classList.remove('fg-cards-grid--list');
+        document.getElementById('viewGrid').classList.add('active');
+        document.getElementById('viewList').classList.remove('active');
+    }
+}
+
+function toggleFilters() { document.getElementById('filtersPanel').classList.toggle('fg-filters--open'); }
+
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+</script>
+{% endblock %}

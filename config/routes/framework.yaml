@@ -1,0 +1,12 @@
+when@dev:
+    _errors:
+<<<<<<< HEAD
+        resource: '@FrameworkBundle/Resources/config/routing/errors.xml'
+=======
+<<<<<<< HEAD
+        resource: '@FrameworkBundle/Resources/config/routing/errors.xml'
+=======
+        resource: '@FrameworkBundle/Resources/config/routing/errors.php'
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+        prefix: /_error

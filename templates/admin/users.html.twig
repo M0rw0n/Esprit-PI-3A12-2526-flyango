@@ -1,0 +1,58 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Utilisateurs — Admin{% endblock %}
+{% block breadcrumb %}Utilisateurs{% endblock %}
+{% block admin_body %}
+<div style="margin-bottom:1.5rem">
+    <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Gestion des utilisateurs</h2>
+    <p style="color:var(--muted);font-size:.85rem">{{ users|length }} utilisateurs inscrits</p>
+</div>
+<div class="acard-wrap">
+    <div class="bookings-list">
+        {% for u in users %}
+        <div class="booking-card">
+            <div class="booking-card__av" style="background:{{ 'ROLE_ADMIN' in u.roles ? 'linear-gradient(135deg,var(--gold),#FF9500)' : 'linear-gradient(135deg,var(--navy),var(--cyan))' }}">
+                {{ u.prenom|slice(0,1)|upper }}
+            </div>
+            <div class="booking-card__info">
+                <div class="booking-card__name">{{ u.fullName }}</div>
+                <div class="booking-card__meta">
+                    <span><i class="fa fa-envelope fa-xs"></i> {{ u.email }}</span>
+                    {% if u.telephone %}<span><i class="fa fa-phone fa-xs"></i> {{ u.telephone }}</span>{% endif %}
+                    <span><i class="fa fa-calendar fa-xs"></i> {{ u.createdAt|date('d/m/Y') }}</span>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:.2rem;align-items:flex-end">
+                {% for role in u.roles %}
+                <span class="tag {{ role == 'ROLE_ADMIN' ? 'tag--gold' : 'tag--navy' }}">{{ role }}</span>
+                {% endfor %}
+            </div>
+            <span class="status status--{{ u.active ? 'confirmed' : 'cancelled' }}">{{ u.active ? 'Actif' : 'Inactif' }}</span>
+            <div class="booking-card__actions">
+                <button onclick="toggleRole({{ u.id }})" class="btn btn-outline btn-sm" title="Changer rôle"><i class="fa fa-user-shield"></i></button>
+                <button onclick="toggleUser({{ u.id }})" class="btn btn-outline btn-sm" title="Activer/Désactiver"><i class="fa fa-{{ u.active ? 'lock' : 'unlock' }}"></i></button>
+                <form action="{{ path('admin_user_delete', {id: u.id}) }}" method="POST" onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                    <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty" style="padding:3rem"><i class="fa fa-users"></i><h3>Aucun utilisateur</h3></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+<script>
+function toggleUser(id) {
+    $.post('{{ path("admin_user_toggle", {"id": "__ID__"}) }}'.replace('__ID__', id))
+     .done(()=>{ showToast('✅ Statut utilisateur mis à jour !'); setTimeout(()=>location.reload(),900); })
+     .fail(()=>showToast('Erreur','error'));
+}
+function toggleRole(id) {
+    if(!confirm('Changer le rôle de cet utilisateur ?')) return;
+    $.post('{{ path("admin_user_role", {"id": "__ID__"}) }}'.replace('__ID__', id))
+     .done(()=>{ showToast('✅ Rôle mis à jour !'); setTimeout(()=>location.reload(),900); })
+     .fail(()=>showToast('Erreur','error'));
+}
+</script>
+{% endblock %}

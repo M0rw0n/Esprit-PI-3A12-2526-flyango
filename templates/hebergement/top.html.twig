@@ -1,0 +1,73 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Top Hébergements — Fly&Go{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title"><i class="fa fa-trophy" style="color:var(--gold)"></i> Top Hébergements</h1>
+        <p class="hero-subtitle">Les hébergements les plus populaires et les mieux notés</p>
+    </div>
+</section>
+
+<div class="container" style="padding-top:2rem;padding-bottom:2rem">
+    {% if topHebergements %}
+    <div class="hcards">
+        {% for item in topHebergements %}
+        {% set h = item[0] %}
+        <article class="hcard" onclick="window.location='{{ path('hebergement_show', {id: h.id}) }}'">
+            <div class="hcard__img">
+                <img src="{{ h.image ? asset(h.image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80' }}" alt="{{ h.nom }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80'">
+                <div class="hcard__badges">
+                    <span class="hcard__badge" style="background:var(--gold);color:var(--navy-dd)">#{{ loop.index }}</span>
+                </div>
+                {% if app.user %}
+                <button class="hcard__wish {% if is_favorite(h.id) %}on{% endif %}" onclick="event.stopPropagation(); toggleWishlist(this, {{ h.id }}, 'hebergement')">
+                    <i class="fa fa-heart"></i>
+                </button>
+                {% endif %}
+                {% set avgRating = item.avgRating|default(0) %}
+                {% if avgRating > 0 %}
+                <div class="hcard__rating">
+                    <i class="fa fa-star"></i>
+                    {{ avgRating|number_format(1, '.') }} · {{ h.avis.count }} avis
+                </div>
+                {% endif %}
+            </div>
+            <div class="hcard__body">
+                <div class="hcard__header">
+                    <div class="hcard__loc">
+                        <i class="fa fa-map-marker-alt"></i>
+                        {{ h.ville }}
+                    </div>
+                    <span class="hcard__type">{{ h.type }}</span>
+                </div>
+                <h3 class="hcard__name">{{ h.nom }}</h3>
+                <div class="hcard__meta">
+                    <span><i class="fa fa-heart"></i> {{ item.favoriteCount|default(0) }} favoris</span>
+                    <span><i class="fa fa-comment"></i> {{ h.avis.count }} avis</span>
+                </div>
+                <div class="hcard__foot">
+                    <div class="hcard__price">
+                        <span class="hcard__price-val">{{ h.prixParNuit|number_format(0, '', ' ') }}</span>
+                        <span class="hcard__price-cur">TND</span>
+                        <span class="hcard__price-per">/nuit</span>
+                    </div>
+                    <div class="hcard__actions" onclick="event.stopPropagation()">
+                        <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fg-empty">
+        <div class="fg-empty__icon"><i class="fa fa-trophy"></i></div>
+        <h3>Aucun classement disponible</h3>
+        <p>Les hébergements apparaîtront ici une fois que des favoris et avis sont ajoutés.</p>
+        <a href="{{ path('hebergement_index') }}" class="btn btn-navy"><i class="fa fa-search"></i> Explorer</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

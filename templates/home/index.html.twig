@@ -1,0 +1,685 @@
+{% extends 'base/base.html.twig' %}
+<<<<<<< HEAD
+{% block title %}Fly&Go — Votre Agence de Voyage en Tunisie{% endblock %}
+{% block og_title %}Fly&Go — Agence de Voyage en Tunisie{% endblock %}
+{% block body %}
+
+<!-- Preload critical hero image -->
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1920&q=80">
+
+<section class="hero">
+    <div class="hero__bg">
+        <div class="hero__slide hero__slide--1 on" fetchpriority="high"></div>
+        <div class="hero__slide hero__slide--2" loading="lazy"></div>
+        <div class="hero__slide hero__slide--3" loading="lazy"></div>
+    </div>
+    <div class="hero__overlay"></div>
+    <div class="hero__content">
+        <img src="{{ asset('images/logo.png') }}" alt="Fly&Go" class="hero__logo" onerror="this.style.display='none'">
+        <div class="hero__badge">✈ Expérience premium · Tunisie &amp; Monde · Support 24/7</div>
+        <h1 class="hero__title">Réservez plus vite,<br>voyagez mieux avec <em>Fly&amp;Go</em></h1>
+        <p class="hero__sub">Un parcours de réservation inspiré des meilleures plateformes : recherche claire, filtres utiles, scénarios pensés pour les couples, familles et voyageurs solo.</p>
+        <div class="hero__search">
+            <div class="hero__field"><i class="fa fa-map-marker-alt"></i><input type="text" id="heroQ" placeholder="Destination ou hébergement"></div>
+            <div class="hero__field"><i class="fa fa-calendar"></i><input type="date" id="heroDate"></div>
+            <div class="hero__field"><i class="fa fa-users"></i><select id="heroGuests"><option>1 personne</option><option selected>2 personnes</option><option>3 personnes</option><option>4+ personnes</option></select></div>
+            <button onclick="heroSearch()" class="btn btn-gold btn-lg"><i class="fa fa-search"></i> Rechercher</button>
+        </div>
+        <div class="hero__stats">
+            <div class="hero__stat"><strong><span data-target="{{ totalHebergements }}" data-suffix="+">0+</span></strong><span>Hébergements</span></div>
+            <div class="hero__sep"></div>
+            <div class="hero__stat"><strong><span data-target="{{ totalCircuits }}" data-suffix="+">0+</span></strong><span>Circuits</span></div>
+            <div class="hero__sep"></div>
+            <div class="hero__stat"><strong><span data-target="{{ totalActivities }}" data-suffix="+">0+</span></strong><span>Activités</span></div>
+            <div class="hero__sep"></div>
+            <div class="hero__stat"><strong><span data-target="{{ totalPosts }}" data-suffix="+">0+</span></strong><span>Discussions</span></div>
+        </div>
+    </div>
+    <div class="hero__dots"><button class="hero__dot on" onclick="goS(0)"></button><button class="hero__dot" onclick="goS(1)"></button><button class="hero__dot" onclick="goS(2)"></button></div>
+    <a href="#booking-scenarios" class="hero__scroll"><i class="fa fa-chevron-down"></i></a>
+</section>
+
+<section id="booking-scenarios" style="background:#fff;border-bottom:1px solid var(--border)">
+    <div style="max-width:1380px;margin:0 auto;padding:1.25rem 2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem"><strong style="display:flex;align-items:center;gap:.55rem;color:var(--navy)"><i class="fa fa-check-circle" style="color:var(--green)"></i> Réservation simple</strong><p style="color:var(--muted);font-size:.84rem;margin-top:.45rem">Un parcours plus clair pour passer de la recherche à la confirmation en quelques clics.</p></div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem"><strong style="display:flex;align-items:center;gap:.55rem;color:var(--navy)"><i class="fa fa-sliders-h" style="color:var(--cyan-d)"></i> Filtres utiles</strong><p style="color:var(--muted);font-size:.84rem;margin-top:.45rem">Tri par prix, recherche par ville, type d’hébergement et difficulté des circuits.</p></div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem"><strong style="display:flex;align-items:center;gap:.55rem;color:var(--navy)"><i class="fa fa-bolt" style="color:var(--gold-d)"></i> Scénarios prêts</strong><p style="color:var(--muted);font-size:.84rem;margin-top:.45rem">Couple, famille, aventure ou city-break : le contenu est mieux structuré pour guider le choix.</p></div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem"><strong style="display:flex;align-items:center;gap:.55rem;color:var(--navy)"><i class="fa fa-headset" style="color:#7C3AED"></i> Réassurance</strong><p style="color:var(--muted);font-size:.84rem;margin-top:.45rem">Messages de confiance, support visible et meilleure lisibilité sur les actions de réservation.</p></div>
+    </div>
+</section>
+
+<section class="band"><div class="band__inner">
+    <a class="cat on" href="{{ path('hebergement_index') }}"><i class="fa fa-hotel"></i><span>Hébergements</span></a>
+    <a class="cat" href="{{ path('circuit_index') }}"><i class="fa fa-route"></i><span>Circuits</span></a>
+    <a class="cat" href="{{ path('activity_index') }}"><i class="fa fa-hiking"></i><span>Activités</span></a>
+    <a class="cat" href="{{ path('transport_index') }}"><i class="fa fa-plane"></i><span>Transport</span></a>
+    <a class="cat" href="{{ path('forum_index') }}"><i class="fa fa-comments"></i><span>Forum</span></a>
+    {% for v in villes|slice(0, 4) %}
+        <a class="cat" href="{{ path('hebergement_index', {ville: v}) }}"><i class="fa fa-map-pin"></i><span>{{ v }}</span></a>
+    {% endfor %}
+</div></section>
+
+<section class="sec" id="hebergements">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--cyan-d);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Hébergements</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Séjours <em style="color:var(--gold)">recommandés</em></h2>
+            </div>
+            <a href="{{ path('hebergement_index') }}" class="btn btn-outline">Voir tout <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem">
+            {% for h in hebergements %}
+            <div class="hcard anim">
+                <div class="hcard__img">
+                    <img src="{{ h.image ? asset(h.image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80' }}" alt="{{ h.nom }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&q=80'">
+                    {% if loop.index <= 2 %}<span class="hcard__badge">🔥 Populaire</span>{% endif %}
+                    <button class="hcard__wish"><i class="fa fa-heart"></i></button>
+                </div>
+                <div class="hcard__body">
+                    <p class="hcard__loc"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ h.ville }}</p>
+                    <h3 class="hcard__name">{{ h.nom }}</h3>
+                    <div class="hcard__meta">
+                        <span><i class="fa fa-tag"></i> {{ h.type }}</span>
+                        {% if h.capacite %}<span><i class="fa fa-users"></i> {{ h.capacite }} pers.</span>{% endif %}
+                        {% if h.avis|length > 0 %}<span><i class="fa fa-star" style="color:var(--gold)"></i> {{ h.getMoyenneNotes() }}</span>{% endif %}
+                    </div>
+                    <div class="hcard__foot">
+                        <div class="price price--sm">
+                            <span class="price__val">{{ h.prixParNuit|number_format(3, ',', ' ') }}</span>
+                            <span class="price__cur">TND</span>
+                            <span class="price__per">/nuit</span>
+                        </div>
+                        <div class="hcard__actions">
+                            <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                            <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-gold btn-sm">Réserver</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="sec" style="background:var(--bg2)" id="circuits">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--cyan-d);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Circuits</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Voyages <em style="color:var(--gold)">organisés</em></h2>
+            </div>
+            <a href="{{ path('circuit_index') }}" class="btn btn-outline">Voir tout <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem">
+            {% for c in circuits %}
+            <div class="ccard anim">
+                <div class="ccard__img">
+                    <img src="{{ c.image ? asset(c.image) : 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=80' }}" alt="{{ c.titre }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=80'">
+                    {% if c.difficulte %}<span class="ccard__badge diff-badge diff-badge--{{ c.difficulte|lower }}">{{ c.difficulte }}</span>{% endif %}
+                </div>
+                <div class="ccard__body">
+                    {% if c.destination %}<p class="ccard__loc"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ c.depart }} → {{ c.destination }}</p>{% endif %}
+                    <h3 class="ccard__name">{{ c.titre }}</h3>
+                    <div class="ccard__meta">
+                        {% if c.duree %}<span><i class="fa fa-clock"></i> {{ c.duree }}</span>{% endif %}
+                        {% if c.placesDisponibles %}<span><i class="fa fa-users"></i> {{ c.placesDisponibles }} places</span>{% endif %}
+                    </div>
+                    <div class="ccard__foot">
+                        <div class="price price--sm">
+                            <span class="price__val">{{ c.prix|number_format(3, ',', ' ') }}</span>
+                            <span class="price__cur">TND</span>
+                            <span class="price__per">/pers.</span>
+                        </div>
+                        <div class="ccard__actions">
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-gold btn-sm">Réserver</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="sec" id="activities">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--cyan-d);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Activités</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Expériences <em style="color:var(--gold)">uniques</em></h2>
+            </div>
+            <a href="{{ path('activity_index') }}" class="btn btn-outline">Voir tout <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem">
+            {% for a in activities %}
+            <div class="acard anim" data-id="{{ a.id }}">
+                <div class="acard__img">
+                    {% if a.image %}<img src="{{ asset(a.image) }}" alt="{{ a.title }}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=500&q=80'">
+                    {% else %}<img src="https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=500&q=80" alt="{{ a.title }}">{% endif %}
+                    {% if loop.index <= 2 %}<span class="acard__badge">🔥 Tendance</span>{% endif %}
+                </div>
+                <div class="acard__body">
+                    {% if a.lieu %}<p class="acard__loc"><i class="fa fa-map-marker-alt"></i> {{ a.lieu }}</p>{% endif %}
+                    <h3 class="acard__name">{{ a.title }}</h3>
+                    <p class="acard__desc">{{ a.description|length > 80 ? a.description|slice(0,80)~'…' : a.description }}</p>
+                    <div class="acard__meta">
+                        {% if a.duration %}<span><i class="fa fa-clock"></i> {{ a.duration }}</span>{% endif %}
+                        <span><i class="fa fa-users"></i> {{ a.capacity }} places</span>
+                    </div>
+                    <div class="acard__foot">
+                        <div class="price price--sm">
+                            <span class="price__val">{{ a.price|number_format(3, ',', ' ') }}</span>
+                            <span class="price__cur">TND</span>
+                            <span class="price__per">/pers.</span>
+                        </div>
+                        <div class="acard__actions">
+                            <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                            <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-gold btn-sm">Réserver</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% if posts %}
+<section class="sec" style="background:var(--navy-dd)">
+    <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
+            <div>
+                <p style="font-size:.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Communauté</p>
+                <h2 style="font-size:1.8rem;font-weight:900;color:#fff;letter-spacing:-.02em">Forum des <em style="color:var(--gold)">voyageurs</em></h2>
+            </div>
+            <a href="{{ path('forum_index') }}" class="btn btn-gold">Rejoindre <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem">
+            {% for p in posts %}
+            <a href="{{ path('forum_show', {id: p.id}) }}" class="fpost anim" style="text-decoration:none">
+                {% if p.categorie %}<div class="fpost__head"><span class="fpost__cat">{{ p.categorie }}</span></div>{% endif %}
+                <div class="fpost__title">{{ p.title }}</div>
+                <div class="fpost__excerpt">{{ p.content|length > 100 ? p.content|slice(0,100)~'…' : p.content }}</div>
+                <div class="fpost__foot">
+                    <div class="fpost__meta">
+                        <span><i class="fa fa-user"></i> {{ p.author }}</span>
+                        <span><i class="fa fa-comment"></i> {{ p.comments|length }}</span>
+                        <span><i class="fa fa-eye"></i> {{ p.vues }}</span>
+                    </div>
+                    <span style="font-size:.73rem;color:var(--muted)">{{ p.createdAt|date('d/m/Y') }}</span>
+                </div>
+            </a>
+=======
+{% block title %}Fly&Go — Explorez la Tunisie et le Monde{% endblock %}
+
+{% block body %}
+
+{# ══════════ HERO ══════════ #}
+<section class="fg-hero">
+    <div class="fg-hero__bg">
+        <div class="fg-hero__slide fg-hero__slide--1 active"></div>
+        <div class="fg-hero__slide fg-hero__slide--2"></div>
+        <div class="fg-hero__slide fg-hero__slide--3"></div>
+    </div>
+    <div class="fg-hero__overlay"></div>
+    <div class="fg-hero__particles"></div>
+
+    <div class="fg-hero__content">
+        <div class="fg-hero__eyebrow">
+            <span>✈</span> Agence de voyage certifiée — Tunisie &amp; Monde
+        </div>
+        <h1 class="fg-hero__title">
+            Explorez la Tunisie<br>avec <em>Fly&amp;Go</em>
+        </h1>
+        <p class="fg-hero__subtitle">
+            Des expériences authentiques, des destinations paradisiaques,<br>
+            des souvenirs qui durent toute une vie.
+        </p>
+
+        <div class="fg-hero__search">
+            <div class="fg-hero__search-field">
+                <i class="fa fa-map-marker-alt"></i>
+                <input type="text" id="heroSearchDest" placeholder="Destination (Djerba, Sahara…)">
+            </div>
+            <div class="fg-hero__search-field">
+                <i class="fa fa-calendar"></i>
+                <input type="date" id="heroSearchDate" min="{{ 'now'|date('Y-m-d') }}">
+            </div>
+            <div class="fg-hero__search-field">
+                <i class="fa fa-users"></i>
+                <select id="heroSearchPersons">
+                    <option value="1">1 personne</option>
+                    <option value="2" selected>2 personnes</option>
+                    <option value="3">3 personnes</option>
+                    <option value="4">4+ personnes</option>
+                </select>
+            </div>
+            <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--orange fg-btn--lg" id="heroSearchBtn">
+                <i class="fa fa-search"></i> Rechercher
+            </a>
+        </div>
+
+        <div class="fg-hero__stats">
+            <div class="fg-hero__stat">
+                <strong><span data-target="500" data-suffix="+">0+</span></strong>
+                <span>Activités disponibles</span>
+            </div>
+            <div class="fg-hero__stat-sep"></div>
+            <div class="fg-hero__stat">
+                <strong><span data-target="50000" data-suffix="+">0+</span></strong>
+                <span>Voyageurs satisfaits</span>
+            </div>
+            <div class="fg-hero__stat-sep"></div>
+            <div class="fg-hero__stat">
+                <strong>4.9★</strong>
+                <span>Note moyenne</span>
+            </div>
+            <div class="fg-hero__stat-sep"></div>
+            <div class="fg-hero__stat">
+                <strong><span data-target="7" data-suffix=" dest.">0 dest.</span></strong>
+                <span>En Tunisie</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="fg-hero__dots">
+        <button class="fg-hero__dot active" onclick="goSlide(0)"></button>
+        <button class="fg-hero__dot" onclick="goSlide(1)"></button>
+        <button class="fg-hero__dot" onclick="goSlide(2)"></button>
+    </div>
+    <a href="#activities-section" class="fg-hero__scroll"><i class="fa fa-chevron-down"></i></a>
+</section>
+
+{# ══════════ CATEGORIES ══════════ #}
+<section class="fg-band">
+    <div class="fg-band__inner">
+        <div class="fg-band__item active"><i class="fa fa-star"></i><span>Tout voir</span></div>
+        <div class="fg-band__item"><i class="fa fa-mountain"></i><span>Aventure</span></div>
+        <div class="fg-band__item"><i class="fa fa-umbrella-beach"></i><span>Plages</span></div>
+        <div class="fg-band__item"><i class="fa fa-landmark"></i><span>Culture</span></div>
+        <div class="fg-band__item"><i class="fa fa-spa"></i><span>Bien-être</span></div>
+        <div class="fg-band__item"><i class="fa fa-utensils"></i><span>Gastronomie</span></div>
+        <div class="fg-band__item"><i class="fa fa-camera"></i><span>Photo</span></div>
+        <div class="fg-band__item"><i class="fa fa-horse"></i><span>Équitation</span></div>
+    </div>
+</section>
+
+{# ══════════ ACTIVITIES ══════════ #}
+<section class="fg-section" id="activities-section">
+    <div class="fg-section__inner">
+        <div class="fg-section__header">
+            <div>
+                <p class="fg-section__eyebrow">Nos Activités</p>
+                <h2 class="fg-section__title">Expériences <em>Recommandées</em></h2>
+            </div>
+            <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--ghost">
+                Voir tout <i class="fa fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="fg-cards-grid">
+            {% for activity in activities %}
+            <div class="fg-card fg-card--activity" data-id="{{ activity.id }}" data-price="{{ activity.price }}">
+                <div class="fg-card__image">
+                    {% if activity.image %}
+                        <img src="{{ asset(activity.image) }}" alt="{{ activity.title }}"
+                             onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80'">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&q=80" alt="{{ activity.title }}">
+                    {% endif %}
+                    {% if loop.index <= 2 %}
+                        <span class="fg-card__badge">🔥 Populaire</span>
+                    {% elseif activity.price < 50 %}
+                        <span class="fg-card__badge fg-card__badge--deal">💰 Bon plan</span>
+                    {% endif %}
+                    <button class="fg-card__wishlist"
+                            onclick="toggleWishlistItem({{ activity.id }}, '{{ activity.title|e('js') }}', {{ activity.price }}, '{{ activity.image|e('js') }}')">
+                        <i class="fa fa-heart"></i>
+                    </button>
+                    {% if activity.date %}
+                    <span class="fg-card__date-badge"><i class="fa fa-calendar"></i> {{ activity.date|date('d/m/Y') }}</span>
+                    {% endif %}
+                </div>
+                <div class="fg-card__body">
+                    {% if activity.place %}
+                        <span class="fg-card__location"><i class="fa fa-map-marker-alt"></i> {{ activity.place.name }}</span>
+                    {% endif %}
+                    <h3 class="fg-card__title">{{ activity.title }}</h3>
+                    <p class="fg-card__desc">{{ activity.description|length > 85 ? activity.description|slice(0,85) ~ '…' : activity.description }}</p>
+                    <div class="fg-card__meta">
+                        {% if activity.duration %}<span><i class="fa fa-clock"></i> {{ activity.duration }}</span>{% endif %}
+                        {% if activity.capacity %}<span><i class="fa fa-users"></i> {{ activity.capacity }} places</span>{% endif %}
+                    </div>
+                    <div class="fg-card__rating">
+                        <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i><i class="fa fa-star-half-alt"></i>
+                        <span>(4.5)</span>
+                    </div>
+                    <div class="fg-card__footer">
+                        <div class="fg-card__price">
+                            <span class="fg-card__price-amount">{{ activity.price }} DT</span>
+                            <span class="fg-card__price-label">/pers.</span>
+                        </div>
+                        <div class="fg-card__actions">
+                            <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--blue fg-btn--sm">Détails</a>
+                            <a href="{{ path('activity_show', {id: activity.id}) }}" class="fg-btn fg-btn--orange fg-btn--sm">
+                                Réserver <i class="fa fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-empty-state" style="grid-column:1/-1">
+                <i class="fa fa-hiking"></i><p>Aucune activité disponible.</p>
+                <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--orange">Voir le catalogue</a>
+            </div>
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<<<<<<< HEAD
+{% endif %}
+
+<section style="background:linear-gradient(135deg,var(--navy),var(--cyan-d));padding:4rem 0">
+    <div style="max-width:980px;margin:0 auto;padding:0 2rem;text-align:center;color:#fff">
+        <h2 style="font-size:2rem;font-weight:900;margin-bottom:1rem">Un projet plus proche des standards Booking &amp; OTA</h2>
+        <p style="opacity:.88;margin-bottom:2rem;font-size:1.05rem">Tri, filtres, scénarios de réservation, messages de réassurance, données de démonstration réalistes et logo Fly&amp;Go conservé.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+            <a href="{{ path('hebergement_index') }}" class="btn btn-gold btn-xl"><i class="fa fa-hotel"></i> Voir les hébergements</a>
+            <a href="{{ path('circuit_index') }}" class="btn btn-outline btn-xl" style="border-color:rgba(255,255,255,0.4);color:#fff"><i class="fa fa-route"></i> Explorer les circuits</a>
+        </div>
+    </div>
+</section>
+
+<!-- Témoignages -->
+<section class="sec" style="background:var(--bg2)">
+    <div class="sec__inner" style="max-width:1200px;margin:0 auto;padding:0 2rem">
+        <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:3rem">
+            <div>
+                <p class="sec__eye" style="font-size:.75rem;font-weight:800;color:var(--cyan-d);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Témoignages</p>
+                <h2 class="sec__title" style="font-size:1.8rem;font-weight:900;color:var(--text);letter-spacing:-.02em">Ce que disent nos <em style="color:var(--gold)">voyageurs</em></h2>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem">
+            <div style="background:#fff;border-radius:var(--r);padding:2rem;box-shadow:var(--s2);border:1px solid var(--border)">
+                <div style="color:var(--gold);font-size:1.2rem;margin-bottom:1rem">★★★★★</div>
+                <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:1.5rem;font-style:italic">"Service exceptionnel ! L'équipe de Fly&Go a organisé notre voyage de rêve en Tunisie. Tout était parfaitement prévu, des hébergements aux activités."</p>
+                <div style="display:flex;align-items:center;gap:1rem">
+                    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:1.1rem">SM</div>
+                    <div>
+                        <strong style="font-weight:700;color:var(--text)">Sarah Martin</strong>
+                        <p style="font-size:.8rem;color:var(--muted)">Voyage en couple, Djerba</p>
+                    </div>
+                </div>
+            </div>
+            <div style="background:#fff;border-radius:var(--r);padding:2rem;box-shadow:var(--s2);border:1px solid var(--border)">
+                <div style="color:var(--gold);font-size:1.2rem;margin-bottom:1rem">★★★★★</div>
+                <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:1.5rem;font-style:italic">"Le circuit Sahara était inoubliable. Les guides étaient passionnés et le camp bédouin une expérience unique. Je recommande vivement !"</p>
+                <div style="display:flex;align-items:center;gap:1rem">
+                    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--orange));color:var(--navy-dd);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:1.1rem">JD</div>
+                    <div>
+                        <strong style="font-weight:700;color:var(--text)">Jean Dupont</strong>
+                        <p style="font-size:.8rem;color:var(--muted)">Circuit Sahara, Douz</p>
+                    </div>
+                </div>
+            </div>
+            <div style="background:#fff;border-radius:var(--r);padding:2rem;box-shadow:var(--s2);border:1px solid var(--border)">
+                <div style="color:var(--gold);font-size:1.2rem;margin-bottom:1rem">★★★★★</div>
+                <p style="color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:1.5rem;font-style:italic">"Réservation simple et rapide. La plongée à Tabarka était magique. Le matériel était impeccable et les moniteurs très professionnels."</p>
+                <div style="display:flex;align-items:center;gap:1rem">
+                    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:1.1rem">CV</div>
+                    <div>
+                        <strong style="font-weight:700;color:var(--text)">Claire Vincent</strong>
+                        <p style="font-size:.8rem;color:var(--muted)">Activité plongée, Tabarka</p>
+                    </div>
+                </div>
+            </div>
+=======
+
+{# ══════════ DESTINATIONS — images réelles Tunisie ══════════ #}
+<section class="fg-section fg-section--dark" id="destinations">
+    <div class="fg-section__inner">
+        <div class="fg-section__header">
+            <div>
+                <p class="fg-section__eyebrow">Destinations</p>
+                <h2 class="fg-section__title" style="color:#fff">Découvrez la <em>Tunisie</em></h2>
+            </div>
+        </div>
+
+        {% set realImages = {
+            'Sidi Bou Said':   'https://images.unsplash.com/photo-1610822454978-e1cdde073a70?w=800&q=85',
+            'Sahara Douz':     'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=85',
+            'Carthage':        'https://images.unsplash.com/photo-1580834341580-8c17a3a630ca?w=800&q=85',
+            'Medina de Tunis': 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=800&q=85',
+            'Djerba':          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=85',
+            'Kairouan':        'https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=85',
+            'Tabarka':         'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=85'
+        } %}
+
+        <div class="fg-destinations-grid">
+            {% for place in places %}
+            <div class="fg-dest-card" style="animation-delay:{{ loop.index0 * 0.1 }}s">
+                <div class="fg-dest-card__img">
+                    <img src="{{ realImages[place.name] ?? 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=800&q=85' }}"
+                         alt="{{ place.name }}" loading="lazy">
+                </div>
+                <div class="fg-dest-card__overlay">
+                    <div class="fg-dest-card__info">
+                        <h3>{{ place.name }}</h3>
+                        <p><i class="fa fa-map-marker-alt"></i> {{ place.city }}, {{ place.country }}</p>
+                    </div>
+                    <a href="{{ path('activity_index') }}?place={{ place.id }}" class="fg-dest-card__btn">
+                        Explorer <i class="fa fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+        </div>
+    </div>
+</section>
+
+<<<<<<< HEAD
+<!-- Newsletter -->
+<section style="background:linear-gradient(135deg,var(--navy-dd),var(--navy));padding:5rem 0">
+    <div style="max-width:680px;margin:0 auto;padding:0 2rem;text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">✈️</div>
+        <h2 style="font-size:1.8rem;font-weight:900;color:#fff;margin-bottom:.75rem">Restez informé</h2>
+        <p style="color:rgba(255,255,255,.75);margin-bottom:2rem;font-size:1rem">Recevez nos meilleures offres et inspirations de voyage directement dans votre boîte mail.</p>
+        <form style="display:flex;gap:.75rem;max-width:480px;margin:0 auto;flex-wrap:wrap" onsubmit="event.preventDefault();showToast('Merci pour votre inscription !','success');this.reset();">
+            <input type="email" placeholder="Votre adresse email" required style="flex:1;min-width:200px;padding:.9rem 1.2rem;border-radius:var(--r);border:none;font-size:.95rem;outline:none;font-family:var(--font)">
+            <button type="submit" class="btn btn-gold btn-lg"><i class="fa fa-paper-plane"></i> S'inscrire</button>
+        </form>
+        <p style="font-size:.75rem;color:rgba(255,255,255,.45);margin-top:1rem">En vous inscrivant, vous acceptez de recevoir nos offres. Désabonnement possible à tout moment.</p>
+=======
+{# ══════════ FORUM ══════════ #}
+<section class="fg-section">
+    <div class="fg-section__inner">
+        <div class="fg-section__header">
+            <div>
+                <p class="fg-section__eyebrow">Communauté</p>
+                <h2 class="fg-section__title">Discussions <em>Récentes</em></h2>
+            </div>
+            <a href="{{ path('forum_index') }}" class="fg-btn fg-btn--ghost">Voir tout <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="fg-forum-grid">
+            {% for post in recentPosts %}
+            <div class="fg-forum-card">
+                <div class="fg-forum-card__top">
+                    <div class="fg-forum-card__avatar">{{ post.author|slice(0,1)|upper }}</div>
+                    <div class="fg-forum-card__meta">
+                        <strong>{{ post.author }}</strong>
+                        <span><i class="fa fa-clock"></i> {{ post.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                    <span class="fg-forum-card__status fg-forum-card__status--{{ post.status|lower }}">
+                        {{ post.status == 'APPROVED' ? '✅' : '⏳' }} {{ post.status }}
+                    </span>
+                </div>
+                <h3 class="fg-forum-card__title">{{ post.title }}</h3>
+                <p class="fg-forum-card__excerpt">{{ post.content|slice(0,115) }}{% if post.content|length > 115 %}…{% endif %}</p>
+                <div class="fg-forum-card__footer">
+                    <span><i class="fa fa-comments"></i> {{ post.comments|length }} commentaire(s)</span>
+                    <a href="{{ path('forum_show', {id: post.id}) }}" class="fg-btn fg-btn--ghost fg-btn--sm">
+                        Lire <i class="fa fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-empty-state" style="grid-column:1/-1">
+                <i class="fa fa-comments"></i><p>Aucune discussion récente.</p>
+                <a href="{{ path('forum_index') }}" class="fg-btn fg-btn--orange">Rejoindre le forum</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# ══════════ REVIEWS ══════════ #}
+<section class="fg-section fg-section--blue">
+    <div class="fg-section__inner">
+        <div class="fg-section__header fg-section__header--center">
+            <div>
+                <p class="fg-section__eyebrow">Avis Clients</p>
+                <h2 class="fg-section__title" style="color:#fff">Ce que disent <em>nos voyageurs</em></h2>
+            </div>
+        </div>
+        <div class="fg-reviews-slider" id="reviewsSlider">
+            {% for review in reviews %}
+            <div class="fg-review-card">
+                <div class="fg-review-card__stars">
+                    {% for i in 1..5 %}<i class="fa fa-star{% if i > review.rating %}-o{% endif %}"></i>{% endfor %}
+                </div>
+                <p class="fg-review-card__comment">{{ review.comment }}</p>
+                <div class="fg-review-card__author">
+                    <div class="fg-review-card__avatar">{{ review.author|slice(0,1)|upper }}</div>
+                    <div><strong>{{ review.author }}</strong><span>{{ review.createdAt|date('d/m/Y') }}</span></div>
+                </div>
+            </div>
+            {% else %}
+            <div class="fg-review-card active">
+                <div class="fg-review-card__stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></div>
+                <p class="fg-review-card__comment">Le Safari Sahara était une expérience absolument magique. La nuit sous les étoiles dans le désert est un souvenir inoubliable !</p>
+                <div class="fg-review-card__author"><div class="fg-review-card__avatar">P</div><div><strong>Pierre D.</strong><span>Mars 2026</span></div></div>
+            </div>
+            <div class="fg-review-card">
+                <div class="fg-review-card__stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></div>
+                <p class="fg-review-card__comment">Sidi Bou Saïd est splendide ! Guide excellent, très cultivé et passionné. Je recommande vivement Fly&Go pour toute visite en Tunisie.</p>
+                <div class="fg-review-card__author"><div class="fg-review-card__avatar">M</div><div><strong>Marie L.</strong><span>Février 2026</span></div></div>
+            </div>
+            <div class="fg-review-card">
+                <div class="fg-review-card__stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></div>
+                <p class="fg-review-card__comment">Organisation parfaite. Carthage était fascinant, l'histoire prenait vie ! Rapport qualité/prix imbattable.</p>
+                <div class="fg-review-card__author"><div class="fg-review-card__avatar">J</div><div><strong>Jean B.</strong><span>Janvier 2026</span></div></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="fg-reviews-nav">
+            <button onclick="prevReview()" class="fg-reviews-nav__btn"><i class="fa fa-chevron-left"></i></button>
+            <div class="fg-reviews-dots" id="reviewDots"></div>
+            <button onclick="nextReview()" class="fg-reviews-nav__btn"><i class="fa fa-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
+
+{# ══════════ CTA ══════════ #}
+<section class="fg-cta">
+    <div class="fg-cta__inner">
+        <div class="fg-cta__text">
+            <h2>Prêt pour votre prochaine aventure ?</h2>
+            <p>Réservez maintenant et profitez de tarifs exclusifs sur toutes nos activités</p>
+        </div>
+        <div class="fg-cta__actions">
+            <a href="{{ path('activity_index') }}" class="fg-btn fg-btn--white fg-btn--xl">
+                <i class="fa fa-calendar-plus"></i> Réserver une activité
+            </a>
+            <a href="{{ path('forum_index') }}" class="fg-btn fg-btn--lg" style="background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.4)">
+                <i class="fa fa-comments"></i> Rejoindre le forum
+            </a>
+        </div>
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+    </div>
+</section>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+<<<<<<< HEAD
+let slide = 0;
+const slides = document.querySelectorAll('.hero__slide');
+const dots = document.querySelectorAll('.hero__dot');
+function goS(n) {
+    slides.forEach(s => s.classList.remove('on'));
+    dots.forEach(d => d.classList.remove('on'));
+    slide = n;
+    slides[n]?.classList.add('on');
+    dots[n]?.classList.add('on');
+}
+setInterval(() => goS((slide + 1) % slides.length), 5000);
+function heroSearch() {
+    const q = document.getElementById('heroQ')?.value.trim();
+    window.location.href = '{{ path("hebergement_index") }}' + (q ? '?q=' + encodeURIComponent(q) : '');
+}
+document.getElementById('heroQ')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') heroSearch();
+=======
+// ── Hero Slider ──
+let slideIdx = 0;
+const slides = document.querySelectorAll('.fg-hero__slide');
+const heroDots = document.querySelectorAll('.fg-hero__dot');
+function goSlide(n) {
+    slides[slideIdx].classList.remove('active');
+    heroDots[slideIdx].classList.remove('active');
+    slideIdx = n;
+    slides[slideIdx].classList.add('active');
+    heroDots[slideIdx].classList.add('active');
+}
+setInterval(() => goSlide((slideIdx + 1) % slides.length), 5500);
+
+// ── Reviews Slider ──
+let revIdx = 0;
+const revCards = document.querySelectorAll('.fg-review-card');
+const revDotsEl = document.getElementById('reviewDots');
+revCards.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'fg-reviews-dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goReview(i);
+    revDotsEl?.appendChild(d);
+});
+function goReview(n) {
+    revCards[revIdx]?.classList.remove('active');
+    document.querySelectorAll('.fg-reviews-dot')[revIdx]?.classList.remove('active');
+    revIdx = (n + revCards.length) % revCards.length;
+    revCards[revIdx]?.classList.add('active');
+    document.querySelectorAll('.fg-reviews-dot')[revIdx]?.classList.add('active');
+}
+function prevReview() { goReview(revIdx - 1); }
+function nextReview() { goReview(revIdx + 1); }
+if (revCards.length > 0) {
+    revCards[0].classList.add('active');
+    setInterval(() => goReview(revIdx + 1), 6500);
+}
+
+// ── Category band ──
+document.querySelectorAll('.fg-band__item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.fg-band__item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+    });
+});
+
+// ── Hero search redirect ──
+document.getElementById('heroSearchBtn')?.addEventListener('click', function(e) {
+    const dest = document.getElementById('heroSearchDest')?.value.trim();
+    if (dest) {
+        e.preventDefault();
+        window.location.href = '{{ path("activity_index") }}?q=' + encodeURIComponent(dest);
+    }
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+});
+</script>
+{% endblock %}

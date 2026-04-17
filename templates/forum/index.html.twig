@@ -1,0 +1,536 @@
+{% extends 'base/base.html.twig' %}
+<<<<<<< HEAD
+{% block title %}Forum des voyageurs — Fly&Go{% endblock %}
+{% block body %}
+
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Forum des voyageurs</h1>
+        <p class="hero-subtitle">Partagez vos expériences et découvrez des conseils de la communauté</p>
+    </div>
+</section>
+
+<div class="fg-filter-sticky" id="filterSticky">
+    <div class="fg-filter-inner">
+        <form method="GET" action="{{ path('forum_index') }}" id="filterForm" class="fg-filter-form">
+            <div class="fg-filter-row">
+                <div class="fg-filter-search">
+                    <i class="fa fa-search"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Titre, contenu..." data-auto-submit>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-tag"></i>
+                    <select name="categorie" data-auto-submit>
+                        <option value="">Toutes catégories</option>
+                        <option value="Hébergement" {{ categorie|default('') == 'Hébergement' ? 'selected' : '' }}>Hébergement</option>
+                        <option value="Circuit" {{ categorie|default('') == 'Circuit' ? 'selected' : '' }}>Circuit</option>
+                        <option value="Activité" {{ categorie|default('') == 'Activité' ? 'selected' : '' }}>Activité</option>
+                        <option value="Conseil" {{ categorie|default('') == 'Conseil' ? 'selected' : '' }}>Conseil</option>
+                        <option value="Destination" {{ categorie|default('') == 'Destination' ? 'selected' : '' }}>Destination</option>
+                        <option value="Transport" {{ categorie|default('') == 'Transport' ? 'selected' : '' }}>Transport</option>
+                    </select>
+                </div>
+                <a href="{{ path('forum_index') }}" class="btn btn-outline" title="Réinitialiser">
+                    <i class="fa fa-times"></i>
+                </a>
+                <a href="{{ path('forum_new') }}" class="btn btn-gold">
+                    <i class="fa fa-plus"></i> Nouveau sujet
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container" id="resultsContainer">
+    <div class="fg-results-header">
+        <div class="fg-results-info">
+            <h2 class="fg-results-count">{{ posts|length }} sujet{{ posts|length > 1 ? 's' : '' }} trouvé{{ posts|length > 1 ? 's' : '' }}</h2>
+            <p class="fg-results-sub">Rejoignez la communauté Fly&Go et partagez vos expériences</p>
+        </div>
+        <div class="fg-results-badges">
+            {% for cat in ['Hébergement', 'Circuit', 'Activité', 'Conseil', 'Destination'] %}
+            <a href="{{ path('forum_index', {categorie: cat}) }}" class="fg-cat-pill {{ categorie == cat ? 'active' : '' }}">{{ cat }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if posts %}
+    <div class="forum-cards">
+        {% for p in posts %}
+        <a href="{{ path('forum_show', {id: p.id}) }}" class="fpost">
+            <div class="fpost__bar fpost__bar--{{ p.status == 'APPROVED' ? 'approved' : p.status == 'PENDING' ? 'pending' : 'rejected' }}"></div>
+            <div class="fpost__content">
+                <div class="fpost__left">
+                    <div class="fpost__av">{{ p.author ? p.author|slice(0,1)|upper : 'U' }}</div>
+                    <div class="fpost__meta">
+                        <strong>{{ p.author ?: 'Utilisateur' }}</strong>
+                        <span>{{ p.createdAt|date('d M') }}</span>
+                    </div>
+                </div>
+                <div class="fpost__body">
+                    <div class="fpost__titlerow">
+                        <h3 class="fpost__title">{{ p.title }}</h3>
+                        <span class="fst fst--{{ p.status == 'APPROVED' ? 'approved' : p.status == 'PENDING' ? 'pending' : 'rejected' }}">{{ p.status == 'APPROVED' ? 'Approuvé' : p.status == 'PENDING' ? 'En attente' : 'Rejeté' }}</span>
+                    </div>
+                    <p class="fpost__txt">{{ p.content|length > 150 ? p.content|slice(0,150)~'…' : p.content }}</p>
+                    <div class="fpost__foot">
+                        <div class="fpost__stats">
+                            {% if p.categorie %}<span><i class="fa fa-tag"></i> {{ p.categorie }}</span>{% endif %}
+                            <span><i class="fa fa-comment"></i> {{ p.comments|length }} commentaire{{ p.comments|length != 1 ? 's' : '' }}</span>
+                            <span><i class="fa fa-eye"></i> {{ p.vues ?: 0 }} vues</span>
+                        </div>
+                        <span class="btn btn-outline btn-sm">Lire →</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fg-empty">
+        <div class="fg-empty__icon"><i class="fa fa-comments"></i></div>
+        <h3>Aucun sujet trouvé</h3>
+        <p>Soyez le premier à créer un sujet dans le forum !</p>
+        <a href="{{ path('forum_new') }}" class="btn btn-navy">Créer un sujet</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-filter-sticky{position:sticky;top:68px;z-index:50;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--s1);padding:.75rem 0}
+.fg-filter-inner{max-width:1380px;margin:0 auto;padding:0 2rem}
+.fg-filter-form{width:100%}
+.fg-filter-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.fg-filter-search{flex:1;min-width:200px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-search i{position:absolute;left:.85rem;color:var(--muted)}
+.fg-filter-search input{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font)}
+.fg-filter-select-wrap{flex:1;min-width:140px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-select-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-select-wrap i{position:absolute;left:.85rem;color:var(--muted);pointer-events:none}
+.fg-filter-select-wrap select{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+.fg-results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.fg-results-count{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+.fg-results-sub{font-size:.85rem;color:var(--muted)}
+.fg-results-badges{display:flex;gap:.5rem;flex-wrap:wrap}
+.fg-cat-pill{display:inline-flex;align-items:center;padding:.35rem .75rem;border-radius:100px;background:var(--bg);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted);transition:all var(--t);text-decoration:none}
+.fg-cat-pill:hover{border-color:var(--navy);color:var(--navy)}
+.fg-cat-pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.fg-empty{text-align:center;padding:4rem 2rem}
+.fg-empty__icon{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)}
+.fg-empty h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.fg-empty p{color:var(--muted);margin-bottom:1.5rem}
+.forum-cards{display:flex;flex-direction:column;gap:1rem}
+.fpost{display:flex;background:var(--card);border-radius:var(--r);box-shadow:var(--s1);border:1px solid var(--border);overflow:hidden;transition:all var(--t);text-decoration:none;color:inherit}
+.fpost:hover{transform:translateY(-3px);box-shadow:var(--s3);border-color:rgba(27,58,107,.18)}
+.fpost__bar{width:5px;flex-shrink:0}
+.fpost__bar--approved{background:linear-gradient(to bottom,#10b981,#059669)}
+.fpost__bar--pending{background:linear-gradient(to bottom,#f59e0b,#d97706)}
+.fpost__bar--rejected{background:linear-gradient(to bottom,#ef4444,#dc2626)}
+.fpost__content{display:flex;gap:1.25rem;padding:1.5rem;flex:1;align-items:flex-start}
+.fpost__left{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:70px}
+.fpost__av{width:44px;height:44px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;font-weight:800;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.fpost__meta{text-align:center}
+.fpost__meta strong{font-size:.75rem;font-weight:600}
+.fpost__meta span{font-size:.68rem;color:var(--muted)}
+.fpost__body{flex:1;min-width:0}
+.fpost__titlerow{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.5rem;flex-wrap:wrap}
+.fpost__title{font-size:1.1rem;font-weight:700;color:var(--text);line-height:1.3}
+.fst{font-size:.7rem;font-weight:700;padding:.25rem .65rem;border-radius:100px;white-space:nowrap}
+.fst--approved{background:#d1fae5;color:#065f46}
+.fst--pending{background:#fef3c7;color:#92400e}
+.fst--rejected{background:#fee2e2;color:#991b1b}
+.fpost__txt{font-size:.875rem;color:var(--muted);line-height:1.6;margin-bottom:1rem}
+.fpost__foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem}
+.fpost__stats{display:flex;gap:1rem;font-size:.78rem;color:var(--muted);flex-wrap:wrap}
+.fpost__stats span{display:flex;align-items:center;gap:.3rem}
+@media (max-width:900px){
+    .fg-filter-row{flex-direction:column;align-items:stretch}
+    .fg-filter-search,.fg-filter-select-wrap{min-width:100%}
+    .fpost__content{flex-direction:column}
+    .fpost__left{flex-direction:row;min-width:auto}
+}
+</style>
+=======
+{% block title %}Forum — Fly&Go{% endblock %}
+
+{% block body %}
+
+{# ── Page Hero ── #}
+<div class="fg-page-hero fg-page-hero--forum">
+    <div class="fg-page-hero__overlay"></div>
+    <div class="fg-page-hero__content">
+        <p class="fg-page-hero__eyebrow">💬 Communauté</p>
+        <h1>Forum <em>Voyageurs</em></h1>
+        <p>Partagez vos expériences, posez vos questions, inspirez les autres</p>
+    </div>
+</div>
+
+<div class="fg-forum-layout">
+
+    {# ── Toolbar ── #}
+    <div class="fg-forum-toolbar">
+        <div class="fg-forum-toolbar__left">
+            <div class="fg-filters__search-wrap" style="max-width:400px">
+                <i class="fa fa-search"></i>
+                <input type="text" id="forumSearch" placeholder="Rechercher une discussion…" autocomplete="off">
+                <div class="fg-spinner" id="forumSpinner"></div>
+            </div>
+            <span class="fg-activities-count" id="forumCount">{{ posts|length }} discussion(s)</span>
+        </div>
+        <div class="fg-forum-toolbar__right">
+            <select id="forumSort" class="fg-filters__select" onchange="sortForum()">
+                <option value="recent">Plus récents</option>
+                <option value="popular">Plus populaires</option>
+                <option value="alpha">A → Z</option>
+            </select>
+            <button class="fg-btn fg-btn--orange" onclick="openModal('newPostModal')">
+                <i class="fa fa-plus"></i> Nouveau sujet
+            </button>
+        </div>
+    </div>
+
+    {# ── Forum Grid ── #}
+    <div class="fg-forum-cards" id="forumGrid">
+        {% for post in posts %}
+        <div class="fg-forum-card--full fg-anim-in"
+             id="post-{{ post.id }}"
+             data-title="{{ post.title|lower }}"
+             data-date="{{ post.createdAt|date('Y-m-d') }}"
+             data-comments="{{ post.comments|length }}"
+             style="animation-delay: {{ loop.index0 * 0.07 }}s">
+
+            {# Status color bar #}
+            <div class="fg-forum-card--full__bar fg-forum-card--full__bar--{{ post.status|lower }}"></div>
+
+            <div class="fg-forum-card--full__content">
+                <div class="fg-forum-card--full__left">
+                    <div class="fg-forum-card--full__avatar">
+                        {{ post.author|slice(0,1)|upper }}
+                    </div>
+                    <div class="fg-forum-card--full__meta">
+                        <strong>{{ post.author }}</strong>
+                        <span><i class="fa fa-clock"></i> {{ post.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                </div>
+
+                <div class="fg-forum-card--full__body">
+                    <div class="fg-forum-card--full__title-row">
+                        <h3 class="fg-forum-card--full__title">{{ post.title }}</h3>
+                        <span class="fg-forum-card--full__status fg-forum-card--full__status--{{ post.status|lower }}">
+                            {{ post.status == 'APPROVED' ? '✅ Approuvé' : (post.status == 'PENDING' ? '⏳ En attente' : '❌ Rejeté') }}
+                        </span>
+                    </div>
+                    <p class="fg-forum-card--full__excerpt">
+                        {{ post.content|slice(0, 180) }}{% if post.content|length > 180 %}…{% endif %}
+                    </p>
+                    <div class="fg-forum-card--full__footer">
+                        <div class="fg-forum-card--full__stats">
+                            <span><i class="fa fa-comments"></i> {{ post.comments|length }} commentaire(s)</span>
+                            <span><i class="fa fa-thumbs-up"></i> {{ post.reactions|length }} réaction(s)</span>
+                        </div>
+                        <div class="fg-forum-card--full__actions">
+                            {# Reactions #}
+                            <button class="fg-reaction-btn" onclick="reactPost({{ post.id }}, 'LIKE')"
+                                    title="J'aime">👍</button>
+                            <button class="fg-reaction-btn" onclick="reactPost({{ post.id }}, 'LOVE')"
+                                    title="J'adore">❤️</button>
+                            <button class="fg-reaction-btn" onclick="reactPost({{ post.id }}, 'WOW')"
+                                    title="Wow">😮</button>
+                            <a href="{{ path('forum_show', {id: post.id}) }}"
+                               class="fg-btn fg-btn--blue fg-btn--sm">
+                                <i class="fa fa-comments"></i> Voir la discussion
+                            </a>
+                            <button class="fg-btn fg-btn--danger fg-btn--sm"
+                                    onclick="deletePost({{ post.id }})">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="fg-empty-state" id="forumEmpty">
+            <i class="fa fa-comments"></i>
+            <h3>Aucun sujet pour l'instant</h3>
+            <p>Soyez le premier à lancer une discussion !</p>
+            <button class="fg-btn fg-btn--orange" onclick="openModal('newPostModal')">Créer un sujet</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# No results #}
+    <div class="fg-empty-state" id="noResults" style="display:none">
+        <i class="fa fa-search"></i>
+        <h3>Aucun résultat trouvé</h3>
+        <p>Essayez un autre mot-clé</p>
+    </div>
+</div>
+
+{# ══ New Post Modal ══ #}
+<div class="fg-modal-overlay" id="newPostModal">
+    <div class="fg-modal fg-modal--lg">
+        <div class="fg-modal__header">
+            <h3><i class="fa fa-pen"></i> Nouveau sujet</h3>
+            <button onclick="closeModal('newPostModal')"><i class="fa fa-times"></i></button>
+        </div>
+        <div class="fg-modal__body">
+            <div class="fg-booking-form__field">
+                <label>Votre nom / pseudo</label>
+                <input type="text" id="postAuthor" placeholder="Votre prénom" maxlength="100">
+            </div>
+            <div class="fg-booking-form__field">
+                <label>Titre du sujet</label>
+                <input type="text" id="postTitle" placeholder="Ex: Conseils pour visiter Djerba…" maxlength="255">
+            </div>
+            <div class="fg-booking-form__field">
+                <label>Contenu</label>
+                <textarea id="postContent" rows="6" placeholder="Décrivez votre question ou expérience en détail…"></textarea>
+            </div>
+            <div id="postErrors"></div>
+        </div>
+        <div class="fg-modal__footer">
+            <button class="fg-btn fg-btn--ghost" onclick="closeModal('newPostModal')">Annuler</button>
+            <button class="fg-btn fg-btn--orange" id="submitPostBtn" onclick="submitPost()">
+                <span id="submitPostLabel"><i class="fa fa-paper-plane"></i> Publier</span>
+                <div class="fg-spinner" id="submitPostSpinner" style="display:none"></div>
+            </button>
+        </div>
+    </div>
+</div>
+
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+{% endblock %}
+
+{% block javascripts %}
+<script>
+<<<<<<< HEAD
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+        let timeout;
+        el.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 600);
+        });
+        el.addEventListener('change', () => filterForm.submit());
+    });
+});
+=======
+// ══════════════════════════════════════
+//  FORUM PAGE — AJAX + Filters
+// ══════════════════════════════════════
+
+let allPosts = Array.from(document.querySelectorAll('.fg-forum-card--full'));
+let forumSearchTimer = null;
+
+/* ── Live Search ── */
+$('#forumSearch').on('input', function () {
+    clearTimeout(forumSearchTimer);
+    const q = $(this).val().trim();
+    $('#forumSpinner').show();
+
+    forumSearchTimer = setTimeout(() => {
+        $.ajax({
+            url: '{{ path("forum_search") }}',
+            type: 'GET',
+            data: { q: q },
+            dataType: 'json',
+            success: res => {
+                if (res.success) renderForumResults(res.posts);
+            },
+            complete: () => $('#forumSpinner').hide()
+        });
+    }, 350);
+});
+
+function renderForumResults(posts) {
+    const grid = document.getElementById('forumGrid');
+    const noRes = document.getElementById('noResults');
+    grid.innerHTML = '';
+
+    if (!posts.length) {
+        noRes.style.display = 'block';
+        updateForumCount(0);
+        return;
+    }
+
+    noRes.style.display = 'none';
+    posts.forEach((p, i) => {
+        grid.innerHTML += `
+        <div class="fg-forum-card--full fg-anim-in" id="post-${p.id}"
+             data-title="${esc(p.title)}" data-comments="${p.commentsCount}"
+             style="animation-delay:${i*0.07}s">
+            <div class="fg-forum-card--full__bar fg-forum-card--full__bar--approved"></div>
+            <div class="fg-forum-card--full__content">
+                <div class="fg-forum-card--full__left">
+                    <div class="fg-forum-card--full__avatar">${esc(p.author)[0].toUpperCase()}</div>
+                    <div class="fg-forum-card--full__meta"><strong>${esc(p.author)}</strong><span><i class="fa fa-clock"></i> ${p.createdAt}</span></div>
+                </div>
+                <div class="fg-forum-card--full__body">
+                    <div class="fg-forum-card--full__title-row">
+                        <h3 class="fg-forum-card--full__title">${esc(p.title)}</h3>
+                    </div>
+                    <p class="fg-forum-card--full__excerpt">${esc(p.content.slice(0,180))}${p.content.length>180?'…':''}</p>
+                    <div class="fg-forum-card--full__footer">
+                        <div class="fg-forum-card--full__stats">
+                            <span><i class="fa fa-comments"></i> ${p.commentsCount} commentaire(s)</span>
+                        </div>
+                        <div class="fg-forum-card--full__actions">
+                            <button class="fg-reaction-btn" onclick="reactPost(${p.id},'LIKE')">👍</button>
+                            <button class="fg-reaction-btn" onclick="reactPost(${p.id},'LOVE')">❤️</button>
+                            <a href="/forum/${p.id}" class="fg-btn fg-btn--blue fg-btn--sm"><i class="fa fa-comments"></i> Voir</a>
+                            <button class="fg-btn fg-btn--danger fg-btn--sm" onclick="deletePost(${p.id})"><i class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    });
+
+    allPosts = Array.from(document.querySelectorAll('.fg-forum-card--full'));
+    updateForumCount(posts.length);
+}
+
+/* ── Sort ── */
+function sortForum() {
+    const mode = document.getElementById('forumSort').value;
+    const grid = document.getElementById('forumGrid');
+    const cards = Array.from(grid.querySelectorAll('.fg-forum-card--full'));
+
+    cards.sort((a, b) => {
+        if (mode === 'popular')return parseInt(b.dataset.comments||0) - parseInt(a.dataset.comments||0);
+        if (mode === 'alpha')  return (a.dataset.title||'').localeCompare(b.dataset.title||'');
+        return (b.dataset.date||'').localeCompare(a.dataset.date||''); // recent
+    });
+    cards.forEach(c => grid.appendChild(c));
+}
+
+/* ── Submit new post ── */
+function submitPost() {
+    const author  = document.getElementById('postAuthor').value.trim();
+    const title   = document.getElementById('postTitle').value.trim();
+    const content = document.getElementById('postContent').value.trim();
+    const errDiv  = document.getElementById('postErrors');
+    errDiv.innerHTML = '';
+
+    if (!author || !title || !content) {
+        errDiv.innerHTML = '<p class="fg-form-error">Veuillez remplir tous les champs.</p>';
+        return;
+    }
+
+    document.getElementById('submitPostLabel').innerHTML = 'Publication…';
+    document.getElementById('submitPostSpinner').style.display = 'inline-block';
+    document.getElementById('submitPostBtn').disabled = true;
+
+    $.ajax({
+        url: '{{ path("forum_add") }}',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ author, title, content }),
+        dataType: 'json',
+        success: res => {
+            if (res.success) {
+                const p = res.post;
+                const grid = document.getElementById('forumGrid');
+                document.getElementById('forumEmpty')?.remove();
+
+                const card = `
+                <div class="fg-forum-card--full fg-anim-in" id="post-${p.id}" data-title="${esc(p.title)}" data-comments="0">
+                    <div class="fg-forum-card--full__bar fg-forum-card--full__bar--pending"></div>
+                    <div class="fg-forum-card--full__content">
+                        <div class="fg-forum-card--full__left">
+                            <div class="fg-forum-card--full__avatar">${esc(p.author)[0].toUpperCase()}</div>
+                            <div class="fg-forum-card--full__meta"><strong>${esc(p.author)}</strong><span>${p.createdAt}</span></div>
+                        </div>
+                        <div class="fg-forum-card--full__body">
+                            <h3 class="fg-forum-card--full__title">${esc(p.title)}</h3>
+                            <p class="fg-forum-card--full__excerpt">${esc(p.content.slice(0,180))}</p>
+                            <div class="fg-forum-card--full__footer">
+                                <span><i class="fa fa-comments"></i> 0 commentaire</span>
+                                <div class="fg-forum-card--full__actions">
+                                    <a href="/forum/${p.id}" class="fg-btn fg-btn--blue fg-btn--sm">Voir</a>
+                                    <button class="fg-btn fg-btn--danger fg-btn--sm" onclick="deletePost(${p.id})"><i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                grid.insertAdjacentHTML('afterbegin', card);
+                updateForumCount(parseInt(document.getElementById('forumCount').textContent) + 1);
+                closeModal('newPostModal');
+                document.getElementById('postAuthor').value = '';
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postContent').value = '';
+                showToast('Sujet publié avec succès ! 🎉');
+            }
+        },
+        error: xhr => {
+            const r = xhr.responseJSON;
+            errDiv.innerHTML = `<p class="fg-form-error">${r?.message || 'Erreur lors de la publication.'}</p>`;
+        },
+        complete: () => {
+            document.getElementById('submitPostLabel').innerHTML = '<i class="fa fa-paper-plane"></i> Publier';
+            document.getElementById('submitPostSpinner').style.display = 'none';
+            document.getElementById('submitPostBtn').disabled = false;
+        }
+    });
+}
+
+/* ── Delete post ── */
+function deletePost(id) {
+    if (!confirm('Supprimer cette discussion ?')) return;
+    const card = document.getElementById('post-' + id);
+    card.style.opacity = '.4';
+    $.ajax({
+        url: '/forum/delete/' + id,
+        type: 'DELETE',
+        dataType: 'json',
+        success: res => {
+            if (res.success) {
+                card.style.transition = 'all .3s ease';
+                card.style.opacity = '0';
+                card.style.maxHeight = '0';
+                setTimeout(() => { card.remove(); updateForumCount(-1, true); }, 300);
+                showToast('Discussion supprimée.');
+            }
+        },
+        error: () => { card.style.opacity = '1'; showToast('Erreur lors de la suppression.', 'error'); }
+    });
+}
+
+/* ── Reactions ── */
+function reactPost(id, type) {
+    $.ajax({
+        url: '/forum/' + id + '/react',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ type }),
+        dataType: 'json',
+        success: () => showToast('Réaction ajoutée !')
+    });
+}
+
+function updateForumCount(n, relative = false) {
+    const el = document.getElementById('forumCount');
+    const cur = parseInt(el.textContent) || 0;
+    el.textContent = (relative ? cur + n : n) + ' discussion(s)';
+}
+
+function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+document.querySelectorAll('.fg-modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) closeModal(o.id); }));
+
+$('#postContent').on('keydown', e => { if (e.ctrlKey && e.key==='Enter') submitPost(); });
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+</script>
+{% endblock %}

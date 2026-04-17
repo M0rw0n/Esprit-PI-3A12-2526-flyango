@@ -1,0 +1,211 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Nouveau sujet — Forum Fly&Go{% endblock %}
+{% block stylesheets %}
+<style>
+:root {
+    --primary: #0D5BD7;
+    --primary-hover: #0a4ab8;
+    --accent: #FF6B2C;
+    --white: #FFFFFF;
+    --bg: #F4F7FB;
+    --border: #E2E8F0;
+    --text: #1E293B;
+    --text-muted: #64748B;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.navbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.navbar-nav { display: flex; gap: 1.5rem; align-items: center; }
+.nav-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.nav-link:hover { color: var(--primary); }
+
+.container { max-width: 700px; margin: 0 auto; padding: 2rem 1rem; }
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+}
+.back-link:hover { color: var(--primary); }
+
+.form-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+}
+
+.form-card h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group { margin-bottom: 1.25rem; }
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: white;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(13, 91, 215, 0.1);
+}
+
+.form-control::placeholder { color: var(--text-muted); }
+
+textarea.form-control { resize: vertical; min-height: 150px; }
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+}
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--bg); }
+
+@media (max-width: 640px) {
+    .navbar { padding: 0.75rem 1rem; }
+    .form-card { padding: 1.25rem; }
+    .form-actions { flex-direction: column; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<nav class="navbar">
+    <a href="{{ path('forum_index') }}" class="navbar-brand">Fly&Go</a>
+    <div class="navbar-nav">
+        <a href="{{ path('forum_index') }}" class="nav-link">Forum</a>
+        {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('app_logout') }}" class="nav-link">Déconnexion</a>
+        {% else %}
+            <a href="{{ path('app_login') }}" class="nav-link">Connexion</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="container">
+    <a href="{{ path('forum_index') }}" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Retour au forum
+    </a>
+
+    <div class="form-card">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Nouveau sujet de discussion
+        </h1>
+        <form action="{{ path('forum_new') }}" method="POST">
+            <div class="form-group">
+                <label for="title">Titre du sujet *</label>
+                <input type="text" name="title" id="title" class="form-control" required placeholder="Ex: Meilleurs restaurants à Djerba ?">
+            </div>
+            <div class="form-group">
+                <label for="categorie">Catégorie</label>
+                <select name="categorie" id="categorie" class="form-control">
+                    <option value="">-- Choisir une catégorie --</option>
+                    {% for cat in ['Hébergement', 'Circuit', 'Activité', 'Conseil', 'Destination'] %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="author">Votre nom *</label>
+                <input type="text" name="author" id="author" class="form-control" required placeholder="Votre prénom ou pseudo">
+            </div>
+            <div class="form-group">
+                <label for="content">Contenu *</label>
+                <textarea name="content" id="content" class="form-control" rows="8" required placeholder="Partagez votre question, expérience ou conseil..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                    Publier le sujet
+                </button>
+                <a href="{{ path('forum_index') }}" class="btn btn-outline">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

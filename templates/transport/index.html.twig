@@ -1,0 +1,198 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Transport & Voyage — Fly&Go{% endblock %}
+{% block body %}
+
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Transport & Voyage</h1>
+        <p class="hero-subtitle">{{ offers|length }} offres disponibles — Vols, Trains, Bus & Cars</p>
+    </div>
+</section>
+
+<div class="fg-filter-sticky" id="filterSticky">
+    <div class="fg-filter-inner">
+        <form method="GET" action="{{ path('transport_index') }}" id="filterForm" class="fg-filter-form">
+            <div class="fg-filter-row">
+                <div class="fg-filter-search">
+                    <i class="fa fa-search"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Compagnie, référence..." data-auto-submit>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-plane"></i>
+                    <select name="type" data-auto-submit>
+                        <option value="">Tous types</option>
+                        <option value="FLIGHT" {{ type|default('') == 'FLIGHT' ? 'selected' : '' }}>✈ Avions</option>
+                        <option value="TRAIN" {{ type|default('') == 'TRAIN' ? 'selected' : '' }}>🚂 Trains</option>
+                        <option value="BUS" {{ type|default('') == 'BUS' ? 'selected' : '' }}>🚌 Bus</option>
+                        <option value="CAR" {{ type|default('') == 'CAR' ? 'selected' : '' }}>🚗 Voitures</option>
+                    </select>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-map-marker-alt"></i>
+                    <select name="depart" data-auto-submit>
+                        <option value="">Ville de départ</option>
+                        {% for c in cities %}<option value="{{ c }}" {{ depart|default('') == c ? 'selected' : '' }}>{{ c }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-flag-checkered"></i>
+                    <select name="arrival" data-auto-submit>
+                        <option value="">Ville d'arrivée</option>
+                        {% for c in cities %}<option value="{{ c }}" {{ arrival|default('') == c ? 'selected' : '' }}>{{ c }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="fg-filter-select-wrap">
+                    <i class="fa fa-sort"></i>
+                    <select name="sort" data-auto-submit>
+                        <option value="date_asc" {{ sort|default('date_asc') == 'date_asc' ? 'selected' : '' }}>Date ↑</option>
+                        <option value="date_desc" {{ sort|default('date_asc') == 'date_desc' ? 'selected' : '' }}>Date ↓</option>
+                        <option value="price_asc" {{ sort|default('date_asc') == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                        <option value="price_desc" {{ sort|default('date_asc') == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+                    </select>
+                </div>
+                <a href="{{ path('transport_index') }}" class="btn btn-outline" title="Réinitialiser">
+                    <i class="fa fa-times"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container" id="resultsContainer">
+    <div class="fg-results-header">
+        <div class="fg-results-info">
+            <h2 class="fg-results-count">{{ offers|length }} offre{{ offers|length > 1 ? 's' : '' }} trouvée{{ offers|length > 1 ? 's' : '' }}</h2>
+            <p class="fg-results-sub">Réservation simple · Annulation gratuite · Paiement sécurisé</p>
+        </div>
+        <div class="fg-results-badges">
+            <span class="fg-badge"><i class="fa fa-check-circle"></i> Annulation gratuite</span>
+            <span class="fg-badge"><i class="fa fa-lock"></i> Paiement sécurisé</span>
+        </div>
+    </div>
+
+    {% if offers %}
+    <div class="hcards" id="cardsGrid">
+        {% for o in offers %}
+        <article class="hcard tcard anim" data-id="{{ o.id }}" onclick="window.location='{{ path('transport_show', {id: o.id}) }}'">
+            <div class="hcard__img">
+                <div class="tcard-icon">
+                    <i class="fas {{ o.transportIcon }}"></i>
+                </div>
+                <div class="hcard__badges">
+                    {% if loop.index <= 2 %}<span class="hcard__badge hcard__badge--popular"><i class="fa fa-fire"></i> Populaire</span>{% endif %}
+                </div>
+                <div class="hcard__rating">
+                    <i class="fas {{ o.transportIcon }}"></i>
+                    {{ o.transportType }}
+                </div>
+            </div>
+            <div class="hcard__body">
+                <div class="hcard__header">
+                    <div class="hcard__loc">
+                        <i class="fa fa-building"></i>
+                        {{ o.companyName ?: 'Transport' }}
+                    </div>
+                    <span class="hcard__type">{{ o.transportType }}</span>
+                </div>
+                <div class="tcard-route">
+                    <div class="tcard-route__point">
+                        <span class="tcard-route__time">{{ o.departureDatetime|date('H:i') }}</span>
+                        <span class="tcard-route__city">{{ o.departureCity }}</span>
+                    </div>
+                    <div class="tcard-route__line">
+                        <i class="fa fa-arrow-right"></i>
+                        <span class="tcard-route__duration">{{ o.duration ?: '—' }}</span>
+                    </div>
+                    <div class="tcard-route__point tcard-route__point--end">
+                        <span class="tcard-route__time">{{ o.arrivalDatetime|date('H:i') }}</span>
+                        <span class="tcard-route__city">{{ o.arrivalCity }}</span>
+                    </div>
+                </div>
+                <div class="hcard__meta">
+                    <span><i class="fa fa-calendar"></i> {{ o.departureDatetime|date('d/m/Y') }}</span>
+                    <span><i class="fa fa-chair"></i> {{ o.availableSeats ?: '—' }} places</span>
+                    {% if o.departureStation %}<span><i class="fa fa-map-marker-alt"></i> {{ o.departureStation }}</span>{% endif %}
+                </div>
+                <div class="hcard__foot">
+                    <div class="hcard__price">
+                        <span class="hcard__price-val">{{ o.price|number_format(0, '', ' ') }}</span>
+                        <span class="hcard__price-cur">TND</span>
+                    </div>
+                    <div class="hcard__actions" onclick="event.stopPropagation()">
+                        <a href="{{ path('transport_show', {id: o.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                        <a href="{{ path('transport_book', {id: o.id}) }}" class="btn btn-navy btn-sm">Réserver</a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fg-empty">
+        <div class="fg-empty__icon"><i class="fa fa-plane"></i></div>
+        <h3>Aucun transport trouvé</h3>
+        <p>Essayez d'autres critères de recherche</p>
+        <a href="{{ path('transport_index') }}" class="btn btn-navy">Voir tous les transports</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-filter-sticky{position:sticky;top:68px;z-index:50;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--s1);padding:.75rem 0}
+.fg-filter-inner{max-width:1380px;margin:0 auto;padding:0 2rem}
+.fg-filter-form{width:100%}
+.fg-filter-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.fg-filter-search{flex:1;min-width:200px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-search:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-search i{position:absolute;left:.85rem;color:var(--muted)}
+.fg-filter-search input{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font)}
+.fg-filter-select-wrap{flex:1;min-width:130px;position:relative;display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.6rem 1rem .6rem 2.5rem;transition:all var(--t)}
+.fg-filter-select-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,58,107,.08);background:#fff}
+.fg-filter-select-wrap i{position:absolute;left:.85rem;color:var(--muted);pointer-events:none}
+.fg-filter-select-wrap select{border:none;background:none;outline:none;width:100%;font-size:.9rem;font-family:var(--font);color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;-moz-appearance:none}
+.fg-results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.fg-results-count{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+.fg-results-sub{font-size:.85rem;color:var(--muted)}
+.fg-results-badges{display:flex;gap:.75rem;flex-wrap:wrap}
+.fg-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border-radius:100px;background:var(--bg);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted)}
+.fg-badge i{color:var(--green)}
+.fg-empty{text-align:center;padding:4rem 2rem}
+.fg-empty__icon{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)}
+.fg-empty h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.fg-empty p{color:var(--muted);margin-bottom:1.5rem}
+.hcard__type{font-size:.7rem;font-weight:700;color:var(--navy);background:rgba(27,58,107,.1);padding:.2rem .5rem;border-radius:4px}
+.tcard-icon{width:70px;height:70px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:2rem;color:#fff}
+.hcard__rating{position:absolute;bottom:.75rem;left:.75rem;z-index:2;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);padding:.3rem .65rem;border-radius:6px;font-size:.75rem;font-weight:700;display:flex;align-items:center;gap:.3rem;color:var(--text)}
+.hcard__rating i{color:var(--navy)}
+.tcard-route{display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:.85rem;border-radius:var(--r-sm);margin-bottom:.85rem}
+.tcard-route__point{text-align:center}
+.tcard-route__time{display:block;font-size:1.1rem;font-weight:800;color:var(--text)}
+.tcard-route__city{font-size:.8rem;color:var(--muted)}
+.tcard-route__line{display:flex;flex-direction:column;align-items:center;gap:.2rem;color:var(--navy)}
+.tcard-route__line .fa-arrow-right{font-size:.9rem}
+.tcard-route__duration{font-size:.68rem;color:var(--muted)}
+.tcard-route__point--end{text-align:center}
+@media (max-width:900px){
+    .fg-filter-row{flex-direction:column;align-items:stretch}
+    .fg-filter-search,.fg-filter-select-wrap{min-width:100%}
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+        let timeout;
+        el.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 600);
+        });
+        el.addEventListener('change', () => filterForm.submit());
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Avis activités — Admin{% endblock %}
+{% block breadcrumb %}Avis activités{% endblock %}
+{% block admin_body %}
+<div style="margin-bottom:1.5rem">
+    <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Avis activités</h2>
+    <p style="color:var(--muted);font-size:.85rem">{{ reviews|length }} avis au total</p>
+</div>
+<div class="admin-acts" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    {% for r in reviews %}
+    <div class="adm-act">
+        <div class="adm-act__body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+                <div style="display:flex;gap:2px">
+                    {% for i in 1..5 %}
+                    <i class="fa fa-star" style="color:{{ i <= r.rating ? '#F59E0B' : 'var(--border)' }};font-size:.9rem"></i>
+                    {% endfor %}
+                </div>
+                <span style="font-size:.72rem;color:var(--muted)">{{ r.createdAt|date('d/m/Y') }}</span>
+            </div>
+            <div style="font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:.85rem">{{ r.comment }}</div>
+            <div class="adm-act__foot">
+                <div>
+                    <div style="font-size:.8rem;font-weight:700">{{ r.author }}</div>
+                    <div style="font-size:.73rem;color:var(--cyan-d)"><i class="fa fa-hiking fa-xs"></i> {{ r.activity.title }}</div>
+                </div>
+                <form action="{{ path('admin_review_delete', {id: r.id}) }}" method="POST" onsubmit="return confirm('Supprimer ?')">
+                    <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1"><i class="fa fa-star"></i><h3>Aucun avis</h3></div>
+    {% endfor %}
+</div>
+{% endblock %}

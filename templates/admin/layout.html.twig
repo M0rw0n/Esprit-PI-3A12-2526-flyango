@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin — Fly&Go{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}">
+</head>
+<body>
+<div class="admin">
+
+    <aside class="admin__side" id="adminSide">
+        <div class="admin__logo">
+            <div class="admin__logo-brand">
+                <img src="{{ asset('images/logo.png') }}" alt="Fly&Go" onerror="this.style.display='none'">
+                <div class="admin__logo-text">
+                    <span>Fly<em>&</em>Go</span>
+                    <span>Administration</span>
+                </div>
+            </div>
+            <span class="admin__logo-badge">ADMIN</span>
+        </div>
+
+        <div class="admin__section">Principal</div>
+        <a href="{{ path('admin_dashboard') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'on' : '' }}">
+            <i class="fa fa-chart-line"></i> Tableau de bord
+        </a>
+
+        <div class="admin__section">Hébergements</div>
+        <a href="{{ path('admin_hebergements') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_hebergement' ? 'on' : '' }}">
+            <i class="fa fa-hotel"></i> Hébergements
+        </a>
+        <a href="{{ path('admin_reservations') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_reservations' ? 'on' : '' }}">
+            <i class="fa fa-calendar-check"></i> Réservations
+        </a>
+        <a href="{{ path('admin_avis') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_avis' ? 'on' : '' }}">
+            <i class="fa fa-star"></i> Avis hébergements
+        </a>
+
+        <div class="admin__section">Circuits</div>
+        <a href="{{ path('admin_circuits') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_circuit' ? 'on' : '' }}">
+            <i class="fa fa-route"></i> Circuits
+        </a>
+        <a href="{{ path('admin_res_circuits') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_res_circuits' ? 'on' : '' }}">
+            <i class="fa fa-ticket-alt"></i> Rés. Circuits
+        </a>
+
+        <div class="admin__section">Activités</div>
+        <a href="{{ path('admin_activities') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_activit' ? 'on' : '' }}">
+            <i class="fa fa-hiking"></i> Activités
+        </a>
+        <a href="{{ path('admin_bookings') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_bookings' ? 'on' : '' }}">
+            <i class="fa fa-shopping-cart"></i> Bookings
+        </a>
+        <a href="{{ path('admin_reviews') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_reviews' ? 'on' : '' }}">
+            <i class="fa fa-comment-dots"></i> Avis activités
+        </a>
+
+        <div class="admin__section">Communauté</div>
+        <a href="{{ path('admin_forum') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_forum' ? 'on' : '' }}">
+            <i class="fa fa-comments"></i> Forum
+        </a>
+        <a href="{{ path('admin_users') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_users' ? 'on' : '' }}">
+            <i class="fa fa-users"></i> Utilisateurs
+        </a>
+
+        <div class="admin__section">Site</div>
+        <a href="{{ path('home') }}" class="admin__link" target="_blank">
+            <i class="fa fa-external-link-alt"></i> Voir le site
+        </a>
+        <a href="{{ path('app_logout') }}" class="admin__link" style="color:rgba(239,68,68,0.7)">
+            <i class="fa fa-sign-out-alt"></i> Déconnexion
+        </a>
+
+        <div class="admin__foot">
+            <div class="admin__user">
+                <div class="admin__av">{{ app.user ? app.user.prenom|slice(0,1)|upper : 'A' }}</div>
+                <div class="admin__user-info">
+                    <strong>{{ app.user ? app.user.fullName : 'Administrateur' }}</strong>
+                    <span>{{ app.user ? app.user.email : 'admin@flyandgo.tn' }}</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="admin__main">
+        <div class="admin__topbar">
+            <div class="admin__topbar-left">
+                <button class="fg-icon-btn" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
+                <div class="admin__bc">
+                    <span>Fly&amp;Go</span>
+                    <span style="color:var(--border)"><i class="fa fa-chevron-right fa-xs"></i></span>
+                    <strong>{% block breadcrumb %}Dashboard{% endblock %}</strong>
+                </div>
+            </div>
+            <div class="admin__topbar-right">
+                {% for type, messages in app.flashes %}
+                    {% for msg in messages %}
+                    <div class="toast toast--{{ type }}" style="position:static;animation:none;font-size:.78rem;padding:.5rem .9rem">{{ msg }}</div>
+                    {% endfor %}
+                {% endfor %}
+                <a href="{{ path('admin_hebergement_new') }}" class="btn btn-gold btn-sm"><i class="fa fa-plus"></i> Nouveau</a>
+                <a href="{{ path('home') }}" class="btn btn-outline btn-sm"><i class="fa fa-home"></i> Site</a>
+            </div>
+        </div>
+
+        <div class="admin__content">
+            {% block admin_body %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<div class="toast-box" id="toastBox"></div>
+<script src="{{ asset('js/flyandgo.js') }}"></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

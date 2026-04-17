@@ -1,0 +1,547 @@
+<<<<<<< HEAD
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Tableau de bord — Fly&Go Admin{% endblock %}
+{% block breadcrumb %}Tableau de bord{% endblock %}
+
+{% block admin_body %}
+<div style="margin-bottom:2rem">
+    <h1 style="font-size:1.5rem;font-weight:900;letter-spacing:-.02em;color:var(--text);margin-bottom:.25rem">Bonjour, {{ app.user ? app.user.prenom : 'Admin' }} 👋</h1>
+    <p style="color:var(--muted);font-size:.9rem">Voici le résumé complet de votre agence Fly&amp;Go</p>
+</div>
+
+{# KPIs — 4 rows #}
+<div class="kpis">
+    <div class="kpi kpi--navy">
+        <div class="kpi__head"><span class="kpi__label">Hébergements</span><div class="kpi__icon"><i class="fa fa-hotel"></i></div></div>
+        <div class="kpi__val" data-target="{{ totalHebergements }}">0</div>
+        <div class="kpi__change kpi__change--up"><i class="fa fa-arrow-up fa-xs"></i> Catalogue actif</div>
+    </div>
+    <div class="kpi kpi--gold">
+        <div class="kpi__head"><span class="kpi__label">Réservations</span><div class="kpi__icon"><i class="fa fa-calendar-check"></i></div></div>
+        <div class="kpi__val" data-target="{{ totalReservations }}">0</div>
+        <div class="kpi__change kpi__change--up"><i class="fa fa-clock fa-xs"></i> {{ pendingRes + pendingBook }} en attente</div>
+    </div>
+    <div class="kpi kpi--green">
+        <div class="kpi__head"><span class="kpi__label">Revenus totaux</span><div class="kpi__icon"><i class="fa fa-coins"></i></div></div>
+        <div class="kpi__val" style="font-size:1.4rem">{{ revenus|number_format(3, ',', ' ') }} TND</div>
+        <div class="kpi__change kpi__change--up"><i class="fa fa-arrow-up fa-xs"></i> Tous modules</div>
+    </div>
+    <div class="kpi kpi--red">
+        <div class="kpi__head"><span class="kpi__label">Note moyenne</span><div class="kpi__icon"><i class="fa fa-star"></i></div></div>
+        <div class="kpi__val">{{ moyenneAvis > 0 ? moyenneAvis : 'N/A' }}</div>
+        <div class="kpi__change kpi__change--up"><i class="fa fa-smile fa-xs"></i> Satisfaction client</div>
+    </div>
+    <div class="kpi kpi--navy">
+        <div class="kpi__head"><span class="kpi__label">Circuits</span><div class="kpi__icon"><i class="fa fa-route"></i></div></div>
+        <div class="kpi__val" data-target="{{ totalCircuits }}">0</div>
+        <div class="kpi__change kpi__change--up"><i class="fa fa-globe fa-xs"></i> Disponibles</div>
+    </div>
+    <div class="kpi kpi--gold">
+        <div class="kpi__head"><span class="kpi__label">Activités</span><div class="kpi__icon"><i class="fa fa-hiking"></i></div></div>
+        <div class="kpi__val" data-target="{{ totalActivities }}">0</div>
+        <div class="kpi__change kpi__change--up"><i class="fa fa-calendar fa-xs"></i> Disponibles</div>
+    </div>
+    <div class="kpi kpi--green">
+        <div class="kpi__head"><span class="kpi__label">Utilisateurs</span><div class="kpi__icon"><i class="fa fa-users"></i></div></div>
+        <div class="kpi__val" data-target="{{ totalUsers }}">0</div>
+        <div class="kpi__change kpi__change--up"><i class="fa fa-user-plus fa-xs"></i> Inscrits</div>
+    </div>
+    <div class="kpi kpi--red">
+        <div class="kpi__head"><span class="kpi__label">Forum posts</span><div class="kpi__icon"><i class="fa fa-comments"></i></div></div>
+        <div class="kpi__val" data-target="{{ totalForumPosts }}">0</div>
+        <div class="kpi__change {{ pendingPosts > 0 ? 'kpi__change--down' : 'kpi__change--up' }}">
+            <i class="fa fa-{{ pendingPosts > 0 ? 'exclamation-triangle' : 'check' }} fa-xs"></i> {{ pendingPosts }} en attente
+        </div>
+    </div>
+</div>
+
+{# Charts #}
+<div class="admin-grid" style="margin-bottom:2rem">
+    <div class="acard-wrap">
+        <div class="acard-wrap__head">
+            <span class="acard-wrap__title"><i class="fa fa-chart-line"></i> Revenus mensuels</span>
+            <span class="tag tag--navy">Hébergements</span>
+        </div>
+        <div style="padding:1.25rem">
+            <canvas id="chartRevenus" height="90"></canvas>
+        </div>
+    </div>
+    <div class="acard-wrap">
+        <div class="acard-wrap__head">
+            <span class="acard-wrap__title"><i class="fa fa-chart-pie"></i> Réservations par ville</span>
+        </div>
+        <div style="padding:1.25rem">
+            <canvas id="chartVilles" height="190"></canvas>
+        </div>
+    </div>
+</div>
+
+{# Recent reservations + Quick actions #}
+<div class="admin-grid">
+    <div class="acard-wrap">
+        <div class="acard-wrap__head">
+            <span class="acard-wrap__title"><i class="fa fa-calendar-check"></i> Réservations hébergements récentes</span>
+            <a href="{{ path('admin_reservations') }}" class="btn btn-outline btn-sm">Voir tout</a>
+        </div>
+        <div class="bookings-list">
+            {% for r in recentReservations %}
+            <div class="booking-card">
+                <div class="booking-card__av">{{ r.nomClient|slice(0,1)|upper }}</div>
+                <div class="booking-card__info">
+                    <div class="booking-card__name">{{ r.nomClient }}</div>
+                    <div class="booking-card__meta">
+                        <span><i class="fa fa-hotel fa-xs"></i> {{ r.hebergement.nom }}</span>
+                        <span><i class="fa fa-calendar fa-xs"></i> {{ r.dateDebut|date('d/m/Y') }} → {{ r.dateFin|date('d/m/Y') }}</span>
+                        <span><i class="fa fa-users fa-xs"></i> {{ r.nombrePersonnes }} pers.</span>
+                    </div>
+                </div>
+                <div class="booking-card__price">
+                    <strong>{{ r.montantTotal|number_format(3, ',', ' ') }}</strong>
+                    <span>TND</span>
+                </div>
+                <span class="status status--{{ r.statut == 'CONFIRMEE' ? 'confirmed' : (r.statut == 'EN_ATTENTE' ? 'pending' : 'cancelled') }}">
+                    {{ r.statut == 'CONFIRMEE' ? 'Confirmée' : (r.statut == 'EN_ATTENTE' ? 'En attente' : 'Annulée') }}
+                </span>
+                {% if r.statut == 'EN_ATTENTE' %}
+                <div class="booking-card__actions">
+                    <button onclick="changeStatutRes({{ r.id }}, 'CONFIRMEE')" class="btn btn-green btn-sm"><i class="fa fa-check"></i></button>
+                    <button onclick="changeStatutRes({{ r.id }}, 'ANNULEE')" class="btn btn-red btn-sm"><i class="fa fa-times"></i></button>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="empty" style="padding:2.5rem"><i class="fa fa-calendar"></i><p>Aucune réservation</p></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Quick Stats + Actions #}
+    <div class="acard-wrap">
+        <div class="acard-wrap__head">
+            <span class="acard-wrap__title"><i class="fa fa-bolt"></i> Actions rapides</span>
+        </div>
+        <div class="quick-stats">
+            <a href="{{ path('admin_hebergement_new') }}" class="qs" style="text-decoration:none;color:inherit">
+                <div class="qs__icon" style="background:rgba(27,58,107,0.1);color:var(--navy)"><i class="fa fa-plus"></i></div>
+                <div><div class="qs__label">Ajouter un hébergement</div></div>
+                <i class="fa fa-chevron-right" style="color:var(--border);margin-left:auto"></i>
+            </a>
+            <a href="{{ path('admin_circuit_new') }}" class="qs" style="text-decoration:none;color:inherit">
+                <div class="qs__icon" style="background:rgba(0,180,216,0.1);color:var(--cyan-d)"><i class="fa fa-route"></i></div>
+                <div><div class="qs__label">Nouveau circuit</div></div>
+                <i class="fa fa-chevron-right" style="color:var(--border);margin-left:auto"></i>
+            </a>
+            <a href="{{ path('admin_activity_new') }}" class="qs" style="text-decoration:none;color:inherit">
+                <div class="qs__icon" style="background:rgba(255,183,0,0.12);color:var(--gold-d)"><i class="fa fa-hiking"></i></div>
+                <div><div class="qs__label">Nouvelle activité</div></div>
+                <i class="fa fa-chevron-right" style="color:var(--border);margin-left:auto"></i>
+            </a>
+            <a href="{{ path('admin_reservations') }}" class="qs" style="text-decoration:none;color:inherit">
+                <div class="qs__icon" style="background:rgba(16,185,129,0.1);color:var(--green)"><i class="fa fa-calendar-check"></i></div>
+                <div><div class="qs__label">Gérer les réservations</div></div>
+                <span class="status status--pending" style="margin-left:auto">{{ pendingRes }}</span>
+            </a>
+            <a href="{{ path('admin_forum') }}" class="qs" style="text-decoration:none;color:inherit">
+                <div class="qs__icon" style="background:rgba(239,68,68,0.1);color:var(--red)"><i class="fa fa-comments"></i></div>
+                <div><div class="qs__label">Modérer le forum</div></div>
+                {% if pendingPosts > 0 %}<span class="status status--pending" style="margin-left:auto">{{ pendingPosts }}</span>{% endif %}
+            </a>
+            <a href="{{ path('admin_users') }}" class="qs" style="text-decoration:none;color:inherit">
+                <div class="qs__icon" style="background:rgba(139,92,246,0.1);color:#7C3AED"><i class="fa fa-users"></i></div>
+                <div><div class="qs__label">Gérer les utilisateurs</div></div>
+                <i class="fa fa-chevron-right" style="color:var(--border);margin-left:auto"></i>
+            </a>
+            <a href="{{ path('admin_export_pdf') }}" class="qs" style="text-decoration:none;color:inherit" target="_blank">
+                <div class="qs__icon" style="background:rgba(249,115,22,0.1);color:var(--orange)"><i class="fa fa-file-pdf"></i></div>
+                <div><div class="qs__label">Exporter PDF statistiques</div></div>
+                <i class="fa fa-download" style="color:var(--border);margin-left:auto"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+{# Top Hébergements par revenus #}
+{% if topHeb %}
+<div class="acard-wrap" style="margin-bottom:2rem">
+    <div class="acard-wrap__head">
+        <span class="acard-wrap__title"><i class="fa fa-trophy"></i> Top hébergements par revenus</span>
+    </div>
+    <div class="bookings-list">
+        {% for item in topHeb %}
+        <div class="booking-card">
+            <div class="booking-card__av" style="background:linear-gradient(135deg,var(--gold),#FF9500)">{{ loop.index }}</div>
+            <div class="booking-card__info">
+                <div class="booking-card__name">{{ item.nom }}</div>
+                <div class="booking-card__meta">
+                    <span><i class="fa fa-map-marker-alt fa-xs"></i> {{ item.ville }}</span>
+                    <span><i class="fa fa-calendar fa-xs"></i> {{ item.nbRes }} réservations</span>
+                </div>
+            </div>
+            <div class="booking-card__price">
+                <strong>{{ (item.revenus ?? 0)|number_format(3, ',', ' ') }}</strong>
+                <span>TND</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# Recent Forum Posts #}
+{% if recentPosts %}
+<div class="acard-wrap">
+    <div class="acard-wrap__head">
+        <span class="acard-wrap__title"><i class="fa fa-comments"></i> Derniers posts forum</span>
+        <a href="{{ path('admin_forum') }}" class="btn btn-outline btn-sm">Gérer</a>
+    </div>
+    <div class="bookings-list">
+        {% for p in recentPosts %}
+        <div class="booking-card">
+            <div class="booking-card__av" style="background:linear-gradient(135deg,#7C3AED,#4F46E5)">{{ p.author|slice(0,1)|upper }}</div>
+            <div class="booking-card__info">
+                <div class="booking-card__name">{{ p.title }}</div>
+                <div class="booking-card__meta">
+                    <span><i class="fa fa-user fa-xs"></i> {{ p.author }}</span>
+                    <span><i class="fa fa-calendar fa-xs"></i> {{ p.createdAt|date('d/m/Y') }}</span>
+                    <span><i class="fa fa-comment fa-xs"></i> {{ p.comments|length }} commentaires</span>
+                </div>
+            </div>
+            <span class="status status--{{ p.status == 'APPROVED' ? 'confirmed' : (p.status == 'PENDING' ? 'pending' : 'cancelled') }}">
+                {{ p.status == 'APPROVED' ? 'Approuvé' : (p.status == 'PENDING' ? 'En attente' : 'Rejeté') }}
+            </span>
+            {% if p.status == 'PENDING' %}
+            <div class="booking-card__actions">
+                <button onclick="moderatePost({{ p.id }}, 'APPROVED')" class="btn btn-green btn-sm"><i class="fa fa-check"></i></button>
+                <button onclick="moderatePost({{ p.id }}, 'REJECTED')" class="btn btn-red btn-sm"><i class="fa fa-times"></i></button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Charts data from backend
+const revenusData = {
+    labels: [{% for r in revenusParMois %}'{{ ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"][r.mois - 1] }} {{ r.annee }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for r in revenusParMois %}{{ r.total|default(0) }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+const villesData = {
+    labels: [{% for v in occParVille %}'{{ v.ville }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for v in occParVille %}{{ v.total }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+document.addEventListener('DOMContentLoaded', () => initDashboardCharts(revenusData, villesData));
+
+function changeStatutRes(id, statut) {
+    if (!confirm('Changer le statut ?')) return;
+    $.post('{{ path("admin_reservation_statut", {"id": "__ID__"}) }}'.replace('__ID__', id), {statut: statut})
+     .done(() => { showToast('✅ Statut mis à jour !'); setTimeout(() => location.reload(), 1000); })
+     .fail(() => showToast('Erreur', 'error'));
+}
+function moderatePost(id, status) {
+    if (!confirm('Modérer ce post ?')) return;
+    $.post('{{ path("admin_forum_moderate", {"id": "__ID__"}) }}'.replace('__ID__', id), {status: status})
+     .done(() => { showToast('✅ Post modéré !'); setTimeout(() => location.reload(), 1000); })
+     .fail(() => showToast('Erreur', 'error'));
+}
+</script>
+=======
+<<<<<<< HEAD
+{% extends 'layouts/admin_base.html.twig' %}
+
+{% block title %}Dashboard admin | Fly &amp; Go{% endblock %}
+
+{% block body %}
+    <section class="admin-shell-header">
+        <div>
+            <p class="admin-shell-caption">Dashboard</p>
+            <h1>Dashboard</h1>
+            <p>Planifiez, priorisez et pilotez vos opérations Fly &amp; Go avec une interface premium inspirée de votre maquette.</p>
+        </div>
+        <div class="admin-shell-actions">
+            <a class="btn btn-primary" href="{{ path('admin_circuits') }}">+ Add Project</a>
+            <a class="btn btn-light" href="{{ path('admin_reservations') }}">Import Data</a>
+        </div>
+    </section>
+
+    <section class="admin-kpi-grid-refined">
+        <article class="admin-kpi-card admin-kpi-primary">
+            <div class="admin-kpi-head"><span>Total Projects</span><span class="kpi-arrow">↗</span></div>
+            <strong>{{ dashboard.global.circuits }}</strong>
+            <small>Catalogue Fly &amp; Go disponible</small>
+        </article>
+        <article class="admin-kpi-card">
+            <div class="admin-kpi-head"><span>Ended Projects</span><span class="kpi-arrow">↗</span></div>
+            <strong>{{ dashboard.global.inactiveCircuits }}</strong>
+            <small>Circuits archivés ou inactifs</small>
+        </article>
+        <article class="admin-kpi-card">
+            <div class="admin-kpi-head"><span>Running Projects</span><span class="kpi-arrow">↗</span></div>
+            <strong>{{ dashboard.global.activeCircuits }}</strong>
+            <small>Circuits actifs en vente</small>
+        </article>
+        <article class="admin-kpi-card">
+            <div class="admin-kpi-head"><span>Pending Project</span><span class="kpi-arrow">↗</span></div>
+            <strong>{{ dashboard.global.pendingCustom }}</strong>
+            <small>Demandes sur mesure en attente</small>
+        </article>
+    </section>
+
+    <section class="admin-dashboard-reference-grid">
+        <div class="travel-panel admin-analytics-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Project Analytics</span>
+                    <h2>Activité hebdomadaire</h2>
+                </div>
+            </div>
+            <div class="admin-week-chart">
+                {% set weeklyMax = 1 %}
+                {% for item in dashboard.weeklyActivity %}
+                    {% if item.total > weeklyMax %}{% set weeklyMax = item.total %}{% endif %}
+                {% endfor %}
+                {% for item in dashboard.weeklyActivity %}
+                    {% set barHeight = item.total > 0 ? ((item.total / weeklyMax) * 118) + 36 : 56 %}
+                    <div class="admin-week-bar-wrap {{ item.highlight ? 'is-highlight' : '' }}">
+                        <div class="admin-week-bar" style="height: {{ barHeight }}px;">
+                            {% if item.total > 0 %}<span>{{ item.total }}</span>{% endif %}
+                        </div>
+                        <small>{{ item.label }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="travel-panel admin-reminder-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Reminders</span>
+                    <h2>Départ à surveiller</h2>
+                </div>
+            </div>
+            <strong class="admin-reminder-title">{{ dashboard.reminder.title }}</strong>
+            <p>{{ dashboard.reminder.subtitle }}</p>
+            <a class="btn btn-primary travel-full-btn" href="{{ path('admin_reservations') }}">Start Meeting</a>
+        </div>
+
+        <div class="travel-panel admin-project-list-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Project</span>
+                    <h2>Top circuits</h2>
+                </div>
+                <a class="btn btn-light btn-sm" href="{{ path('admin_circuits') }}">+ New</a>
+            </div>
+            <div class="admin-project-list">
+                {% for circuit in dashboard.topCircuits %}
+                    <article class="admin-project-row">
+                        <span class="project-dot dot-{{ loop.index }}"></span>
+                        <div>
+                            <strong>{{ circuit.title }}</strong>
+                            <small>Destination {{ circuit.destination }}</small>
+                        </div>
+                    </article>
+                {% else %}
+                    <div class="empty-state">Aucun circuit classé.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-dashboard-reference-grid admin-dashboard-reference-grid-bottom">
+        <div class="travel-panel admin-collaboration-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Team Collaboration</span>
+                    <h2>Dernières réservations</h2>
+                </div>
+                <a class="btn btn-light btn-sm" href="{{ path('admin_reservations') }}">+ Add Member</a>
+            </div>
+            <div class="admin-collab-list">
+                {% for reservation in dashboard.recentReservations %}
+                    <article class="admin-collab-row">
+                        <div class="admin-collab-avatar">{{ (reservation.prenom ?: 'U')|slice(0,1)|upper }}</div>
+                        <div class="admin-collab-copy">
+                            <strong>{{ reservation.prenom ?: 'Client' }} {{ reservation.nom ?: '' }}</strong>
+                            <small>{{ reservation.title }} · {{ reservation.destination }}</small>
+                        </div>
+                        <span class="status-chip status-chip-{{ reservation.status|lower|replace({'é':'e', 'è':'e', 'ê':'e', '_':'-'}) }}">{{ reservation.status }}</span>
+                    </article>
+                {% else %}
+                    <div class="empty-state">Aucune réservation récente.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="travel-panel admin-progress-card">
+            <div class="section-head travel-panel-head compact">
+                <div>
+                    <span class="eyebrow">Project Progress</span>
+                    <h2>Réservations confirmées</h2>
+                </div>
+            </div>
+            <div class="admin-gauge" style="--progress: {{ dashboard.completionPercent }};">
+                <div class="admin-gauge-inner">
+                    <strong>{{ dashboard.completionPercent }}%</strong>
+                    <span>Project Ended</span>
+                </div>
+            </div>
+            <div class="admin-legend">
+                <span><i class="dot-complete"></i> Completed</span>
+                <span><i class="dot-progress"></i> In Progress</span>
+                <span><i class="dot-pending"></i> Pending</span>
+            </div>
+        </div>
+
+        <div class="travel-panel admin-timer-card">
+            <div class="admin-timer-pattern"></div>
+            <div class="admin-timer-copy">
+                <span class="eyebrow">Time Tracker</span>
+                <strong id="liveAdminClock">--:--:--</strong>
+                <small>{{ dashboard.global.travellers }} voyageurs suivis · {{ dashboard.global.reviews }} avis</small>
+            </div>
+            <div class="admin-timer-actions">
+                <span class="timer-btn timer-btn-light">❚❚</span>
+                <span class="timer-btn timer-btn-stop">■</span>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (() => {
+            const target = document.getElementById('liveAdminClock');
+            if (!target) return;
+            const update = () => {
+                const now = new Date();
+                target.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            };
+            update();
+            window.setInterval(update, 1000);
+        })();
+    </script>
+=======
+{% extends "base.html.twig" %}
+
+{% block title %}Dashboard Admin - Fly & Go{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-dark navbar-expand-lg" style="background: linear-gradient(to right, #1e4d7b, #0d2137);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">
+            ✈️ <span style="color: #F78D00;">FLY & GO</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_logout') }}">
+                        🚪 Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    {% include 'admin/_sidebar.html.twig' %}
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        <!-- Stats Cards -->
+        {% if currentTab == 'dashboard' %}
+            <div class="stats-container">
+                <h2 class="mb-4">Dashboard</h2>
+                
+                <div class="row">
+                    <!-- Total Users -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-teal">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value">{{ stats.totalUsers }}</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                    </div>
+
+                    <!-- Active Users -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-green">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-value">{{ stats.activeUsers }}</div>
+                            <div class="stat-label">Active Users</div>
+                        </div>
+                    </div>
+
+                    <!-- Active % -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-blue">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-value">{{ stats.activePercent }}%</div>
+                            <div class="stat-label">Active %</div>
+                        </div>
+                    </div>
+
+                    <!-- Voyageurs -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-orange">
+                            <div class="stat-icon">✈️</div>
+                            <div class="stat-value">{{ stats.voyageurs }}</div>
+                            <div class="stat-label">Voyageurs</div>
+                        </div>
+                    </div>
+
+                    <!-- Admins -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-red">
+                            <div class="stat-icon">🔐</div>
+                            <div class="stat-value">{{ stats.admins }}</div>
+                            <div class="stat-label">Admins</div>
+                        </div>
+                    </div>
+
+                    <!-- New This Month -->
+                    <div class="col-md-4 col-lg-2 mb-3">
+                        <div class="stat-card stat-card-purple">
+                            <div class="stat-icon">🆕</div>
+                            <div class="stat-value">{{ stats.newThisMonth }}</div>
+                            <div class="stat-label">New This Month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Users Tab -->
+        {% elseif currentTab == 'users' %}
+            {% include 'admin/_users_tab.html.twig' %}
+
+        <!-- Profiles Tab -->
+        {% elseif currentTab == 'profiles' %}
+            {% include 'admin/_profiles_tab.html.twig' %}
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #F0F7FF;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ asset('js/dashboard.js') }}"></script>
+>>>>>>> 75a51bb2f23ad35cbe21f311286d6fb525b8d5da
+>>>>>>> 3e12171c67102e38de2cde7e791a0d50ede41739
+{% endblock %}
