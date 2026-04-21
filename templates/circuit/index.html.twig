@@ -1,0 +1,548 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Circuits de voyage — Fly&Go{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="circuit-hero" style="background:linear-gradient(135deg,rgba(27,58,107,0.9),rgba(0,180,216,0.8)),url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=80');background-size:cover;background-position:center;padding:3rem 0">
+    <div class="container">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff">
+            <h1 style="font-size:2.5rem;font-weight:800;margin-bottom:.5rem">Circuits de voyage</h1>
+            <p style="font-size:1.1rem;opacity:.9;margin-bottom:1.5rem">{{ circuits.totalItemCount|default(circuits|length) }} circuits disponibles — Circuits admin + circuits personnalisés</p>
+            
+            {# Main Search Bar with IA Integration #}
+            <div style="background:linear-gradient(135deg,rgba(255,255,255,0.98),rgba(254,243,199,0.95));padding:.6rem;border-radius:60px;display:flex;align-items:center;gap:.5rem;width:100%;max-width:950px;box-shadow:0 8px 30px rgba(0,0,0,.2)">
+                {# Search Input #}
+                <div style="flex:1;display:flex;align-items:center;padding:0 1rem;border-right:2px solid #ddd">
+                    <i class="fa fa-search" style="color:var(--gold);margin-right:.75rem;font-size:1.1rem"></i>
+                    <input type="text" id="searchInput" placeholder="Destination, titre, mot cle..." value="{{ q|default('') }}" 
+                           style="border:none;outline:none;width:100%;font-size:1rem;padding:.6rem 0;background:transparent"
+                           onkeyup="if(event.key==='Enter')syncAndSubmit()">
+                </div>
+                
+                {# Filters #}
+                <select id="destSelect" style="border:none;outline:none;padding:.5rem;font-size:.9rem;color:#555;cursor:pointer;min-width:110px;background:transparent"
+                        onchange="syncAndSubmit()">
+                    <option value="">Destination</option>
+                    <option value="Djerba" {{ destination=='Djerba'?'selected':'' }}>Djerba</option>
+                    <option value="Tunis" {{ destination=='Tunis'?'selected':'' }}>Tunis</option>
+                    <option value="Sousse" {{ destination=='Sousse'?'selected':'' }}>Sousse</option>
+                    <option value="Hammamet" {{ destination=='Hammamet'?'selected':'' }}>Hammamet</option>
+                    <option value="Tozeur" {{ destination=='Tozeur'?'selected':'' }}>Tozeur</option>
+                </select>
+                
+                <select id="diffSelect" style="border:none;outline:none;padding:.5rem;font-size:.9rem;color:#555;cursor:pointer;min-width:100px;background:transparent"
+                        onchange="syncAndSubmit()">
+                    <option value="">Difficulté</option>
+                    <option value="Facile" {{ difficulte=='Facile'?'selected':'' }}>Facile</option>
+                    <option value="Modéré" {{ difficulte=='Modéré'?'selected':'' }}>Modéré</option>
+                    <option value="Difficile" {{ difficulte=='Difficile'?'selected':'' }}>Difficile</option>
+                </select>
+                
+                {# IA Voice Button #}
+                <button type="button" id="aiVoiceBtn" onclick="startAiVoiceSearch()" 
+                        style="background:linear-gradient(135deg,var(--gold),#f59e0b);border:none;padding:.5rem;border-radius:50%;cursor:pointer;color:#fff" title="Recherche vocale IA">
+                    <i class="fa fa-microphone"></i>
+                </button>
+                
+                {# Submit Button #}
+                <button type="button" onclick="syncAndSubmit()" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;border:none;padding:.75rem 1.25rem;border-radius:40px;font-weight:700;cursor:pointer">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
+            
+            {# AI Helper Text #}
+            <div style="display:flex;align-items:center;gap:1rem;margin-top:1rem;opacity:.9;font-size:.9rem">
+                <span><i class="fa fa-lightbulb-o" style="color:var(--gold)"></i> Tip: Dictez votre voyage ideal avec le micro <i class="fa fa-microphone"></i></span>
+            </div>
+            
+            {# Quick Stats #}
+            <div style="display:flex;gap:2rem;margin-top:1.5rem;opacity:.85">
+                <span><i class="fa fa-route"></i> Circuits</span>
+                <span><i class="fa fa-mountain"></i> Destinations</span>
+                <span><i class="fa fa-calendar-check"></i> Disponibles</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Weather Bar #}
+<div style="background:#fff;border-bottom:1px solid var(--border);padding:.75rem 0">
+    <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+            {# Weather Search #}
+            <div style="display:flex;align-items:center;gap:.5rem">
+                <i class="fa fa-cloud-sun" style="color:var(--navy)"></i>
+                <input type="text" id="weatherSearch" placeholder="Météo (ex: Paris, London...)" 
+                       style="border:1px solid var(--border);padding:.4rem .75rem;border-radius:20px;font-size:.85rem;width:180px;outline:none"
+                       onkeyup="if(event.key==='Enter')searchWeather(this.value)">
+                <button onclick="searchWeather(document.getElementById('weatherSearch').value)" 
+                        style="background:none;border:none;cursor:pointer;color:var(--navy)">
+                    <i class="fa fa-arrow-right"></i>
+                </button>
+            </div>
+            
+            {# Weather Result #}
+            <div id="customWeatherResult" style="display:none;background:linear-gradient(135deg,var(--navy),var(--cyan));padding:.5rem 1rem;border-radius:25px;color:#fff;font-size:.85rem;align-items:center;gap:.5rem"></div>
+            
+            {# View Toggle #}
+            <div style="display:flex;align-items:center;gap:.5rem">
+                <button onclick="switchView('grid')" id="btnGrid" class="view-btn active" style="padding:.4rem .75rem;border:1px solid var(--border);background:var(--navy);color:#fff;border-radius:20px;cursor:pointer">
+                    <i class="fa fa-th"></i>
+                </button>
+                <button onclick="switchView('calendar')" id="btnCalendar" class="view-btn" style="padding:.4rem .75rem;border:1px solid var(--border);background:#fff;border-radius:20px;cursor:pointer">
+                    <i class="fa fa-calendar"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Hidden Filter Form #}
+<form method="GET" action="{{ path('circuit_index') }}" id="filterForm" style="position:absolute;left:-9999px;width:1px">
+    <input type="text" name="q" id="filterQ" value="{{ q|default('') }}">
+    <input type="text" name="destination" id="filterDest" value="{{ destination|default('') }}">
+    <input type="text" name="difficulte" id="filterDiff" value="{{ difficulte|default('') }}">
+    <input type="text" name="source" value="{{ source|default('') }}">
+</form>
+
+<script>
+function syncAndSubmit() {
+    document.getElementById('filterQ').value = document.getElementById('searchInput').value;
+    document.getElementById('filterDest').value = document.getElementById('destSelect').value;
+    document.getElementById('filterDiff').value = document.getElementById('diffSelect').value;
+    document.getElementById('filterForm').submit();
+}
+</script>
+
+{# Main Content #}
+<div class="container" style="padding:2rem 0">
+    
+    {# Results Header #}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <div>
+            <h2 style="font-size:1.25rem;font-weight:700;color:var(--text)">{{ circuits.totalItemCount|default(circuits|length) }} circuit{{ circuits.totalItemCount|default(circuits|length)>1?'s':'' }}</h2>
+            <p style="font-size:.85rem;color:var(--muted)">Circuits  + Admin</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem">
+            <a href="{{ path('circuit_ai_create') }}" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;padding:.5rem 1rem;border-radius:25px;text-decoration:none;font-size:.85rem;font-weight:600">
+                <i class="fa fa-brain"></i> Circuit personnalisé
+            </a>
+        </div>
+    </div>
+
+    {# Grid View #}
+    <div id="grid-view">
+        {% if circuits %}
+        <div id="circuit-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem">
+            {% for c in circuits %}
+            <article class="circuit-card" data-id="{{ c.id }}" onclick="window.location='{{ path('circuit_show', {id: c.id}) }}'" style="background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .3s;cursor:pointer">
+                <div style="position:relative;height:180px;overflow:hidden">
+                    <img src="{{ c.image ? asset(c.image) : 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80' }}" style="width:100%;height:100%;object-fit:cover" alt="{{ c.titre }}">
+                    {% if c.isAiGenerated %}
+                    <span style="position:absolute;top:.5rem;left:.5rem;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#fff;padding:.25rem .5rem;border-radius:15px;font-size:.7rem;font-weight:600">
+                        <i class="fa fa-brain"></i> Personnalisé
+                    </span>
+                    {% endif %}
+                    {% if c.difficulte %}
+                    <span style="position:absolute;top:.5rem;right:.5rem;padding:.25rem .5rem;border-radius:15px;font-size:.7rem;font-weight:600;background:{{ c.difficulte=='Facile'?'#10B981':c.difficulte=='Difficile'?'#EF4444':'#F59E0B'}};color:#fff">
+                        {{ c.difficulte }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div style="padding:1rem">
+                    <div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--muted);margin-bottom:.5rem">
+                        <i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i>
+                        {{ c.depart }} → {{ c.destination }}
+                    </div>
+                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:.5rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.titre }}</h3>
+                    <div style="display:flex;gap:1rem;font-size:.8rem;color:var(--muted);margin-bottom:1rem">
+                        {% if c.duree %}<span><i class="fa fa-clock"></i> {{ c.duree }}</span>{% endif %}
+                        {% if c.placesDisponibles %}<span><i class="fa fa-users"></i> {{ c.placesDisponibles }} places</span>{% endif %}
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                            <span style="font-size:1.5rem;font-weight:800;color:var(--navy)">{{ c.prix|number_format(0,'','') }}</span>
+                            <span style="color:var(--muted);font-size:.85rem">TND</span>
+                        </div>
+                        <div style="display:flex;gap:.5rem" onclick="event.stopPropagation()">
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" style="padding:.4rem .75rem;border:1px solid var(--navy);border-radius:20px;font-size:.8rem;color:var(--navy);text-decoration:none">Détails</a>
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" style="padding:.4rem .75rem;background:var(--navy);border-radius:20px;font-size:.8rem;color:#fff;text-decoration:none">Réserver</a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        
+        {# Pagination #}
+        {% if circuits.pageCount|default(1) > 1 %}
+        <div style="display:flex;justify-content:center;align-items:center;gap:.5rem;margin-top:2rem;flex-wrap:wrap">
+            {% if circuits.currentPageNumber|default(1) > 1 %}
+            <a href="{{ path('circuit_index', app.request.query|merge({page: circuits.currentPageNumber|default(1) - 1})) }}" style="padding:.5rem 1rem;border:1px solid var(--border);border-radius:25px;color:var(--navy);background:#fff;font-weight:600;transition:all .2s">← Précédent</a>
+            {% endif %}
+            {% if circuits.currentPageNumber|default(1) > 3 %}
+            <a href="{{ path('circuit_index', app.request.query|merge({page: 1})) }}" style="padding:.5rem .75rem;border:1px solid var(--border);border-radius:50%;color:var(--text);background:#fff">1</a>
+            <span style="color:var(--muted)">...</span>
+            {% endif %}
+            {% for page in 1..circuits.pageCount|default(1) %}
+            {% if page >= circuits.currentPageNumber|default(1) - 1 and page <= circuits.currentPageNumber|default(1) + 1 %}
+            <a href="{{ path('circuit_index', app.request.query|merge({page: page})) }}" style="min-width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid var(--navy);border-radius:50%;background:{{ page==circuits.currentPageNumber|default(1)?'var(--navy)':'#fff'}};color:{{ page==circuits.currentPageNumber|default(1)?'#fff':'var(--navy)' }};font-weight:600">{{ page }}</a>
+            {% endif %}
+            {% endfor %}
+            {% if circuits.currentPageNumber|default(1) < circuits.pageCount|default(1) - 2 %}
+            <span style="color:var(--muted)">...</span>
+            <a href="{{ path('circuit_index', app.request.query|merge({page: circuits.pageCount|default(1)})) }}" style="padding:.5rem .75rem;border:1px solid var(--border);border-radius:50%;color:var(--text);background:#fff">{{ circuits.pageCount|default(1) }}</a>
+            {% endif %}
+            {% if circuits.currentPageNumber|default(1) < circuits.pageCount|default(1) %}
+            <a href="{{ path('circuit_index', app.request.query|merge({page: circuits.currentPageNumber|default(1) + 1})) }}" style="padding:.5rem 1rem;border:1px solid var(--border);border-radius:25px;color:var(--navy);background:#fff;font-weight:600;transition:all .2s">Suivant →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div style="text-align:center;padding:4rem 2rem">
+            <i class="fa fa-route" style="font-size:3rem;color:var(--muted);margin-bottom:1rem;display:block"></i>
+            <h3 style="font-size:1.25rem;font-weight:700;margin-bottom:.5rem">Aucun circuit trouvé</h3>
+            <p style="color:var(--muted);margin-bottom:1.5rem">Essayez de modifier vos critères</p>
+            <a href="{{ path('circuit_ai_create') }}" style="background:var(--navy);color:#fff;padding:.75rem 1.5rem;border-radius:25px;text-decoration:none;font-weight:600">Créer un circuit personnalisé</a>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Calendar View #}
+    <div id="calendar-view" style="display:none">
+        <div id="circuit-calendar" style="background:#fff;padding:1.5rem;border-radius:var(--r);box-shadow:0 2px 8px rgba(0,0,0,.08)"></div>
+    </div>
+</div>
+
+{# Scripts #}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+<script>
+let calendar;
+let userReservationsData = {{ userReservations|json_encode|raw }};
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
+
+function switchView(view) {
+    const gridView = document.getElementById('grid-view');
+    const calendarView = document.getElementById('calendar-view');
+    const btnGrid = document.getElementById('btnGrid');
+    const btnCalendar = document.getElementById('btnCalendar');
+    
+    if (view === 'calendar') {
+        gridView.style.display = 'none';
+        calendarView.style.display = 'block';
+        btnGrid.style.background = '#fff';
+        btnGrid.style.color = 'var(--text)';
+        btnCalendar.style.background = 'var(--navy)';
+        btnCalendar.style.color = '#fff';
+        if (!calendar) initCalendar();
+        calendar.render();
+        history.pushState({ view: 'calendar' }, '', '?view=calendar');
+    } else {
+        gridView.style.display = 'block';
+        calendarView.style.display = 'none';
+        btnGrid.style.background = 'var(--navy)';
+        btnGrid.style.color = '#fff';
+        btnCalendar.style.background = '#fff';
+        btnCalendar.style.color = 'var(--text)';
+        history.pushState({ view: 'grid' }, '', '?');
+    }
+}
+
+window.addEventListener('popstate', function(e) {
+    if (e.state?.view === 'calendar') {
+        switchView('calendar');
+    } else {
+        switchView('grid');
+    }
+});
+
+function initCalendar() {
+    const circuitEvents = [
+        {% for c in circuits %}
+        {% if c.startDate and c.endDate %}
+        {
+            title: '{{ c.titre }}',
+            start: '{{ c.startDate|date('Y-m-d') }}',
+            end: '{{ c.endDate|date('Y-m-d') }}',
+            url: '{{ path('circuit_show', {id: c.id}) }}',
+            backgroundColor: '{{ c.difficulte == "Facile" ? "#10B981" : c.difficulte == "Difficile" ? "#EF4444" : "#F59E0B" }}',
+            extendedProps: { type: 'circuit' }
+        }{% if not loop.last %},{% endif %}
+        {% endif %}
+        {% endfor %}
+    ];
+
+    const reservationEvents = userReservationsData.map(function(res) {
+        return {
+            title: '📅 ' + res.circuit,
+            start: res.date,
+            allDay: true,
+            backgroundColor: res.status === 'CONFIRME' ? '#1B3A6B' : '#F59E0B',
+            extendedProps: { type: 'reservation', status: res.status }
+        };
+    });
+
+    const allEvents = [...circuitEvents, ...reservationEvents];
+
+    calendar = new FullCalendar.Calendar(document.getElementById('circuit-calendar'), {
+        initialView: 'dayGridMonth',
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'dayGridMonth,listMonth' 
+        },
+        events: allEvents,
+        eventClick: function(info) {
+            if (info.event.extendedProps?.type === 'circuit') {
+                window.location.href = info.event.url;
+            } else if (info.event.extendedProps?.type === 'reservation') {
+                showReservationModal(info.event.startStr, info.event.title);
+            }
+        },
+        dateClick: function(info) {
+            const dayReservations = userReservationsData.filter(function(r) { 
+                return r.date === info.dateStr; 
+            });
+            
+            if (dayReservations.length > 0) {
+                showReservationModal(info.dateStr, dayReservations);
+            } else {
+                alert('Aucune réservation pour le ' + new Date(info.dateStr).toLocaleDateString('fr-FR'));
+            }
+        },
+        height: 'auto',
+        locale: 'fr',
+        buttonText: { today: 'Aujourd\'hui', month: 'Mois', list: 'Liste' },
+        eventDisplay: 'block'
+    });
+}
+
+function showReservationModal(dateStr, reservations) {
+    const modal = document.getElementById('reservationModal');
+    const modalDate = document.getElementById('modalDate');
+    const modalCircuit = document.getElementById('modalCircuit');
+    
+    if (!Array.isArray(reservations)) {
+        reservations = userReservationsData.filter(function(r) { return r.date === dateStr; });
+    }
+    
+    const date = new Date(dateStr);
+    modalDate.textContent = date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    
+    if (reservations.length > 0) {
+        let html = '<div style="text-align:left">';
+        reservations.forEach(function(res) {
+            const statusColor = res.status === 'CONFIRME' ? '#10B981' : '#F59E0B';
+            html += '<div style="padding:0.75rem;margin-bottom:0.5rem;background:#f8fafc;border-radius:8px;border-left:4px solid #1B3A6B">' +
+                '<strong style="color:#1B3A6B">📅 ' + (res.circuit || 'Circuit') + '</strong>' +
+                '<span style="display:block;margin-top:0.25rem;font-size:0.85rem;color:' + statusColor + '">' + 
+                '<i class="fa fa-check-circle"></i> ' + (res.status || 'Confirmé') + '</span></div>';
+        });
+        html += '</div>';
+        modalCircuit.innerHTML = html;
+    } else {
+        modalCircuit.innerHTML = '<p style="color:#64748b">Aucune réservation pour cette date</p>';
+    }
+    
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+}
+
+function closeModal() {
+    const modal = document.getElementById('reservationModal');
+    modal.style.display = 'none';
+    modal.classList.remove('active');
+}
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    setTimeout(function() { toast.style.display = 'none'; }, 3000);
+}
+
+async function searchWeather(query) {
+    const result = document.getElementById('customWeatherResult');
+    
+    if (!query || query.length < 2) { 
+        result.style.display = 'none'; 
+        return; 
+    }
+    
+    result.style.display = 'inline-flex';
+    result.innerHTML = '<i class="fa fa-spinner fa-spin"></i> <span style="margin-left:8px">Recherche...</span>';
+    
+    try {
+        const res = await fetch('/api/weather?city=' + encodeURIComponent(query));
+        const data = await res.json();
+        
+        if (data.success && data.weather) {
+            const w = data.weather;
+            const icons = {'01d':'☀️','01n':'🌙','02d':'⛅','03d':'☁️','09d':'🌧️','10d':'🌦️','11d':'⛈️','13d':'❄️','50d':'🌫️'};
+            result.innerHTML = '<span style="margin-right:8px">' + (icons[w.icon] || '🌤️') + '</span>' +
+                '<span style="font-weight:700">' + w.temperature + '°C</span>' +
+                '<span style="margin-left:8px;opacity:0.9">' + w.city + '</span>';
+        } else {
+            result.innerHTML = '<i class="fa fa-exclamation-circle"></i> <span style="margin-left:8px">Non trouvé</span>';
+            setTimeout(function() { result.style.display = 'none'; }, 2000);
+        }
+    } catch (e) {
+        result.innerHTML = '<i class="fa fa-exclamation-triangle"></i> <span style="margin-left:8px">Erreur</span>';
+    }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('view') === 'calendar') {
+        switchView('calendar');
+    }
+});
+
+let aiVoiceRecognition = null;
+
+function startAiVoiceSearch() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('La reconnaissance vocale n\'est pas supportee par votre navigateur');
+        return;
+    }
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    aiVoiceRecognition = new SpeechRecognition();
+    aiVoiceRecognition.lang = 'fr-FR';
+    aiVoiceRecognition.interimResults = false;
+    aiVoiceRecognition.maxAlternatives = 1;
+    
+    const btn = document.getElementById('aiVoiceBtn');
+    const input = document.getElementById('searchInput');
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+    
+    aiVoiceRecognition.onstart = function() {
+        console.log('AI Voice recognition started');
+    };
+    
+    aiVoiceRecognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        setTimeout(function() {
+            syncAndSubmit();
+        }, 300);
+    };
+    
+    aiVoiceRecognition.onerror = function(event) {
+        console.error('Voice recognition error', event.error);
+        btn.innerHTML = '<i class="fa fa-microphone"></i>';
+        alert('Erreur de reconnaissance vocale: ' + event.error);
+    };
+    
+    aiVoiceRecognition.onend = function() {
+        btn.innerHTML = '<i class="fa fa-microphone"></i>';
+    };
+    
+    aiVoiceRecognition.start();
+}
+
+function performAiSearchFromBar() {
+    const query = document.getElementById('searchInput').value.trim();
+    
+    if (query.length < 2) {
+        document.getElementById('searchInput').focus();
+        return;
+    }
+    
+    syncAndSubmit();
+}
+
+function performAiSearch(query) {
+    const aiBrainBtn = document.getElementById('aiVoiceBtn');
+    if (aiBrainBtn) aiBrainBtn.disabled = true;
+    
+    let resultsContainer = document.getElementById('semanticResults');
+    if (!resultsContainer) {
+        resultsContainer = document.createElement('div');
+        resultsContainer.id = 'semanticResults';
+        resultsContainer.style.cssText = 'margin:2rem 0;padding:1.5rem;background:linear-gradient(135deg,rgba(27,58,107,0.1),rgba(0,180,216,0.05));border-radius:16px;border:2px solid var(--navy)';
+        
+        const gridView = document.getElementById('grid-view');
+        if (gridView) {
+            gridView.parentNode.insertBefore(resultsContainer, gridView);
+        }
+    }
+    
+    const resultsDiv = document.getElementById('semanticResults');
+    resultsDiv.innerHTML = '<div style="text-align:center;padding:2rem"><i class="fa fa-spinner fa-spin" style="font-size:2rem;color:var(--navy)"></i><p style="margin-top:1rem;color:var(--muted)">🤖 Analyse IA en cours...</p></div>';
+    resultsDiv.style.display = 'block';
+    
+    fetch('/api/circuit/search?q=' + encodeURIComponent(query))
+    .then(r => r.json())
+    .then(data => {
+        if (data.success && data.results && data.results.length > 0) {
+            let matchedIds = data.results.map(r => r.circuit.id);
+            
+            document.querySelectorAll('#circuit-grid .circuit-card').forEach(card => {
+                let idMatch = matchedIds.some(id => card.dataset.id == id);
+                card.style.display = idMatch ? 'block' : 'none';
+            });
+            
+            let html = '<div style="margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem"><i class="fa fa-sparkles" style="color:var(--gold);font-size:1.2rem"></i><span style="font-weight:700;font-size:1.1rem;color:var(--navy)">Résultats pour: "' + query + '"</span><span style="background:var(--navy);color:#fff;padding:2px 8px;border-radius:10px;font-size:0.75rem">' + data.results.length + '</span></div>';
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        } else {
+            document.querySelectorAll('#circuit-grid .circuit-card').forEach(card => {
+                card.style.display = 'block';
+            });
+            
+            let resultsDiv = document.getElementById('semanticResults');
+            if (resultsDiv) resultsDiv.style.display = 'none';
+        }
+    })
+    .catch(e => {
+        document.querySelectorAll('#circuit-grid .circuit-card').forEach(card => {
+            card.style.display = 'block';
+        });
+    })
+    .finally(() => {
+        if (aiBrainBtn) aiBrainBtn.disabled = false;
+    });
+}
+
+function askDestination() {
+    const dest = prompt('Entrez une destination (ville ou pays):');
+    if (dest && dest.trim()) {
+        document.getElementById('searchInput').value = dest.trim();
+        document.getElementById('filterForm').submit();
+    }
+}
+
+</script>
+
+<style>
+.circuit-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.15) !important; }
+#reservationModal { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center }
+#reservationModal.active { display:flex }
+#reservationModal .modal-content { background:#fff;padding:2rem;border-radius:16px;max-width:400px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2);position:relative }
+#reservationModal h3 { color:#1B3A6B;margin-bottom:1rem;font-size:1.25rem }
+#reservationModal .close-btn { position:absolute;top:0.5rem;right:0.75rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;line-height:1 }
+#reservationModal .close-btn:hover { color:#1B3A6B }
+</style>
+
+{# Reservation Modal #}
+<div id="reservationModal" onclick="if(event.target === this) closeModal()" style="cursor:pointer">
+    <div class="modal-content" style="cursor:default" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <h3><i class="fa fa-calendar-check"></i> Réservation du <span id="modalDate"></span></h3>
+        <div id="modalCircuit"></div>
+    </div>
+</div>
+
+{# Toast container for notifications #}
+<div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1B3A6B;color:#fff;padding:12px 24px;border-radius:8px;z-index:10000;display:none;box-shadow:0 4px 12px rgba(0,0,0,.2)"></div>
+
+{% endblock %}

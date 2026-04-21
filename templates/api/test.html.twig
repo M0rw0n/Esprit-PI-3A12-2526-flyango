@@ -1,0 +1,307 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}API Test — {{ endpoint }}{% endblock %}
+{% block body %}
+
+<style>
+:root {
+    --api-primary: #1B4D3E;
+    --api-secondary: #2D7A5F;
+    --api-accent: #D4A853;
+    --api-bg: #F8FAFB;
+    --api-card: #FFFFFF;
+    --api-text: #1A2B3C;
+    --api-text-light: #6B7B8C;
+    --api-success: #10B981;
+    --api-error: #EF4444;
+    --api-blue: #3B82F6;
+    --radius: 12px;
+}
+.api-test-header {
+    background: linear-gradient(135deg, var(--api-primary) 0%, var(--api-secondary) 100%);
+    padding: 40px 0;
+    color: white;
+}
+.api-test-header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+.api-test-header a {
+    color: var(--api-accent);
+    text-decoration: none;
+}
+.container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+.api-card {
+    background: var(--api-card);
+    border-radius: var(--radius);
+    padding: 25px;
+    margin: 30px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.api-endpoint-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+.api-form-group {
+    display: flex;
+    flex-direction: column;
+}
+.api-form-group label {
+    font-weight: 600;
+    color: var(--api-text);
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+}
+.api-form-group input, .api-form-group select {
+    padding: 10px 14px;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+.api-form-group input:focus, .api-form-group select:focus {
+    outline: none;
+    border-color: var(--api-accent);
+}
+.btn-api {
+    background: var(--api-accent);
+    color: var(--api-primary);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-api:hover {
+    background: #C49943;
+    transform: translateY(-2px);
+}
+.api-result {
+    margin-top: 25px;
+}
+.api-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #E5E7EB;
+}
+.api-result-title {
+    font-weight: 700;
+    color: var(--api-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.api-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.api-status.success { background: #D1FAE5; color: #065F46; }
+.api-status.error { background: #FEE2E2; color: #991B1B; }
+.api-json {
+    background: #1E293B;
+    border-radius: 10px;
+    padding: 20px;
+    overflow-x: auto;
+}
+.api-json pre {
+    color: #E2E8F0;
+    font-family: 'Consolas', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.api-params {
+    background: var(--api-bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+.api-params-title {
+    font-weight: 600;
+    color: var(--api-text);
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+.api-param {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: white;
+    border-radius: 6px;
+    margin: 4px;
+    font-size: 0.8rem;
+    color: var(--api-text);
+}
+.api-param-key { font-weight: 600; color: var(--api-primary); }
+.api-qr-result { text-align: center; padding: 30px; }
+.api-qr-result img { max-width: 250px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.api-qr-result h3 { margin-top: 15px; color: var(--api-text); }
+</style>
+
+<section class="api-test-header">
+    <div class="container">
+        <h1><i class="fa fa-flask"></i> Test API: <span style="color: var(--api-accent)">{{ endpoint }}</span></h1>
+        <a href="{{ path('api_explorer') }}"><i class="fa fa-arrow-left"></i> Retour à l'API Explorer</a>
+    </div>
+</section>
+
+<div class="container">
+    <div class="api-card">
+        <form method="GET" action="{{ path('api_test') }}">
+            <input type="hidden" name="endpoint" value="{{ endpoint }}">
+            
+            {% if endpoint == 'weather' or endpoint == 'weather-forecast' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group">
+                    <label>Ville</label>
+                    <input type="text" name="city" value="{{ params.city|default('Paris') }}">
+                </div>
+                {% if endpoint == 'weather-forecast' %}
+                <div class="api-form-group">
+                    <label>Jours (1-5)</label>
+                    <input type="number" name="days" value="{{ params.days|default(5) }}" min="1" max="5">
+                </div>
+                {% endif %}
+            </div>
+            {% elseif endpoint == 'flights' or endpoint == 'compare' or endpoint == 'cheapest-dates' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group">
+                    <label>Origine (code IATA)</label>
+                    <input type="text" name="origin" value="{{ params.origin|default('PAR') }}">
+                </div>
+                <div class="api-form-group">
+                    <label>Destination (code IATA)</label>
+                    <input type="text" name="destination" value="{{ params.destination|default('LON') }}">
+                </div>
+                <div class="api-form-group">
+                    <label>Date</label>
+                    <input type="date" name="date" value="{{ params.date|default('now'|date('Y-m-d')) }}">
+                </div>
+            </div>
+            {% elseif endpoint == 'places' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group">
+                    <label>Recherche</label>
+                    <input type="text" name="query" value="{{ params.query|default('restaurant Paris') }}">
+                </div>
+            </div>
+            {% elseif endpoint == 'translate' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group">
+                    <label>Texte à traduire</label>
+                    <input type="text" name="text" value="{{ params.text|default('Hello world') }}">
+                </div>
+                <div class="api-form-group">
+                    <label>Langue cible</label>
+                    <select name="target">
+                        <option value="fr" {{ params.target == 'fr' ? 'selected' : '' }}>Français</option>
+                        <option value="es" {{ params.target == 'es' ? 'selected' : '' }}>Espagnol</option>
+                        <option value="de" {{ params.target == 'de' ? 'selected' : '' }}>Allemand</option>
+                        <option value="it" {{ params.target == 'it' ? 'selected' : '' }}>Italien</option>
+                        <option value="en" {{ params.target == 'en' ? 'selected' : '' }}>Anglais</option>
+                    </select>
+                </div>
+            </div>
+            {% elseif endpoint == 'ai-chat' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group" style="grid-column: 1 / -1;">
+                    <label>Prompt</label>
+                    <input type="text" name="prompt" value="{{ params.prompt|default('What are the best places to visit in France?') }}">
+                </div>
+            </div>
+            {% elseif endpoint == 'moderation' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group" style="grid-column: 1 / -1;">
+                    <label>Texte à modérer</label>
+                    <input type="text" name="text" value="{{ params.text|default('This is a great product!') }}">
+                </div>
+            </div>
+            {% elseif endpoint == 'exchange' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group">
+                    <label>De</label>
+                    <select name="from">
+                        <option value="EUR" {{ params.from == 'EUR' ? 'selected' : '' }}>EUR</option>
+                        <option value="USD" {{ params.from == 'USD' ? 'selected' : '' }}>USD</option>
+                        <option value="GBP" {{ params.from == 'GBP' ? 'selected' : '' }}>GBP</option>
+                        <option value="TND" {{ params.from == 'TND' ? 'selected' : '' }}>TND</option>
+                    </select>
+                </div>
+                <div class="api-form-group">
+                    <label>Vers</label>
+                    <select name="to">
+                        <option value="USD" {{ params.to == 'USD' ? 'selected' : '' }}>USD</option>
+                        <option value="EUR" {{ params.to == 'EUR' ? 'selected' : '' }}>EUR</option>
+                        <option value="GBP" {{ params.to == 'GBP' ? 'selected' : '' }}>GBP</option>
+                        <option value="TND" {{ params.to == 'TND' ? 'selected' : '' }}>TND</option>
+                    </select>
+                </div>
+                <div class="api-form-group">
+                    <label>Montant</label>
+                    <input type="number" name="amount" value="{{ params.amount|default(100) }}">
+                </div>
+            </div>
+            {% elseif endpoint == 'qrcode' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group" style="grid-column: 1 / -1;">
+                    <label>Contenu QR Code</label>
+                    <input type="text" name="content" value="{{ params.content|default('Fly&Go Travel') }}">
+                </div>
+            </div>
+            {% elseif endpoint == 'payment-stripe' %}
+            <div class="api-endpoint-form">
+                <div class="api-form-group">
+                    <label>Montant (EUR)</label>
+                    <input type="number" name="amount" value="{{ params.amount|default(100) }}">
+                </div>
+            </div>
+            {% endif %}
+            
+            <button type="submit" class="btn-api"><i class="fa fa-paper-plane"></i> Tester l'API</button>
+        </form>
+
+        <div class="api-result">
+            <div class="api-result-header">
+                <span class="api-result-title"><i class="fa fa-code"></i> Résultat</span>
+                <span class="api-status {{ result.success ? 'success' : 'error' }}">
+                    {{ result.success ? 'Succès' : 'Erreur' }}
+                </span>
+            </div>
+            
+            {% if params|length > 0 %}
+            <div class="api-params">
+                <div class="api-params-title"><i class="fa fa-sliders-h"></i> Paramètres utilisés:</div>
+                {% for key, value in params %}
+                <span class="api-param"><span class="api-param-key">{{ key }}</span>: {{ value }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if endpoint == 'qrcode' and result.qrcode %}
+            <div class="api-qr-result">
+                <img src="{{ result.qrcode }}" alt="QR Code">
+                <h3>{{ result.content }}</h3>
+            </div>
+            {% else %}
+            <div class="api-json">
+                <pre>{{ result|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Nouveau sujet — Forum Fly&Go{% endblock %}
+{% block body %}
+
+{# Hero Section #}
+<section class="circuit-hero" style="background:linear-gradient(135deg,rgba(27,58,107,0.9),rgba(0,180,216,0.8)),url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1920&q=80');background-size:cover;background-position:center;padding:2rem 0">
+    <div class="container">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff">
+            <h1 style="font-size:2rem;font-weight:800;margin-bottom:.5rem">Créer un nouveau sujet</h1>
+            <p style="font-size:1rem;opacity:.9">Partagez votre question, expérience ou conseil avec la communauté</p>
+            <a href="{{ path('forum_index') }}" style="color:#fff;opacity:.8;margin-top:1rem;text-decoration:none">
+                <i class="fa fa-arrow-left"></i> Retour au forum
+            </a>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="max-width:700px;padding:2rem 1rem">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,.1);padding:2rem">
+        <h2 style="font-size:1.25rem;font-weight:700;color:var(--text);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem">
+            <i class="fa fa-pen" style="color:var(--navy)"></i> Nouveau sujet de discussion
+        </h2>
+        
+        <form action="{{ path('forum_new') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateForumForm()">
+            <div style="margin-bottom:1.25rem">
+                <label for="title" style="display:block;font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.5rem">Titre du sujet *</label>
+                <input type="text" name="title" id="title" required minlength="5" maxlength="150" 
+                       placeholder="Ex: Meilleurs restaurants à Djerba ?" 
+                       style="width:100%;padding:.875rem 1rem;border:1px solid var(--border);border-radius:8px;font-size:.95rem">
+            </div>
+            
+            <div style="margin-bottom:1.25rem">
+                <label for="categorie" style="display:block;font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.5rem">Catégorie *</label>
+                <select name="categorie" id="categorie" required 
+                        style="width:100%;padding:.875rem 1rem;border:1px solid var(--border);border-radius:8px;font-size:.95rem">
+                    <option value="">-- Choisir une catégorie --</option>
+                    {% for cat in ['Hébergement', 'Circuit', 'Activité', 'Conseil', 'Destination', 'Transport'] %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="margin-bottom:1.25rem">
+                <label for="author" style="display:block;font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.5rem">Votre nom *</label>
+                <input type="text" name="author" id="author" required minlength="2" maxlength="50" 
+                       placeholder="Votre prénom ou pseudo" 
+                       style="width:100%;padding:.875rem 1rem;border:1px solid var(--border);border-radius:8px;font-size:.95rem">
+            </div>
+            
+            <div style="margin-bottom:1.25rem">
+                <label for="image" style="display:block;font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.5rem">Image (optionnel)</label>
+                <input type="file" name="image" id="image" accept="image/*"
+                       style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:8px;font-size:.9rem">
+                <div id="image-preview" style="display:none;margin-top:0.5rem">
+                    <img id="preview-img" style="max-width:200px;max-height:150px;border-radius:8px" src="" alt="Preview">
+                    <button type="button" onclick="removeImage()" style="margin-left:0.5rem;padding:0.25rem 0.5rem;background:#dc2626;color:#fff;border:none;border-radius:4px;cursor:pointer">Supprimer</button>
+                </div>
+            </div>
+            
+            <div style="margin-bottom:1.5rem">
+                <label for="content" style="display:block;font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.5rem">Contenu *</label>
+                <textarea name="content" id="content" required minlength="10" maxlength="5000" rows="8" 
+                          placeholder="Partagez votre question, expérience ou conseil..." 
+                          style="width:100%;padding:.875rem 1rem;border:1px solid var(--border);border-radius:8px;font-size:.95rem;resize:vertical"></textarea>
+            </div>
+            
+            <div style="display:flex;gap:1rem">
+                <button type="submit" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;padding:.75rem 1.5rem;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;gap:.5rem">
+                    <i class="fa fa-paper-plane"></i> Publier le sujet
+                </button>
+                <a href="{{ path('forum_index') }}" style="padding:.75rem 1.5rem;border:1px solid var(--border);border-radius:8px;color:var(--text);text-decoration:none;font-size:.95rem">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('image')?.addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview-img').src = e.target.result;
+            document.getElementById('image-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    }
+});
+
+function removeImage() {
+    document.getElementById('image').value = '';
+    document.getElementById('image-preview').style.display = 'none';
+    document.getElementById('preview-img').src = '';
+}
+
+async function validateForumForm() {
+    const title = document.getElementById('title').value.trim();
+    const categorie = document.getElementById('categorie').value;
+    const author = document.getElementById('author').value.trim();
+    const content = document.getElementById('content').value.trim();
+    
+    if (title.length < 5) {
+        alert('Le titre doit contenir au moins 5 caractères.');
+        return false;
+    }
+    
+    if (!categorie) {
+        alert('Veuillez choisir une catégorie.');
+        return false;
+    }
+    
+    if (author.length < 2) {
+        alert('Le nom doit contenir au moins 2 caractères.');
+        return false;
+    }
+    
+    if (content.length < 10) {
+        alert('Le contenu doit contenir au moins 10 caractères.');
+        return false;
+    }
+
+    try {
+        const res = await fetch('/api/forum/moderate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'content=' + encodeURIComponent(title + ' ' + content)
+        });
+        const data = await res.json();
+        
+        if (data.success && data.is_toxic) {
+            alert('Votre publication contient du contenu inapproprié. Veuillez le modifier.');
+            return false;
+        }
+    } catch (e) {
+        console.log('Moderation check skipped');
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

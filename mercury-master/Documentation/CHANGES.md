@@ -1,0 +1,92 @@
+## Summary
+
+This new version brings both bug fixes and feature updates to mercury.
+
+## New features
+
+- __[NA]__
+  - Remove `NA_DEFAULT_PLUGIN_PATH` and use `NA_PLUGIN_RELATIVE_PATH` instead
+    - Use relative path for NA plugin search
+    - Calculate relative path at build time and use it at runtime to find the plugin directory
+- __[NA OFI]__
+  - Fix compatibility with libfabric 2.0
+  - Pass down NA flags for firewall support in prov/tcp
+    - Indicate if client bulk address is behind firewall by using address deserialization callback functions
+- __[HG/NA perf]__
+  - Add `-N` option to keep perf server up after client exits
+  - Remove barrier by default in perf loop and add `--barrier` as optional option to use barrier again
+    - Add min/max measurements when barrier is not used
+  - Print only first and last targets when reading config
+  - Re-organize and clean up printed fields
+  - Add `-K` option to increment key based on rank (used for testing)
+  - Verify source handle matching on RMA when `-v` option is passed
+- __[HG Util]__
+  - Add `fatal` and `info` log levels
+  - This replaces the previous fatal log subsys, default log level is now `fatal`
+
+## Bug fixes
+
+- __[HG]__
+  - Ensure that one-way RPCs can overflow
+    - Use existing ack notifications to ensure send buffer remains available
+  - Fix handling of multi-recv operations returning NULL buffers and repost multi-recv buffer if released
+  - Fix possible erroneous refcount when bulk create/transfer fails
+  - Enable diagnostic counters outside of debug builds
+  - Enable HG proc overflow when using XDR
+    - Fix hg_proc_save_ptr() error handling and allocation with XDR
+    - Multiple proc fixes for XDR encoding
+- __[HG Core]__
+  - Check for mismatching builds when using checksums
+- __[HG Core/Bulk]__
+  - Print destination address string in error messages
+- __[NA]__
+  - Fix plugin scan to continue if one plugin cannot load
+  - Add `na_context` parameter to `context_create` plugin callback
+- __[NA OFI]__
+  - Check against `FI_REMOTE_CQ_DATA` before accessing `cq_event->data`
+  - Fix case of `FI_MULTI_RECV` event returned without buffer
+  - Fix completion of multi-recv cancelation with prov/cxi
+    - Only complete in error path when `FI_MULTI_RECV` is set
+    - Multi-recv operations may still be used even after an error has occurred
+  - Improve logging of canceled events
+  - Add missing op type from op completed error log
+  - Fix compile error on older prov/cxi platforms
+  - Attempt to use `ip_subnet` with `FI_SOCKADDR_IN` format
+  - Refactor msg_send/msg_recv calls and add debug info
+  - Fix compilation under FreeBSD
+  - Disable RNR protocol by default when using prov/cxi
+  - Prevent the use of `FI_AV_AUTH_KEY` with prov/cxi when number of auth keys is 1
+  - Fix tx/rx sizes to appropriate values with prov/tcp and prov/cxi
+    - Add `NA_OFI_TX_SIZE`/`NA_OFI_RX_SIZE` env vars to manually control sizes
+  - Ensure rx message ordering is set to `FI_ORDER_NONE`
+  - Improve error and debug logs
+- __[NA UCX]__
+  - Use `ucp_worker_query()` instead of deprecated `ucp_worker_get_address()`
+  - Switch to using `ucp_ep_close_nbx()`
+  - Rework address EP close to be async and check on address close list during progress
+  - Ensure address is resolved on RMA
+  - Queue up pending connection if address exists and reject connection after timeout if no progress is made
+  - Enable `UCS_LOG_LEVEL_PRINT` as info log
+  - Set `UCP_ERR_HANDLING_MODE_PEER` for all endpoint types
+- __[NA BMI]__
+  - Do not BMI_initialize() servers with address `0.0.0.0` and detect address to use
+- __[HG/NA Perf]__
+  - Fix potential race when re-using exp op ID
+  - Add spin_flag to prevent from excessively sleeping
+    - Reduce overhead of hg_poll_wait()
+- __[HG util]__
+  - Fix global buffer overflow in `hg_log_outlet_active` and `hg_log_get_subsys(void)`
+  - Fix error return of `hg_mem_pool_extend()`
+  - Fix `kqueue` implementation
+  - Ensure parent log is registered first
+    - Fix rare case where log was not being printed even if environment variables were set
+  - Fix dlog to use tail queue
+  - Bump max log buffer size
+- __[CMake]__
+  - Fix tirpc to be an external dependency
+  - Add `MERCURY_LIB_DEBUG_NAME_IS_RELEASE` option to set `OUTPUT_NAME_DEBUG` to `LIB_RELEASE_NAME`
+
+## :warning: Known Issues
+
+- __[NA OFI]__
+    - [tcp/verbs;ofi_rxm] Using more than 256 peers requires `FI_UNIVERSE_SIZE` to be set.

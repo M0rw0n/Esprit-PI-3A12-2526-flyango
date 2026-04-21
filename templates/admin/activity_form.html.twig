@@ -1,0 +1,161 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ activity ? 'Modifier' : 'Nouvelle' }} activité — Admin{% endblock %}
+{% block breadcrumb %}{{ activity ? 'Modifier activité' : 'Nouvelle activité' }}{% endblock %}
+{% block admin_body %}
+<div class="form-wrap">
+    <div style="margin-bottom:1.5rem">
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">{{ activity ? '✏️ ' ~ activity.title : '➕ Nouvelle activité' }}</h2>
+        <a href="{{ path('admin_activities') }}" style="font-size:.85rem;color:var(--muted)"><i class="fa fa-arrow-left"></i> Retour</a>
+    </div>
+    <form action="{{ activity ? path('admin_activity_edit', {id: activity.id}) : path('admin_activity_new') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateActForm()">
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-hiking"></i> Informations de l'activité</div>
+            <div class="fgrid">
+                <div class="ffield fgrid--full">
+                    <label>Titre <span class="required">*</span></label>
+                    <input type="text" name="title" id="title" value="{{ activity ? activity.title : '' }}" required minlength="3" maxlength="255" placeholder="Ex: Randonnée au Djebel Zaghouan">
+                    <span class="fhint" id="titleHint">3-255 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Lieu <span class="required">*</span></label>
+                    <input type="text" name="lieu" id="lieu" value="{{ activity ? activity.lieu : '' }}" required minlength="2" maxlength="100" placeholder="Ex: Zaghouan">
+                    <span class="fhint">2-100 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Prix par personne (TND) <span class="required">*</span></label>
+                    <input type="number" name="price" id="price" step="0.001" value="{{ activity ? activity.price : '' }}" required min="0" max="10000" placeholder="0.000">
+                    <span class="fhint">Entre 0 et 10 000 TND</span>
+                </div>
+                <div class="ffield">
+                    <label>Durée</label>
+                    <input type="text" name="duration" value="{{ activity ? activity.duration : '' }}" placeholder="Ex: 4h, 1 journée">
+                </div>
+                <div class="ffield">
+                    <label>Capacité (places)</label>
+                    <input type="number" name="capacity" id="capacity" value="{{ activity ? activity.capacity : 10 }}" min="1" max="1000" placeholder="10">
+                    <span class="fhint">Entre 1 et 1000 personnes</span>
+                </div>
+                <div class="ffield">
+                    <label>Date de l'activité <span class="required">*</span></label>
+                    <input type="date" name="date" id="activityDate" value="{{ activity and activity.date ? activity.date|date('Y-m-d') : '' }}" required min="{{ 'now'|date('Y-m-d') }}">
+                </div>
+                <div class="ffield">
+                    <label>Statut</label>
+                    <select name="actif">
+                        <option value="1" {{ (activity and activity.actif) or (not activity) ? 'selected' : '' }}>Actif</option>
+                        <option value="0" {{ activity and not activity.actif ? 'selected' : '' }}>Inactif</option>
+                    </select>
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Description</label>
+                    <textarea name="description" id="description" rows="4" maxlength="2000" placeholder="Décrivez l'activité...">{{ activity ? activity.description : '' }}</textarea>
+                    <span class="fhint" id="descHint">Maximum 2000 caractères</span>
+                </div>
+            </div>
+        </div>
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-image"></i> Image <span class="required">*</span></div>
+            {% if activity and activity.image %}<div class="img-prev"><img src="{{ asset(activity.image) }}" alt="{{ activity.title }}"></div>{% endif %}
+            <div class="ffield">
+                <label>Image {% if not activity %}<span class="required">*</span>{% endif %}</label>
+                <input type="file" name="image" id="imageInput" accept="image/jpeg,image/png,image/webp,image/gif" {{ not activity ? 'required' : '' }}>
+                <span class="fhint">JPG, PNG, WebP — Max 5MB</span>
+                <div id="imagePreview" style="margin-top:.5rem;color:var(--red);font-size:.85rem;display:none"></div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-navy btn-lg"><i class="fa fa-save"></i> {{ activity ? 'Mettre à jour' : 'Créer l\'activité' }}</button>
+            <a href="{{ path('admin_activities') }}" class="btn btn-outline">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function validateActForm() {
+    let valid = true;
+    const errors = [];
+    
+    const title = document.getElementById('title');
+    if (title.value.trim().length < 3) {
+        errors.push('Le titre doit contenir au moins 3 caractères');
+        valid = false;
+    }
+    
+    const lieu = document.getElementById('lieu');
+    if (lieu.value.trim().length < 2) {
+        errors.push('Le lieu est obligatoire (minimum 2 caractères)');
+        valid = false;
+    }
+    
+    const price = document.getElementById('price');
+    if (parseFloat(price.value) < 0 || parseFloat(price.value) > 10000) {
+        errors.push('Le prix doit être entre 0 et 10 000 TND');
+        valid = false;
+    }
+    
+    const capacity = document.getElementById('capacity');
+    if (capacity.value && (parseInt(capacity.value) < 1 || parseInt(capacity.value) > 1000)) {
+        errors.push('La capacité doit être entre 1 et 1000');
+        valid = false;
+    }
+    
+    const date = document.getElementById('activityDate');
+    if (!date.value) {
+        errors.push('La date de l\'activité est obligatoire');
+        valid = false;
+    } else {
+        const selectedDate = new Date(date.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+            errors.push('La date de l\'activité ne peut pas être dans le passé');
+            valid = false;
+        }
+    }
+    
+    const fileInput = document.getElementById('imageInput');
+    const preview = document.getElementById('imagePreview');
+    
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        
+        if (!validTypes.includes(file.type)) {
+            errors.push('Type de fichier non valide. Utilisez JPG, PNG, WebP ou GIF.');
+            valid = false;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            errors.push('L\'image est trop grande. Maximum 5MB.');
+            valid = false;
+        }
+    }
+    
+    if (!valid) {
+        alert(errors.join('\n'));
+    }
+    
+    return valid;
+}
+
+document.getElementById('imageInput')?.addEventListener('change', function() {
+    const preview = document.getElementById('imagePreview');
+    if (this.files.length > 0 && this.files[0].size > 5 * 1024 * 1024) {
+        preview.textContent = 'L\'image est trop grande (max 5MB)';
+        preview.style.display = 'block';
+        this.value = '';
+    } else {
+        preview.style.display = 'none';
+    }
+});
+
+document.getElementById('title')?.addEventListener('input', function() {
+    const hint = document.getElementById('titleHint');
+    if (this.value.trim().length < 3) {
+        hint.style.color = 'var(--red)';
+    } else {
+        hint.style.color = 'var(--muted)';
+    }
+});
+</script>
+{% endblock %}

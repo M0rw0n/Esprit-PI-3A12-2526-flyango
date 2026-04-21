@@ -1,0 +1,253 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ transport ? 'Modifier' : 'Nouveau' }} transport — Admin{% endblock %}
+{% block breadcrumb %}{{ transport ? 'Modifier transport' : 'Nouveau transport' }}{% endblock %}
+{% block admin_body %}
+<div class="form-wrap">
+    <div style="margin-bottom:1.5rem">
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">{{ transport ? '✏️ ' ~ transport.companyName : '➕ Nouveau transport' }}</h2>
+        <a href="{{ path('admin_transports') }}" style="font-size:.85rem;color:var(--muted)"><i class="fa fa-arrow-left"></i> Retour</a>
+    </div>
+    <form action="{{ transport ? path('admin_transport_edit', {id: transport.id}) : path('admin_transport_new') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateTransportForm()">
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-info-circle"></i> Informations du transport</div>
+            <div class="fgrid">
+                <div class="ffield">
+                    <label>Type de transport <span class="required">*</span></label>
+                    <select name="transportType" id="transportType" required>
+                        <option value="">-- Choisir --</option>
+                        <option value="FLIGHT" {{ transport and transport.transportType == 'FLIGHT' ? 'selected' : '' }}>Vol</option>
+                        <option value="TRAIN" {{ transport and transport.transportType == 'TRAIN' ? 'selected' : '' }}>Train</option>
+                        <option value="BUS" {{ transport and transport.transportType == 'BUS' ? 'selected' : '' }}>Bus</option>
+                        <option value="CAR" {{ transport and transport.transportType == 'CAR' ? 'selected' : '' }}>Voiture</option>
+                    </select>
+                </div>
+                <div class="ffield">
+                    <label>Compagnie <span class="required">*</span></label>
+                    <input type="text" name="companyName" id="companyName" value="{{ transport ? transport.companyName : '' }}" required minlength="2" maxlength="150" placeholder="Ex: TunisAir, SNCFT">
+                    <span class="fhint">2-150 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Ville de départ <span class="required">*</span></label>
+                    <input type="text" name="departureCity" id="departureCity" value="{{ transport ? transport.departureCity : '' }}" required minlength="2" maxlength="100" placeholder="Ex: Tunis">
+                    <span class="fhint">2-100 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Ville d'arrivée <span class="required">*</span></label>
+                    <input type="text" name="arrivalCity" id="arrivalCity" value="{{ transport ? transport.arrivalCity : '' }}" required minlength="2" maxlength="100" placeholder="Ex: Paris">
+                    <span class="fhint">2-100 caractères</span>
+                </div>
+                <div class="ffield">
+                    <label>Gare/Aéroport de départ</label>
+                    <input type="text" name="departureStation" value="{{ transport ? transport.departureStation : '' }}" maxlength="100" placeholder="Ex: Aéroport Tunis-Carthage">
+                </div>
+                <div class="ffield">
+                    <label>Gare/Aéroport d'arrivée</label>
+                    <input type="text" name="arrivalStation" value="{{ transport ? transport.arrivalStation : '' }}" maxlength="100" placeholder="Ex: Gare Lyon">
+                </div>
+                <div class="ffield">
+                    <label>Date/Heure de départ <span class="required">*</span></label>
+                    <input type="datetime-local" name="departureDatetime" id="departureDatetime" value="{{ transport ? transport.departureDatetime|date('Y-m-d\\TH:i') : '' }}" required min="{{ 'now'|date('Y-m-d\\TH:i') }}">
+                    <span class="fhint" id="depHint">Date future obligatoire</span>
+                </div>
+                <div class="ffield">
+                    <label>Date/Heure d'arrivée <span class="required">*</span></label>
+                    <input type="datetime-local" name="arrivalDatetime" id="arrivalDatetime" value="{{ transport ? transport.arrivalDatetime|date('Y-m-d\\TH:i') : '' }}" required>
+                    <span class="fhint" id="arrHint">Doit être après le départ</span>
+                </div>
+                <div class="ffield">
+                    <label>Durée <span class="required">*</span></label>
+                    <input type="text" name="duration" id="duration" value="{{ transport ? transport.duration : '' }}" required minlength="3" maxlength="50" placeholder="Ex: 2h 30min">
+                    <span class="fhint">Ex: 2h 30min, 45min</span>
+                </div>
+                <div class="ffield">
+                    <label>Places disponibles</label>
+                    <input type="number" name="availableSeats" id="availableSeats" value="{{ transport ? transport.availableSeats : '' }}" min="1" max="500" placeholder="150">
+                    <span class="fhint">Entre 1 et 500</span>
+                </div>
+                <div class="ffield">
+                    <label>Prix (TND) <span class="required">*</span></label>
+                    <input type="number" name="price" id="price" step="0.001" value="{{ transport ? transport.price : '' }}" required min="0" max="50000" placeholder="250.000">
+                    <span class="fhint">Entre 0 et 50 000 TND</span>
+                </div>
+                <div class="ffield">
+                    <label>Statut</label>
+                    <select name="isActive">
+                        <option value="1" {{ (transport and transport.isActive) or (not transport) ? 'selected' : '' }}>Actif</option>
+                        <option value="0" {{ transport and not transport.isActive ? 'selected' : '' }}>Inactif</option>
+                    </select>
+                </div>
+                <div class="ffield fgrid--full">
+                    <label>Équipements/Options</label>
+                    <textarea name="amenities" rows="3" maxlength="500" placeholder="WiFi, Climatisation, Repas inclus...">{{ transport ? transport.amenities : '' }}</textarea>
+                    <span class="fhint">Maximum 500 caractères</span>
+                </div>
+            </div>
+        </div>
+        <div class="form-sec">
+            <div class="form-sec__title"><i class="fa fa-image"></i> Image</div>
+            {% if transport and transport.imagePath %}<div class="img-prev"><img src="{{ asset(transport.imagePath) }}" alt="{{ transport.companyName }}"></div>{% endif %}
+            <div class="ffield">
+                <label>Image</label>
+                <input type="file" name="image" id="imageInput" accept="image/jpeg,image/png,image/webp,image/gif">
+                <span class="fhint">JPG, PNG, WebP — Max 5MB</span>
+                <div id="imagePreview" style="margin-top:.5rem;color:var(--red);font-size:.85rem;display:none"></div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-navy btn-lg"><i class="fa fa-save"></i> {{ transport ? 'Mettre à jour' : 'Créer le transport' }}</button>
+            <a href="{{ path('admin_transports') }}" class="btn btn-outline">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function validateTransportForm() {
+    let valid = true;
+    const errors = [];
+    
+    const type = document.getElementById('transportType');
+    if (!type.value) {
+        errors.push('Le type de transport est obligatoire');
+        valid = false;
+    }
+    
+    const company = document.getElementById('companyName');
+    if (company.value.trim().length < 2) {
+        errors.push('Le nom de la compagnie doit contenir au moins 2 caractères');
+        valid = false;
+    }
+    
+    const depCity = document.getElementById('departureCity');
+    if (depCity.value.trim().length < 2) {
+        errors.push('La ville de départ doit contenir au moins 2 caractères');
+        valid = false;
+    }
+    
+    const arrCity = document.getElementById('arrivalCity');
+    if (arrCity.value.trim().length < 2) {
+        errors.push('La ville d\'arrivée doit contenir au moins 2 caractères');
+        valid = false;
+    }
+    
+    if (depCity.value.trim() === arrCity.value.trim() && depCity.value.trim() !== '') {
+        errors.push('La ville de départ et d\'arrivée doivent être différentes');
+        valid = false;
+    }
+    
+    const depDate = document.getElementById('departureDatetime');
+    const arrDate = document.getElementById('arrivalDatetime');
+    if (!depDate.value) {
+        errors.push('La date de départ est obligatoire');
+        valid = false;
+    }
+    if (!arrDate.value) {
+        errors.push('La date d\'arrivée est obligatoire');
+        valid = false;
+    }
+    if (depDate.value && arrDate.value && new Date(arrDate.value) <= new Date(depDate.value)) {
+        errors.push('La date d\'arrivée doit être après la date de départ');
+        valid = false;
+    }
+    
+    const duration = document.getElementById('duration');
+    if (duration.value.trim().length < 3) {
+        errors.push('La durée est obligatoire (ex: 2h 30min)');
+        valid = false;
+    }
+    
+    const seats = document.getElementById('availableSeats');
+    if (seats.value && (parseInt(seats.value) < 1 || parseInt(seats.value) > 500)) {
+        errors.push('Les places doivent être entre 1 et 500');
+        valid = false;
+    }
+    
+    const price = document.getElementById('price');
+    if (parseFloat(price.value) < 0 || parseFloat(price.value) > 50000) {
+        errors.push('Le prix doit être entre 0 et 50 000 TND');
+        valid = false;
+    }
+    
+    const fileInput = document.getElementById('imageInput');
+    const preview = document.getElementById('imagePreview');
+    
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        
+        if (!validTypes.includes(file.type)) {
+            errors.push('Type de fichier non valide. Utilisez JPG, PNG, WebP ou GIF.');
+            valid = false;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            errors.push('L\'image est trop grande. Maximum 5MB.');
+            valid = false;
+        }
+    }
+    
+    if (!valid) {
+        alert(errors.join('\n'));
+    }
+    
+    return valid;
+}
+
+document.getElementById('imageInput')?.addEventListener('change', function() {
+    const preview = document.getElementById('imagePreview');
+    if (this.files.length > 0 && this.files[0].size > 5 * 1024 * 1024) {
+        preview.textContent = 'L\'image est trop grande (max 5MB)';
+        preview.style.display = 'block';
+        this.value = '';
+    } else {
+        preview.style.display = 'none';
+    }
+});
+
+document.getElementById('departureCity')?.addEventListener('input', function() {
+    const arrCity = document.getElementById('arrivalCity');
+    if (this.value.trim() === arrCity.value.trim() && this.value.trim() !== '') {
+        this.style.borderColor = 'var(--red)';
+    } else {
+        this.style.borderColor = '';
+    }
+});
+
+document.getElementById('arrivalCity')?.addEventListener('input', function() {
+    const depCity = document.getElementById('departureCity');
+    if (this.value.trim() === depCity.value.trim() && this.value.trim() !== '') {
+        this.style.borderColor = 'var(--red)';
+    } else {
+        this.style.borderColor = '';
+    }
+});
+
+document.getElementById('departureDatetime')?.addEventListener('change', function() {
+    const hint = document.getElementById('depHint');
+    if (this.value) {
+        const selected = new Date(this.value);
+        const now = new Date();
+        if (selected < now) {
+            hint.style.color = 'var(--red)';
+            hint.textContent = 'La date doit être future';
+        } else {
+            hint.style.color = 'var(--muted)';
+            hint.textContent = 'Date future obligatoire';
+        }
+    }
+});
+
+document.getElementById('arrivalDatetime')?.addEventListener('change', function() {
+    const hint = document.getElementById('arrHint');
+    const depDate = document.getElementById('departureDatetime');
+    if (this.value && depDate.value) {
+        if (new Date(this.value) <= new Date(depDate.value)) {
+            hint.style.color = 'var(--red)';
+            hint.textContent = 'La date doit être après le départ';
+        } else {
+            hint.style.color = 'var(--muted)';
+            hint.textContent = 'Doit être après le départ';
+        }
+    }
+});
+</script>
+{% endblock %}

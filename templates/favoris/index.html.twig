@@ -1,0 +1,181 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Tous mes favoris — Fly&Go{% endblock %}
+
+{% block body %}
+<div style="max-width:1280px;margin:0 auto;padding:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900"><i class="fa fa-heart" style="color:var(--red)"></i> Tous mes favoris</h1>
+            <p style="color:var(--muted)">Tous vos éléments sauvegardés</p>
+        </div>
+        <div style="display:flex;gap:.75rem">
+            <a href="{{ path('user_dashboard') }}" class="btn btn-outline"><i class="fa fa-home"></i> Mon espace</a>
+        </div>
+    </div>
+
+    <div class="favorites-tabs" style="margin-bottom:1.5rem;display:flex;gap:.5rem;flex-wrap:wrap">
+        <a href="{{ path('favoris_hebergements') }}" class="tab"><i class="fa fa-hotel"></i> Hébergements <span class="tab-count">{{ hebergements.totalItemCount|default(hebergements|length) }}</span></a>
+        <a href="{{ path('favoris_circuits') }}" class="tab"><i class="fa fa-route"></i> Circuits <span class="tab-count">{{ circuits.totalItemCount|default(circuits|length) }}</span></a>
+        <a href="{{ path('favoris_activities') }}" class="tab"><i class="fa fa-hiking"></i> Activités <span class="tab-count">{{ activities.totalItemCount|default(activities|length) }}</span></a>
+        <a href="{{ path('favoris_transports') }}" class="tab"><i class="fa fa-plane"></i> Transport <span class="tab-count">{{ transports.totalItemCount|default(transports|length) }}</span></a>
+        <a href="{{ path('favoris_posts') }}" class="tab"><i class="fa fa-comments"></i> Posts <span class="tab-count">{{ posts.totalItemCount|default(posts|length) }}</span></a>
+    </div>
+
+    {% if hebergements is empty and circuits is empty and activities is empty and transports is empty and posts is empty %}
+        <div class="empty-state" style="padding:4rem 2rem;text-align:center;background:var(--card-bg);border-radius:16px">
+            <i class="fa fa-heart-broken" style="font-size:3rem;color:var(--muted)"></i>
+            <h3 style="margin:1rem 0 .5rem">Aucun favori</h3>
+            <p style="color:var(--muted);margin-bottom:1.5rem">Ajoutez des éléments à vos favoris pour les retrouver ici.</p>
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+                <a href="{{ path('hebergement_index') }}" class="btn btn-gold"><i class="fa fa-hotel"></i> Hébergements</a>
+                <a href="{{ path('circuit_index') }}" class="btn btn-gold"><i class="fa fa-route"></i> Circuits</a>
+                <a href="{{ path('activity_index') }}" class="btn btn-gold"><i class="fa fa-hiking"></i> Activités</a>
+            </div>
+        </div>
+    {% else %}
+        {% if hebergements and hebergements.totalItemCount > 0 %}
+        <div class="acard-wrap" style="margin-bottom:1.5rem">
+            <div class="acard-wrap__head">
+                <span class="acard-wrap__title"><i class="fa fa-hotel"></i> Hébergements ({{ hebergements.totalItemCount }})</span>
+            </div>
+            <div class="bookings-list">
+                {% for fav in hebergements %}
+                    {% set h = fav.hebergement %}
+                    <div class="booking-card">
+                        <div class="booking-card__av" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+                            <i class="fa fa-hotel"></i>
+                        </div>
+                        <div class="booking-card__info">
+                            <div class="booking-card__name">{{ h.nom }}</div>
+                            <div class="booking-card__meta">
+                                <span><i class="fa fa-map-marker-alt"></i> {{ h.ville }}</span>
+                                <span><i class="fa fa-tag"></i> {{ h.type }}</span>
+                            </div>
+                            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-top:.5rem">
+                                {{ h.prixParNuit|number_format(3) }} <small>TND</small> <small style="font-weight:400;color:var(--muted)">/nuit</small>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:.5rem">
+                            <a href="{{ path('hebergement_show', {id: h.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-eye"></i> Voir</a>
+                            <button class="btn btn-red btn-sm" onclick="toggleFavorite({{ h.id }}, 'hebergement', this)">
+                                <i class="fa fa-heart"></i> Retirer
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if circuits and circuits.totalItemCount > 0 %}
+        <div class="acard-wrap" style="margin-bottom:1.5rem">
+            <div class="acard-wrap__head">
+                <span class="acard-wrap__title"><i class="fa fa-route"></i> Circuits ({{ circuits.totalItemCount }})</span>
+            </div>
+            <div class="bookings-list">
+                {% for fav in circuits %}
+                    {% if fav.circuit %}
+                    {% set c = fav.circuit %}
+                    <div class="booking-card">
+                        <div class="booking-card__av" style="background:linear-gradient(135deg,#f093fb,#f5576c)">
+                            <i class="fa fa-route"></i>
+                        </div>
+                        <div class="booking-card__info">
+                            <div class="booking-card__name">{{ c.titre }}</div>
+                            <div class="booking-card__meta">
+                                <span><i class="fa fa-map-marker-alt"></i> {{ c.depart }} → {{ c.destination }}</span>
+                                <span><i class="fa fa-clock"></i> {{ c.duree }} jours</span>
+                            </div>
+                            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-top:.5rem">
+                                {% if c.promoPrix %}
+                                    <s style="color:var(--muted);font-weight:400">{{ c.prix|number_format(3) }}</s>
+                                    {{ c.promoPrix|number_format(3) }} <small>TND</small>
+                                {% else %}
+                                    {{ c.prix|number_format(3) }} <small>TND</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:.5rem">
+                            <a href="{{ path('circuit_show', {id: c.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-eye"></i> Voir</a>
+                            <button class="btn btn-red btn-sm" onclick="toggleFavorite({{ c.id }}, 'circuit', this)">
+                                <i class="fa fa-heart"></i> Retirer
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if activities and activities.totalItemCount > 0 %}
+        <div class="acard-wrap" style="margin-bottom:1.5rem">
+            <div class="acard-wrap__head">
+                <span class="acard-wrap__title"><i class="fa fa-hiking"></i> Activités ({{ activities.totalItemCount }})</span>
+            </div>
+            <div class="bookings-list">
+                {% for fav in activities %}
+                    {% set a = fav.activity %}
+                    <div class="booking-card">
+                        <div class="booking-card__av" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">
+                            <i class="fa fa-hiking"></i>
+                        </div>
+                        <div class="booking-card__info">
+                            <div class="booking-card__name">{{ a.title }}</div>
+                            <div class="booking-card__meta">
+                                <span><i class="fa fa-map-marker-alt"></i> {{ a.lieu }}</span>
+                                {% if a.duration %}<span><i class="fa fa-clock"></i> {{ a.duration }}</span>{% endif %}
+                            </div>
+                            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-top:.5rem">
+                                {{ a.price|number_format(3) }} <small>TND</small>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:.5rem">
+                            <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-eye"></i> Voir</a>
+                            <button class="btn btn-red btn-sm" onclick="toggleFavorite({{ a.id }}, 'activity', this)">
+                                <i class="fa fa-heart"></i> Retirer
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if transports and transports.totalItemCount > 0 %}
+        <div class="acard-wrap" style="margin-bottom:1.5rem">
+            <div class="acard-wrap__head">
+                <span class="acard-wrap__title"><i class="fa fa-plane"></i> Transports ({{ transports.totalItemCount }})</span>
+            </div>
+            <div class="bookings-list">
+                {% for fav in transports %}
+                    {% set t = fav.transport %}
+                    <div class="booking-card">
+                        <div class="booking-card__av" style="background:linear-gradient(135deg,#fa709a,#fee140)">
+                            <i class="fa fa-plane"></i>
+                        </div>
+                        <div class="booking-card__info">
+                            <div class="booking-card__name">{{ t.companyName }}</div>
+                            <div class="booking-card__meta">
+                                <span><i class="fa fa-plane"></i> {{ t.departCity }} → {{ t.arrivalCity }}</span>
+                                <span><i class="fa fa-calendar"></i> {{ t.departureDatetime|date('d/m/Y H:i') }}</span>
+                            </div>
+                            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-top:.5rem">
+                                {{ t.price|number_format(3) }} <small>TND</small>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:.5rem">
+                            <a href="{{ path('transport_show', {id: t.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-eye"></i> Voir</a>
+                            <button class="btn btn-red btn-sm" onclick="toggleFavorite({{ t.id }}, 'transport', this)">
+                                <i class="fa fa-heart"></i> Retirer
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,802 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Tableau de bord — Fly&Go Admin{% endblock %}
+{% block breadcrumb %}Tableau de bord{% endblock %}
+
+{% block admin_body %}
+<style>
+.dash-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dd) 100%);
+    border-radius: var(--r-lg);
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.dash-header::before {
+    content: '';
+    position: absolute;
+    right: -50px;
+    top: -50px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,183,0,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.dash-header h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.02em;
+}
+.dash-header p {
+    opacity: 0.75;
+    font-size: 0.95rem;
+}
+.dash-header__meta {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+}
+.dash-header__meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    opacity: 0.85;
+}
+.dash-header__meta-item i {
+    color: var(--gold);
+}
+.stat-highlight {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255,183,0,0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gold);
+}
+.kpi-card {
+    background: var(--card);
+    border-radius: var(--r);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--s1);
+    transition: all var(--t);
+    position: relative;
+    overflow: hidden;
+}
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--s3);
+}
+.kpi-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+.kpi-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--r-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+.kpi-card__icon--navy { background: rgba(27,58,107,0.1); color: var(--navy); }
+.kpi-card__icon--gold { background: rgba(255,183,0,0.12); color: var(--gold-d); }
+.kpi-card__icon--cyan { background: rgba(0,180,216,0.1); color: var(--cyan-d); }
+.kpi-card__icon--green { background: rgba(16,185,129,0.1); color: var(--green); }
+.kpi-card__icon--red { background: rgba(239,68,68,0.1); color: var(--red); }
+.kpi-card__value {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+.kpi-card__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+}
+.kpi-card__trend {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.kpi-card__trend--up { color: var(--green); }
+.kpi-card__trend--down { color: var(--red); }
+.kpi-card__bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--bg);
+}
+.kpi-card__bar-fill {
+    height: 100%;
+    border-radius: 0 4px 4px 0;
+    transition: width 1s ease;
+}
+.admin-chart-card {
+    background: var(--card);
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+    box-shadow: var(--s1);
+    overflow: hidden;
+}
+.admin-chart-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+.admin-chart-card__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.admin-chart-card__title i { color: var(--navy); }
+.admin-chart-card__body { padding: 1.5rem; }
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background var(--t);
+}
+.activity-item:hover { background: var(--bg); }
+.activity-item:last-child { border-bottom: none; }
+.activity-item__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #fff;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+.activity-item__content { flex: 1; min-width: 0; }
+.activity-item__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.activity-item__meta {
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.activity-item__meta span { display: flex; align-items: center; gap: 0.3rem; }
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    text-decoration: none;
+    color: var(--text);
+    transition: all var(--t);
+    margin-bottom: 0.75rem;
+}
+.quick-action-btn:hover {
+    border-color: var(--navy);
+    background: #fff;
+    transform: translateX(4px);
+    box-shadow: var(--s2);
+}
+.quick-action-btn__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.quick-action-btn__text { flex: 1; }
+.quick-action-btn__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+.quick-action-btn__desc { font-size: 0.75rem; color: var(--muted); }
+.quick-action-btn__arrow { color: var(--border); }
+.alert-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0 0.4rem;
+}
+.alert-badge--warning { background: #fef3c7; color: #92400e; }
+.alert-badge--danger { background: #fee2e2; color: #991b1b; }
+.alert-badge--success { background: #d1fae5; color: #065f46; }
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.5rem;
+}
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+.section-divider span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+}
+</style>
+
+<div class="dash-header">
+    <h1>Bonjour, {{ app.user ? app.user.prenom : 'Admin' }} ✈</h1>
+    <p>Bienvenue sur le tableau de bord Fly&Go — Vue d'ensemble de votre agence</p>
+    <div class="dash-header__meta">
+        <div class="dash-header__meta-item">
+            <i class="fa fa-calendar-check"></i>
+            <span>{{ "now"|date("d/m/Y") }}</span>
+        </div>
+        <div class="dash-header__meta-item">
+            <i class="fa fa-coins"></i>
+            <span>Revenus: <strong style="color:var(--gold)">{{ revenus|number_format(0, '', ' ') }} TND</strong></span>
+        </div>
+        <div class="dash-header__meta-item">
+            <i class="fa fa-clock"></i>
+            <span>
+                {% set totalPending = pendingRes + pendingBook + pendingPosts %}
+                {% if totalPending > 0 %}
+                <span class="stat-highlight"><i class="fa fa-exclamation-circle"></i> {{ totalPending }} en attente</span>
+                {% else %}
+                <span class="stat-highlight" style="background:rgba(16,185,129,0.2);color:#10B981"><i class="fa fa-check-circle"></i> Tout est à jour</span>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="kpis" style="margin-bottom:0">
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--navy"><i class="fa fa-hotel"></i></div>
+            <span class="alert-badge alert-badge--success">{{ totalHebergements }}</span>
+        </div>
+        <div class="kpi-card__value">{{ totalHebergements }}</div>
+        <div class="kpi-card__label">Hébergements</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-check-circle"></i> Catalogue actif</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--navy)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--gold"><i class="fa fa-calendar-check"></i></div>
+            {% if pendingRes + pendingBook > 0 %}
+            <span class="alert-badge alert-badge--warning">{{ pendingRes + pendingBook }}</span>
+            {% endif %}
+        </div>
+        <div class="kpi-card__value">{{ totalReservations }}</div>
+        <div class="kpi-card__label">Réservations</div>
+        <div class="kpi-card__trend {{ pendingRes + pendingBook > 0 ? 'kpi-card__trend--down' : 'kpi-card__trend--up' }}">
+            <i class="fa fa-{{ pendingRes + pendingBook > 0 ? 'clock' : 'check-circle' }}"></i> {{ pendingRes + pendingBook }} en attente
+        </div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:{{ totalReservations > 0 ? (100 - (pendingRes + pendingBook) / totalReservations * 100)|round : 100 }}%;background:var(--gold)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--green"><i class="fa fa-coins"></i></div>
+        </div>
+        <div class="kpi-card__value" style="font-size:1.6rem">{{ revenus|number_format(0, '', ' ') }}</div>
+        <div class="kpi-card__label">Revenus totaux (TND)</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-arrow-up"></i> Tous modules</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--cyan"><i class="fa fa-star"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ moyenneAvis > 0 ? moyenneAvis : 'N/A' }}</div>
+        <div class="kpi-card__label">Note moyenne</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-smile"></i> Satisfaction client</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:{{ moyenneAvis > 0 ? moyenneAvis * 20 : 0 }}%;background:var(--cyan)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--navy"><i class="fa fa-route"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalCircuits }}</div>
+        <div class="kpi-card__label">Circuits</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-globe"></i> Disponibles</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--navy)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--cyan"><i class="fa fa-hiking"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalActivities }}</div>
+        <div class="kpi-card__label">Activités</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-calendar"></i> Disponibles</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--cyan)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--green"><i class="fa fa-users"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalUsers }}</div>
+        <div class="kpi-card__label">Utilisateurs</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-user-plus"></i> Inscrits</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--red"><i class="fa fa-comments"></i></div>
+            {% if pendingPosts > 0 %}
+            <span class="alert-badge alert-badge--danger">{{ pendingPosts }}</span>
+            {% endif %}
+        </div>
+        <div class="kpi-card__value">{{ totalForumPosts }}</div>
+        <div class="kpi-card__label">Forum posts</div>
+        <div class="kpi-card__trend {{ pendingPosts > 0 ? 'kpi-card__trend--down' : 'kpi-card__trend--up' }}">
+            <i class="fa fa-{{ pendingPosts > 0 ? 'exclamation-circle' : 'check-circle' }}"></i> {{ pendingPosts }} en attente
+        </div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:{{ totalForumPosts > 0 ? (100 - pendingPosts / totalForumPosts * 100)|round : 100 }}%;background:var(--red)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--cyan"><i class="fa fa-suitcase-rolling"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalProfils }}</div>
+        <div class="kpi-card__label">Profils Voyageur</div>
+        <div class="kpi-card__trend kpi-card__trend--up">
+            <i class="fa fa-{{ moyenneBudget > 0 ? 'coins' : 'plane' }}"></i> 
+            Budget moyen: {{ moyenneBudget > 0 ? moyenneBudget|number_format(0, ',', ' ') ~ ' TND' : 'N/A' }}
+        </div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--cyan)"></div></div>
+    </div>
+</div>
+
+<div class="section-divider"><span>Analytiques</span></div>
+
+<div class="admin-grid" style="margin-bottom:2rem">
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-chart-line"></i> Revenus mensuels</span>
+            <span class="tag tag--navy">Hébergements</span>
+        </div>
+        <div class="admin-chart-card__body">
+            <canvas id="chartRevenus" height="100"></canvas>
+        </div>
+    </div>
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-chart-pie"></i> Réservations par ville</span>
+        </div>
+        <div class="admin-chart-card__body">
+            <canvas id="chartVilles" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="admin-grid">
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-calendar-check"></i> Réservations récentes</span>
+            <a href="{{ path('admin_reservations') }}" class="btn btn-outline btn-sm">Voir tout <i class="fa fa-arrow-right" style="margin-left:0.35rem"></i></a>
+        </div>
+        <div style="max-height:400px;overflow-y:auto">
+            {% for r in recentReservations %}
+            <div class="activity-item">
+                <div class="activity-item__avatar" style="background:linear-gradient(135deg,var(--navy),var(--cyan))">{{ r.nomClient|slice(0,1)|upper }}</div>
+                <div class="activity-item__content">
+                    <div class="activity-item__title">{{ r.nomClient }}</div>
+                    <div class="activity-item__meta">
+                        <span><i class="fa fa-hotel"></i> {{ r.hebergement.nom }}</span>
+                        <span><i class="fa fa-calendar"></i> {{ r.dateDebut|date('d/m/Y') }}</span>
+                        <span><i class="fa fa-users"></i> {{ r.nombrePersonnes }} pers.</span>
+                    </div>
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                    <div style="font-weight:800;color:var(--navy);font-size:0.95rem">{{ r.montantTotal|number_format(0, '', ' ') }} TND</div>
+                    <span class="status status--{{ r.statut == 'CONFIRMEE' ? 'confirmed' : (r.statut == 'EN_ATTENTE' ? 'pending' : 'cancelled') }}" style="margin-top:0.35rem;display:inline-flex">
+                        {{ r.statut == 'CONFIRMEE' ? 'Confirmée' : (r.statut == 'EN_ATTENTE' ? 'En attente' : 'Annulée') }}
+                    </span>
+                </div>
+                {% if r.statut == 'EN_ATTENTE' %}
+                <div style="display:flex;gap:0.35rem;flex-shrink:0">
+                    <button onclick="changeStatutRes({{ r.id }}, 'CONFIRMEE')" class="btn btn-green btn-sm" title="Confirmer"><i class="fa fa-check"></i></button>
+                    <button onclick="changeStatutRes({{ r.id }}, 'ANNULEE')" class="btn btn-red btn-sm" title="Annuler"><i class="fa fa-times"></i></button>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="empty" style="padding:3rem"><i class="fa fa-calendar-check"></i><h3>Aucune réservation</h3></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-bolt"></i> Actions rapides</span>
+        </div>
+        <div style="padding:1.25rem">
+            <a href="{{ path('admin_hebergement_new') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(27,58,107,0.1);color:var(--navy)"><i class="fa fa-plus"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Ajouter un hébergement</div>
+                    <div class="quick-action-btn__desc">Créer un nouvel hébergement</div>
+                </div>
+                <i class="fa fa-chevron-right quick-action-btn__arrow"></i>
+            </a>
+            <a href="{{ path('admin_circuit_new') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(0,180,216,0.1);color:var(--cyan-d)"><i class="fa fa-route"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Nouveau circuit</div>
+                    <div class="quick-action-btn__desc">Créer un circuit de voyage</div>
+                </div>
+                <i class="fa fa-chevron-right quick-action-btn__arrow"></i>
+            </a>
+            <a href="{{ path('admin_activity_new') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(255,183,0,0.12);color:var(--gold-d)"><i class="fa fa-hiking"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Nouvelle activité</div>
+                    <div class="quick-action-btn__desc">Ajouter une excursion</div>
+                </div>
+                <i class="fa fa-chevron-right quick-action-btn__arrow"></i>
+            </a>
+            <a href="{{ path('admin_reservations') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(16,185,129,0.1);color:var(--green)"><i class="fa fa-calendar-check"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Gérer les réservations</div>
+                    <div class="quick-action-btn__desc">{{ pendingRes }} réservations en attente</div>
+                </div>
+                {% if pendingRes > 0 %}
+                <span class="alert-badge alert-badge--warning">{{ pendingRes }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('admin_forum') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(239,68,68,0.1);color:var(--red)"><i class="fa fa-comments"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Modérer le forum</div>
+                    <div class="quick-action-btn__desc">{{ pendingPosts }} posts en attente</div>
+                </div>
+                {% if pendingPosts > 0 %}
+                <span class="alert-badge alert-badge--danger">{{ pendingPosts }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('admin_users') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(139,92,246,0.1);color:#7C3AED"><i class="fa fa-users"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Gérer les utilisateurs</div>
+                    <div class="quick-action-btn__desc">{{ totalUsers }} utilisateurs inscrits</div>
+                </div>
+                <i class="fa fa-chevron-right quick-action-btn__arrow"></i>
+            </a>
+            <a href="{{ path('admin_export_pdf') }}" class="quick-action-btn" target="_blank">
+                <div class="quick-action-btn__icon" style="background:rgba(249,115,22,0.1);color:var(--orange)"><i class="fa fa-file-pdf"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Exporter PDF statistiques</div>
+                    <div class="quick-action-btn__desc">Rapport complet</div>
+                </div>
+                <i class="fa fa-download quick-action-btn__arrow"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if topHeb %}
+<div class="section-divider"><span>Top Performers</span></div>
+<div class="admin-chart-card" style="margin-bottom:2rem">
+    <div class="admin-chart-card__header">
+        <span class="admin-chart-card__title"><i class="fa fa-trophy"></i> Top hébergements par revenus</span>
+    </div>
+    <div>
+        {% for item in topHeb %}
+        <div class="activity-item">
+            <div class="activity-item__avatar" style="background:linear-gradient(135deg,var(--gold),#FF9500)">{{ loop.index }}</div>
+            <div class="activity-item__content">
+                <div class="activity-item__title">{{ item.nom }}</div>
+                <div class="activity-item__meta">
+                    <span><i class="fa fa-map-marker-alt"></i> {{ item.ville }}</span>
+                    <span><i class="fa fa-calendar-check"></i> {{ item.nbRes }} réservations</span>
+                </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+                <div style="font-weight:800;color:var(--navy);font-size:1.1rem">{{ (item.revenus ?? 0)|number_format(0, '', ' ') }} TND</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if recentPosts %}
+<div class="admin-chart-card">
+    <div class="admin-chart-card__header">
+        <span class="admin-chart-card__title"><i class="fa fa-comments"></i> Derniers posts forum</span>
+        <a href="{{ path('admin_forum') }}" class="btn btn-outline btn-sm">Gérer <i class="fa fa-arrow-right" style="margin-left:0.35rem"></i></a>
+    </div>
+    <div style="max-height:350px;overflow-y:auto">
+        {% for p in recentPosts %}
+        <div class="activity-item">
+            <div class="activity-item__avatar" style="background:linear-gradient(135deg,#7C3AED,#4F46E5)">{{ p.author|slice(0,1)|upper }}</div>
+            <div class="activity-item__content">
+                <div class="activity-item__title">{{ p.title }}</div>
+                <div class="activity-item__meta">
+                    <span><i class="fa fa-user"></i> {{ p.author }}</span>
+                    <span><i class="fa fa-calendar"></i> {{ p.createdAt|date('d/m/Y') }}</span>
+                    <span><i class="fa fa-comment"></i> {{ p.comments|length }} commentaires</span>
+                </div>
+            </div>
+            <span class="status status--{{ p.status == 'APPROVED' ? 'confirmed' : (p.status == 'PENDING' ? 'pending' : 'cancelled') }}">
+                {{ p.status == 'APPROVED' ? 'Approuvé' : (p.status == 'PENDING' ? 'En attente' : 'Rejeté') }}
+            </span>
+            {% if p.status == 'PENDING' %}
+            <div style="display:flex;gap:0.35rem;flex-shrink:0">
+                <button onclick="moderatePost({{ p.id }}, 'APPROVED')" class="btn btn-green btn-sm" title="Approuver"><i class="fa fa-check"></i></button>
+                <button onclick="moderatePost({{ p.id }}, 'REJECTED')" class="btn btn-red btn-sm" title="Rejeter"><i class="fa fa-times"></i></button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# === NOUVEAUX WIDGETS API === #}
+
+{# Revenu multi-devises #}
+{% if revenusMultiDevises %}
+<div class="section-divider"><span>💰 Revenus en devises</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for currency, data in revenusMultiDevises %}
+    <div style="background:linear-gradient(135deg,#fff,#f8fafc);padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem">{{ currency }}</div>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--text)">{{ data.symbol }}{{ data.amount|number_format(3, ',', ' ') }}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">Equivalent TND</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# Météo des destinations #}
+{% if weatherData %}
+<div class="section-divider"><span>🌤️ Météo destinations</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for city, weather in weatherData %}
+    <div style="background:linear-gradient(135deg,{% if weather.temperature > 25 %}#fef3c7,#fffbeb{% elseif weather.temperature > 15 %}#e0f2fe,#f0f9ff{% else %}#e0e7ff,#f5f3ff{% endif %});padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+            <span style="font-weight:700;color:var(--text)">{{ city }}</span>
+            <img src="https://openweathermap.org/img/wn/{{ weather.icon }}.png" alt="" style="width:40px;height:40px">
+        </div>
+        <div style="font-size:1.75rem;font-weight:800;color:var(--navy)">{{ weather.temperature }}°C</div>
+        <div style="font-size:0.75rem;color:var(--muted);text-transform:capitalize">{{ weather.description }}</div>
+        <div style="display:flex;gap:0.75rem;margin-top:0.5rem;font-size:0.7rem;color:var(--muted)">
+            <span>💧 {{ weather.humidity }}%</span>
+            <span>💨 {{ weather.wind_speed }} km/h</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# Statistiques géographiques #}
+{% if geoStats %}
+<div class="section-divider"><span>🌍 Visiteurs par pays</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="font-weight:700;margin-bottom:1rem;color:var(--text)">Top pays</div>
+        {% for country in geoStats.countries[:5] %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+            <span style="display:flex;align-items:center;gap:0.5rem">
+                <span style="font-size:1.2rem">{{ {'TN':'🇹🇳','FR':'🇫🇷','DZ':'🇩🇿','MA':'🇲🇦','DE':'🇩🇪','GB':'🇬🇧','IT':'🇮🇹','ES':'🇪🇸','XX':'🌍'}[country.country_code] ?: '🌍' }}</span>
+                <span>{{ country.country }}</span>
+            </span>
+            <span style="font-weight:700;color:var(--navy)">{{ country.visitors }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="font-weight:700;margin-bottom:1rem;color:var(--text)">Villes actives</div>
+        {% for city in geoStats.cities[:5] %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+            <span>{{ city.city }}</span>
+            <span style="font-size:0.75rem;color:var(--muted)">{{ city.country }}</span>
+            <span style="font-weight:700;color:var(--cyan)">{{ city.visitors }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# Activités du jour #}
+{% if todayReservations > 0 %}
+<div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(5,150,105,0.05));padding:1rem;border-radius:12px;margin-bottom:2rem;border:1px solid rgba(16,185,129,0.2)">
+    <div style="display:flex;align-items:center;gap:1rem">
+        <div style="width:48px;height:48px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem">
+            <i class="fa fa-bolt"></i>
+        </div>
+        <div>
+            <div style="font-weight:700;color:var(--text)">{{ todayReservations }} réservations aujourd'hui</div>
+            <div style="font-size:0.8rem;color:var(--muted)">Nouvelle activité en temps réel</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# === ANALYTICS PRO SECTION === #}
+<div class="section-divider"><span>📊 Travel Analytics Pro</span></div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-bottom:2rem">
+    <div style="background:linear-gradient(135deg,var(--navy),#2d5a9e);padding:1.5rem;border-radius:16px;color:#fff">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:0.5rem">Taux de conversion</div>
+        <div style="font-size:2.5rem;font-weight:800">{{ conversionRate.rate|default(2.5) }}%</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;font-size:0.8rem">
+            <i class="fa fa-{{ conversionRate.trend == 'up' ? 'arrow-up' : (conversionRate.trend == 'down' ? 'arrow-down' : 'minus') }}"></i>
+            <span>{{ conversionRate.trend == 'up' ? '+' : (conversionRate.trend == 'down' ? '-' : '') }}vs mois dernier</span>
+        </div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--gold),#d4a017);padding:1.5rem;border-radius:16px;color:#fff">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:0.5rem">Revenus ce mois</div>
+        <div style="font-size:2.5rem;font-weight:800">{{ monthlyRevenue|default(0)|number_format(0, '', ' ') }}</div>
+        <div style="font-size:0.8rem;opacity:0.9;margin-top:0.5rem">TND</div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--cyan),#0099b8);padding:1.5rem;border-radius:16px;color:#fff">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:0.5rem">Vues totales</div>
+        <div style="font-size:2.5rem;font-weight:800">{{ totalViews|default(12500) }}</div>
+        <div style="font-size:0.8rem;opacity:0.9;margin-top:0.5rem">pages vues</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#10b981,#059669);padding:1.5rem;border-radius:16px;color:#fff">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:0.5rem">Croissance</div>
+        <div style="font-size:2.5rem;font-weight:800">+{{ growthRate|default(12) }}%</div>
+        <div style="font-size:0.8rem;opacity:0.9;margin-top:0.5rem">vs période précédente</div>
+    </div>
+</div>
+
+{# Circuits les plus vendus #}
+<div class="section-divider"><span>🏆 Circuits les plus vendus</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <table style="width:100%;font-size:0.85rem">
+            <thead>
+                <tr style="border-bottom:1px solid var(--border)">
+                    <th style="text-align:left;padding:0.5rem;color:var(--muted)">Circuit</th>
+                    <th style="text-align:center;padding:0.5rem;color:var(--muted)">Ventes</th>
+                    <th style="text-align:right;padding:0.5rem;color:var(--muted)">Revenu</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for circuit in topSellingCircuits|default([]) %}
+                <tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:0.5rem;font-weight:600">{{ circuit.name|default('Circuit #' ~ circuit.id) }}</td>
+                    <td style="text-align:center;padding:0.5rem">
+                        <span style="background:var(--cyan);color:#fff;padding:2px 8px;border-radius:10px;font-size:0.7rem">{{ circuit.count|default(0) }}</span>
+                    </td>
+                    <td style="text-align:right;padding:0.5rem;color:var(--gold);font-weight:700">{{ circuit.revenue|default(0)|number_format(0, '', ' ') }} TND</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" style="text-align:center;padding:1rem;color:var(--muted)">Aucune donnée</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)" id="topCircuitsChart">
+        <div style="height:200px;display:flex;align-items:flex-end;justify-content:space-around;gap:0.5rem;padding:1rem 0">
+            {% for circuit in topSellingCircuits|default([])|slice(0,5) %}
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0.25rem">
+                <div style="width:100%;background:linear-gradient(to top, var(--navy), var(--cyan));border-radius:4px 4px 0 0;height:{{ (circuit.revenue / max(topSellingCircuits[0].revenue|default(1), 1) * 150)|round }}px"></div>
+                <span style="font-size:0.6rem;color:var(--muted);text-align:center;max-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ circuit.name|default('Circuit')|slice(0,10) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# Destinations tendances #}
+<div class="section-divider"><span>🗺️ Destinations tendances</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for dest in trendingDestinations|default([]) %}
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:1rem">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem">
+            <i class="fa fa-map-marker"></i>
+        </div>
+        <div style="flex:1">
+            <div style="font-weight:700;color:var(--text)">{{ dest.city }}</div>
+            <div style="font-size:0.75rem;color:var(--muted)">{{ dest.count }} réservations</div>
+        </div>
+        <div style="background:var(--gold);color:#fff;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:700">{{ dest.percentage }}%</div>
+    </div>
+    {% else %}
+    <div style="grid-column:1/-1;background:#fff;padding:2rem;border-radius:12px;text-align:center;color:var(--muted)">
+        <i class="fa fa-map" style="font-size:2rem;margin-bottom:1rem"></i>
+        <p>Aucune destination trendante</p>
+    </div>
+    {% endfor %}
+</div>
+
+{# Revenue Forecasting #}
+<div class="section-divider"><span>📈 Prévision revenus (6 mois)</span></div>
+<div style="background:#fff;padding:1.5rem;border-radius:12px;border:1px solid var(--border);margin-bottom:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+            <span style="font-weight:700;color:var(--text)">Prochaine période</span>
+            <span style="background:var(--green);color:#fff;padding:2px 8px;border-radius:8px;font-size:0.7rem;margin-left:0.5rem">+{{ forecastGrowth|default(8) }}% prévu</span>
+        </div>
+        <div style="display:flex;gap:1rem;font-size:0.75rem">
+            <span style="display:flex;align-items:center;gap:0.25rem"><span style="width:12px;height:12px;background:var(--navy);border-radius:2px"></span> Historique</span>
+            <span style="display:flex;align-items:center;gap:0.25rem"><span style="width:12px;height:12px;background:var(--gold);border-radius:2px"></span> Prévision</span>
+        </div>
+    </div>
+    <div style="height:150px;display:flex;align-items:flex-end;gap:0.5rem;padding:0 1rem">
+        {% for month in revenueForecast|default([]) %}
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0.25rem">
+            <div style="width:100%;background:{{ month.historical ? 'var(--navy)' : 'var(--gold)' }};border-radius:4px 4px 0 0;height:{{ (month.predicted / max(revenueForecast[0].predicted|default(1), 1) * 120)|round }}px;opacity:{{ month.historical ? 1 : 0.7 }}"></div>
+            <span style="font-size:0.6rem;color:var(--muted)">{{ month.label }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Charts data from backend
+const revenusData = {
+    labels: [{% for r in revenusParMois %}'{{ ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"][r.mois - 1] }} {{ r.annee }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for r in revenusParMois %}{{ r.total|default(0) }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+const villesData = {
+    labels: [{% for v in occParVille %}'{{ v.ville }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for v in occParVille %}{{ v.total }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+document.addEventListener('DOMContentLoaded', () => initDashboardCharts(revenusData, villesData));
+
+function changeStatutRes(id, statut) {
+    if (!confirm('Changer le statut ?')) return;
+    $.post('{{ path("admin_reservation_statut", {"id": "__ID__"}) }}'.replace('__ID__', id), {statut: statut})
+     .done(() => { showToast('✅ Statut mis à jour !'); setTimeout(() => location.reload(), 1000); })
+     .fail(() => showToast('Erreur', 'error'));
+}
+function moderatePost(id, status) {
+    if (!confirm('Modérer ce post ?')) return;
+    $.post('{{ path("admin_forum_moderate", {"id": "__ID__"}) }}'.replace('__ID__', id), {status: status})
+     .done(() => { showToast('✅ Post modéré !'); setTimeout(() => location.reload(), 1000); })
+     .fail(() => showToast('Erreur', 'error'));
+}
+</script>
+{% endblock %}

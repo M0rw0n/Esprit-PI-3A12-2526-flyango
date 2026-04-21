@@ -1,0 +1,202 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Transport & Voyage — Fly&Go{% endblock %}
+{% block body %}
+
+{# Hero Section #}
+<section class="transport-hero" style="background:linear-gradient(135deg,rgba(27,58,107,0.9),rgba(0,180,216,0.8)),url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1920&q=80');background-size:cover;background-position:center;padding:3rem 0">
+    <div class="container">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff">
+            <h1 style="font-size:2.5rem;font-weight:800;margin-bottom:.5rem">Transport & Voyage</h1>
+            <p style="font-size:1.1rem;opacity:.9;margin-bottom:1.5rem">{{ offers.totalItemCount|default(offers|length) }} offres disponibles — Vols, Trains, Bus & Cars</p>
+            
+            {# Search Bar #}
+            <form method="GET" action="{{ path('transport_index') }}" id="filterForm" style="background:#fff;padding:.5rem;border-radius:50px;display:flex;align-items:center;gap:.5rem;width:100%;max-width:800px;box-shadow:0 4px 20px rgba(0,0,0,.15)">
+                <div style="flex:1;display:flex;align-items:center;padding:0 1rem;border-right:1px solid #eee">
+                    <i class="fa fa-search" style="color:var(--navy);margin-right:.75rem"></i>
+                    <input type="text" name="q" placeholder="Compagnie, référence..." value="{{ q }}" 
+                           style="border:none;outline:none;width:100%;font-size:.95rem;padding:.5rem 0">
+                </div>
+                <select name="type" style="border:none;outline:none;padding:.5rem;font-size:.95rem;color:#555;cursor:pointer;min-width:100px"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option value="">Tous types</option>
+                    <option value="FLIGHT" {{ type|default('') == 'FLIGHT' ? 'selected' : '' }}>✈ Avions</option>
+                    <option value="TRAIN" {{ type|default('') == 'TRAIN' ? 'selected' : '' }}>🚂 Trains</option>
+                    <option value="BUS" {{ type|default('') == 'BUS' ? 'selected' : '' }}>🚌 Bus</option>
+                    <option value="CAR" {{ type|default('') == 'CAR' ? 'selected' : '' }}>🚗 Voitures</option>
+                </select>
+                <select name="depart" style="border:none;outline:none;padding:.5rem;font-size:.95rem;color:#555;cursor:pointer;min-width:120px"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option value="">Départ</option>
+                    {% for c in cities %}<option value="{{ c }}" {{ depart|default('') == c ? 'selected' : '' }}>{{ c }}</option>{% endfor %}
+                </select>
+                <select name="arrival" style="border:none;outline:none;padding:.5rem;font-size:.95rem;color:#555;cursor:pointer;min-width:120px"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option value="">Arrivée</option>
+                    {% for c in cities %}<option value="{{ c }}" {{ arrival|default('') == c ? 'selected' : '' }}>{{ c }}</option>{% endfor %}
+                </select>
+                <select name="sort" style="border:none;outline:none;padding:.5rem;font-size:.95rem;color:#555;cursor:pointer;min-width:100px"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option value="date_asc" {{ sort|default('date_asc') == 'date_asc' ? 'selected' : '' }}>Date ↑</option>
+                    <option value="date_desc" {{ sort|default('date_asc') == 'date_desc' ? 'selected' : '' }}>Date ↓</option>
+                    <option value="price_asc" {{ sort|default('date_asc') == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                    <option value="price_desc" {{ sort|default('date_asc') == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+                </select>
+                <button type="submit" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;border:none;padding:.75rem 1.5rem;border-radius:50px;font-weight:600;cursor:pointer">
+                    <i class="fa fa-search"></i>
+                </button>
+                {% if q or type or depart or arrival %}
+                <a href="{{ path('transport_index') }}" style="color:var(--muted);padding:.5rem" title="Réinitialiser">
+                    <i class="fa fa-times"></i>
+                </a>
+                {% endif %}
+            </form>
+            
+            {# Quick Stats #}
+            <div style="display:flex;gap:2rem;margin-top:1.5rem;opacity:.85">
+                <span><i class="fa fa-plane"></i> Vols</span>
+                <span><i class="fa fa-train"></i> Trains</span>
+                <span><i class="fa fa-bus"></i> Bus</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container" id="resultsContainer" style="padding:2rem 1rem;max-width:1200px;margin:0 auto">
+    <div class="fg-results-header">
+        <div class="fg-results-info">
+            <h2 class="fg-results-count">{{ offers.totalItemCount|default(offers|length) }} offre{{ offers.totalItemCount|default(offers|length) > 1 ? 's' : '' }} trouvée{{ offers.totalItemCount|default(offers|length) > 1 ? 's' : '' }}</h2>
+            <p class="fg-results-sub">Réservation simple · Annulation gratuite · Paiement sécurisé</p>
+        </div>
+        <div class="fg-results-badges">
+            <span class="fg-badge"><i class="fa fa-check-circle"></i> Annulation gratuite</span>
+            <span class="fg-badge"><i class="fa fa-lock"></i> Paiement sécurisé</span>
+        </div>
+    </div>
+
+    {% if offers %}
+    <div class="hcards" id="cardsGrid">
+        {% for o in offers %}
+        <article class="hcard tcard anim" data-id="{{ o.id }}" onclick="window.location='{{ path('transport_show', {id: o.id}) }}'">
+            <div class="hcard__img">
+                {% if o.imagePath %}<img src="{{ asset(o.imagePath) }}" alt="{{ o.companyName }}" style="width:100%;height:100%;object-fit:cover">
+                {% else %}<div class="tcard-icon"><i class="fas {{ o.transportIcon }}"></i></div>{% endif %}
+                <div class="hcard__badges">
+                    {% if loop.index <= 2 %}<span class="hcard__badge hcard__badge--popular"><i class="fa fa-fire"></i> Populaire</span>{% endif %}
+                </div>
+                <div class="hcard__rating">
+                    <i class="fas {{ o.transportIcon }}"></i>
+                    {{ o.transportType }}
+                </div>
+            </div>
+            <div class="hcard__body">
+                <div class="hcard__header">
+                    <div class="hcard__loc">
+                        <i class="fa fa-building"></i>
+                        {{ o.companyName ?: 'Transport' }}
+                    </div>
+                    <span class="hcard__type">{{ o.transportType }}</span>
+                </div>
+                <div class="tcard-route">
+                    <div class="tcard-route__point">
+                        <span class="tcard-route__time">{{ o.departureDatetime|date('H:i') }}</span>
+                        <span class="tcard-route__city">{{ o.departureCity }}</span>
+                    </div>
+                    <div class="tcard-route__line">
+                        <i class="fa fa-arrow-right"></i>
+                        <span class="tcard-route__duration">{{ o.duration ?: '—' }}</span>
+                    </div>
+                    <div class="tcard-route__point tcard-route__point--end">
+                        <span class="tcard-route__time">{{ o.arrivalDatetime|date('H:i') }}</span>
+                        <span class="tcard-route__city">{{ o.arrivalCity }}</span>
+                    </div>
+                </div>
+                <div class="hcard__meta">
+                    <span><i class="fa fa-calendar"></i> {{ o.departureDatetime|date('d/m/Y') }}</span>
+                    <span><i class="fa fa-chair"></i> {{ o.availableSeats ?: '—' }} places</span>
+                    {% if o.departureStation %}<span><i class="fa fa-map-marker-alt"></i> {{ o.departureStation }}</span>{% endif %}
+                </div>
+                <div class="hcard__foot">
+                    <div class="hcard__price">
+                        <span class="hcard__price-val">{{ o.price|number_format(0, '', ' ') }}</span>
+                        <span class="hcard__price-cur">TND</span>
+                    </div>
+                    <div class="hcard__actions" onclick="event.stopPropagation()">
+                        <a href="{{ path('transport_show', {id: o.id}) }}" class="btn btn-outline btn-sm">Détails</a>
+                        <a href="{{ path('transport_book', {id: o.id}) }}" class="btn btn-navy btn-sm">Réserver</a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="fg-empty">
+        <div class="fg-empty__icon"><i class="fa fa-plane"></i></div>
+        <h3>Aucun transport trouvé</h3>
+        <p>Essayez d'autres critères de recherche</p>
+        <a href="{{ path('transport_index') }}" class="btn btn-navy">Voir tous les transports</a>
+    </div>
+    {% endif %}
+    
+    {% if offers.pageCount|default(1) > 1 %}
+    <div style="display:flex;justify-content:center;gap:.5rem;margin-top:2rem">
+        {% if offers.currentPageNumber|default(1) > 1 %}
+        <a href="{{ path('transport_index', app.request.query|merge({page: offers.currentPageNumber|default(1) - 1})) }}" class="btn btn-outline">← Précédent</a>
+        {% endif %}
+        {% for page in offers.paginationData.pagesInRange|default([offers.currentPageNumber|default(1)]) %}
+        <a href="{{ path('transport_index', app.request.query|merge({page: page})) }}" class="btn {{ page == offers.currentPageNumber|default(1) ? 'btn-navy' : 'btn-outline' }}">{{ page }}</a>
+        {% endfor %}
+        {% if offers.currentPageNumber|default(1) < offers.pageCount|default(1) %}
+        <a href="{{ path('transport_index', app.request.query|merge({page: offers.currentPageNumber|default(1) + 1})) }}" class="btn btn-outline">Suivant →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.fg-results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem;flex-wrap:wrap;gap:1rem}
+.fg-results-count{font-size:1.25rem;font-weight:800;color:var(--text);margin-bottom:.25rem}
+.fg-results-sub{font-size:.85rem;color:var(--muted)}
+.fg-results-badges{display:flex;gap:.75rem;flex-wrap:wrap}
+.fg-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border-radius:100px;background:var(--bg);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted)}
+.fg-badge i{color:var(--green)}
+.fg-empty{text-align:center;padding:4rem 2rem}
+.fg-empty__icon{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)}
+.fg-empty h3{font-size:1.25rem;font-weight:700;margin-bottom:.5rem;color:var(--text)}
+.fg-empty p{color:var(--muted);margin-bottom:1.5rem}
+.hcard__type{font-size:.7rem;font-weight:700;color:var(--cyan);background:rgba(0,180,216,.1);padding:.2rem .5rem;border-radius:4px}
+.tcard-icon{width:70px;height:70px;background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:2rem;color:#fff;box-shadow:0 4px 15px rgba(0,180,216,.3)}
+.hcard__rating{position:absolute;bottom:.75rem;left:.75rem;z-index:2;background:linear-gradient(135deg,var(--navy),var(--cyan));backdrop-filter:blur(8px);padding:.3rem .65rem;border-radius:6px;font-size:.75rem;font-weight:700;display:flex;align-items:center;gap:.3rem;color:#fff}
+.hcard__rating i{color:var(--gold)}
+.tcard-route{display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:.85rem;border-radius:var(--r-sm);margin-bottom:.85rem;border:1px solid var(--border)}
+.tcard-route__point{text-align:center}
+.tcard-route__time{display:block;font-size:1.1rem;font-weight:800;color:var(--navy)}
+.tcard-route__city{font-size:.8rem;color:var(--muted)}
+.tcard-route__line{display:flex;flex-direction:column;align-items:center;gap:.2rem;color:var(--cyan)}
+.tcard-route__line .fa-arrow-right{font-size:.9rem;color:var(--gold)}
+.tcard-route__duration{font-size:.68rem;color:var(--cyan);font-weight:600}
+.tcard-route__point--end{text-align:center}
+@media (max-width:900px){
+    .transport-hero form{flex-direction:column;border-radius:16px}
+    .transport-hero input,.transport-hero select{width:100%;border-right:none;border-bottom:1px solid #eee}
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+        let timeout;
+        el.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 600);
+        });
+        el.addEventListener('change', () => filterForm.submit());
+    });
+});
+</script>
+{% endblock %}

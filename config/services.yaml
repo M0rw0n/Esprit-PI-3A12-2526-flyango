@@ -1,0 +1,52 @@
+parameters:
+    upload_dir.activities: '%kernel.project_dir%/public/uploads/activities'
+    upload_dir.activities_documents: '%kernel.project_dir%/public/uploads/activities/documents'
+    upload_dir.circuits: '%kernel.project_dir%/public/uploads/circuits'
+    upload_dir.circuits_documents: '%kernel.project_dir%/public/uploads/circuits/documents'
+    openai_api_key: '%env(OPENAI_API_KEY)%'
+    google_cloud_api_key: '%env(GOOGLE_CLOUD_API_KEY)%'
+    huggingface_api_key: '%env(HUGGINGFACE_API_KEY)%'
+    openweather_api_key: '%env(OPENWEATHER_API_KEY)%'
+    exchange_rate_api_key: '%env(EXCHANGE_RATE_API_KEY)%'
+    geoapify_api_key: '%env(GEOAPIFY_API_KEY)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
+
+    App\Service\OpenAIService:
+        arguments:
+            $openAiApiKey: '%openai_api_key%'
+
+    App\Service\SentimentService:
+        arguments:
+            $googleApiKey: '%google_cloud_api_key%'
+            $huggingFaceApiKey: '%huggingface_api_key%'
+
+    App\Service\WeatherService:
+        arguments:
+            $openWeatherApiKey: '%openweather_api_key%'
+
+    App\Service\ExchangeRateService:
+        arguments:
+            $exchangeRateApiKey: '%exchange_rate_api_key%'
+
+    App\Service\GeoIPService:
+        arguments:
+            $geoapifyApiKey: '%geoapify_api_key%'
+
+    App\Service\SemanticSearchService:
+        arguments:
+            $huggingFaceApiKey: '%huggingface_api_key%'

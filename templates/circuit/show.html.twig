@@ -1,0 +1,500 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ circuit.titre }} — Fly&Go{% endblock %}
+{% block body %}
+<div style="max-width:1380px;margin:0 auto;padding:2rem">
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+        <a href="{{ path('home') }}" style="color:var(--muted)">Accueil</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <a href="{{ path('circuit_index') }}" style="color:var(--muted)">Circuits</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <strong style="color:var(--text)">{{ circuit.titre }}</strong>
+    </div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">
+                <span class="tag tag--navy">{{ circuit.sourceType == 'admin' ? 'Circuit admin' : 'Circuit personnalisé' }}</span>
+                {% if circuit.isAiGenerated %}<span class="tag" style="background:#eef2ff;color:#4338ca"><i class="fa fa-brain"></i> Personnalisé</span>{% endif %}
+            </div>
+            <h1 style="font-size:1.8rem;font-weight:900;color:var(--text);margin-bottom:.5rem;letter-spacing:-.02em">{{ circuit.titre }}</h1>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+                <span style="font-size:.875rem;color:var(--muted)"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ circuit.depart|default('Tunis')|capitalize }} → {{ circuit.destination|capitalize }}</span>
+                {% if circuit.duree %}<span class="tag tag--navy"><i class="fa fa-clock"></i> {{ circuit.duree }}</span>{% endif %}
+                {% if circuit.difficulte %}<span class="diff-badge diff-badge--{{ circuit.difficulte|lower }}">{{ circuit.difficulte }}</span>{% endif %}
+                {% if circuit.placesDisponibles %}<span class="tag"><i class="fa fa-users"></i> {{ circuit.placesDisponibles }} places</span>{% endif %}
+                <span class="tag"><i class="fa fa-star" style="color:var(--gold)"></i> {{ circuit.noteMoyenne|default(0) > 0 ? circuit.noteMoyenne : 'Pas encore noté' }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="detail-layout">
+        <div>
+            <div class="detail-gallery" style="margin-bottom:2rem">
+                <img src="{{ circuit.image ? asset(circuit.image) : 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=900&q=85' }}" alt="{{ circuit.titre }}" onerror="this.src='https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=900&q=85'">
+            </div>
+            {% if weather %}
+            <div style="background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:var(--r);padding:1.5rem;margin-bottom:2rem;color:#fff">
+                <h4 style="margin-bottom:1rem;display:flex;align-items:center;gap:.5rem"><i class="fa fa-cloud"></i> Météo à {{ circuit.destination }}</h4>
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+                    {% if weather.icon %}
+                    <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png" alt="{{ weather.description }}" style="width:60px;height:60px">
+                    {% endif %}
+                    <div>
+                        <div style="font-size:2rem;font-weight:900">{{ weather.temperature|number_format(0) }}°C</div>
+                        <div style="opacity:.8">{{ weather.description|capitalize }}</div>
+                    </div>
+                    <div style="margin-left:auto;display:flex;gap:1rem;font-size:.85rem;opacity:.9">
+                        <span><i class="fa fa-tint"></i> {{ weather.humidity }}%</span>
+                        <span><i class="fa fa-wind"></i> {{ weather.wind_speed }} m/s</span>
+                    </div>
+                </div>
+                {% if forecast and forecast.list is defined %}
+                <div style="display:flex;gap:.5rem;margin-top:1rem;overflow-x:auto;padding-top:.5rem">
+                    {% for item in forecast.list|slice(0, 5) %}
+                    <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:.75rem;min-width:80px;text-align:center;flex-shrink:0">
+                        <div style="font-size:.75rem;opacity:.8">{{ item.dt|date('l')|slice(0, 3) }}</div>
+                        {% if item.weather[0].icon %}
+                        <img src="https://openweathermap.org/img/wn/{{ item.weather[0].icon }}.png" style="width:40px;height:40px;margin:.25rem 0">
+                        {% endif %}
+                        <div style="font-weight:700">{{ item.main.temp|number_format(0) }}°</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if circuit.planB %}
+            <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:var(--r);padding:1.5rem;margin-bottom:2rem">
+                <h4 style="color:#856404;margin-bottom:1rem"><i class="fa fa-umbrella"></i> Plan B (Alternative météo)</h4>
+                <p style="color:#856404;margin:0">{{ circuit.planB|nl2br }}</p>
+            </div>
+            {% endif %}
+            {% if circuit.destination %}
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:2rem">
+                <h4 style="margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;color:var(--navy)"><i class="fa fa-map"></i> Localisation & Itinéraire</h4>
+                {% if mapData %}
+                <div id="leafletMap" style="width:100%;height:350px;border-radius:var(--r-sm);overflow:hidden;position:relative;z-index:1"></div>
+                <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap">
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ circuit.destination|url_encode }}" target="_blank" style="color:var(--cyan);font-size:.8rem">
+                        <i class="fa fa-google"></i> Google Maps
+                    </a>
+                    <span style="color:var(--muted)">|</span>
+                    <a href="https://www.openstreetmap.org/search?query={{ circuit.destination|url_encode }}" target="_blank" style="color:var(--cyan);font-size:.8rem">
+                        <i class="fa fa-map"></i> OpenStreetMap
+                    </a>
+                </div>
+                {% else %}
+                <div style="width:100%;height:350px;border-radius:var(--r-sm);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--muted)">
+                    <div style="text-align:center">
+                        <i class="fa fa-map-marker-alt" style="font-size:3rem;color:var(--cyan);margin-bottom:1rem"></i>
+                        <p>{{ circuit.destination }}</p>
+                        {% if circuit.depart %}
+                        <p style="font-size:.85rem">{{ circuit.depart }} → {{ circuit.destination }}</p>
+                        {% endif %}
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ circuit.destination|url_encode }}" target="_blank" style="color:var(--cyan);font-size:.85rem;margin-top:.5rem;display:inline-block">
+                            <i class="fa fa-external-link"></i> Ouvrir dans Google Maps
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            <div class="detail-tabs">
+                <button class="detail-tab on" data-tab="desc" onclick="switchTab('desc')">Description</button>
+                <button class="detail-tab" data-tab="reviews" onclick="switchTab('reviews')">Avis ({{ circuit.avis|length }})</button>
+                <button class="detail-tab" data-tab="add-review" onclick="switchTab('add-review')">Laisser un avis</button>
+            </div>
+            <div id="pane-desc" class="tab-pane on">
+                {% if circuit.description %}
+                <div class="circuit-desc-cards">
+                    {% if circuit.isAiGenerated and aiContext %}
+                    {% set context = aiContext %}
+                    <div class="circuit-meta-card">
+                        <div class="circuit-meta-item">
+                            <i class="fa fa-map-marker-alt"></i>
+                            <div><strong>{{ circuit.depart|default('Tunis') }}</strong> → <strong>{{ circuit.destination }}</strong></div>
+                        </div>
+                        <div class="circuit-meta-item">
+                            <i class="fa fa-calendar-alt"></i>
+                            <div>{{ circuit.duree }}</div>
+                        </div>
+                        <div class="circuit-meta-item">
+                            <i class="fa fa-signal"></i>
+                            <div class="diff-badge diff-badge--{{ circuit.difficulte|lower }}">{{ circuit.difficulte }}</div>
+                        </div>
+                        <div class="circuit-meta-item">
+                            <i class="fa fa-tag"></i>
+                            <div>Circuit personnalisé</div>
+                        </div>
+                    </div>
+                    <div class="circuit-highlights">
+                        <h3><i class="fa fa-star"></i> Points forts</h3>
+                        <div class="highlights-grid">
+                            {% set style = context.style|lower %}
+                            {% if style == 'aventure' %}
+                                {% for h in ['Roadbook actif', 'Expériences outdoor', 'Spots photo'] %}
+                                <div class="highlight-card highlight-card--adventure"><i class="fa fa-hiking"></i><span>{{ h }}</span></div>
+                                {% endfor %}
+                            {% elseif style == 'romantique' %}
+                                {% for h in ['Hôtel charme', 'Coucher de soleil', 'Dîner couple'] %}
+                                <div class="highlight-card highlight-card--romantic"><i class="fa fa-heart"></i><span>{{ h }}</span></div>
+                                {% endfor %}
+                            {% elseif style == 'famille' %}
+                                {% for h in ['Rythme doux', 'Activités enfants', 'Temps libre'] %}
+                                <div class="highlight-card highlight-card--family"><i class="fa fa-child"></i><span>{{ h }}</span></div>
+                                {% endfor %}
+                            {% else %}
+                                {% for h in ['Visites incontournables', 'Bon équilibre', 'Culture et détente'] %}
+                                <div class="highlight-card highlight-card--default"><i class="fa fa-check-circle"></i><span>{{ h }}</span></div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="circuit-program">
+                        <h3><i class="fa fa-calendar-week"></i> Programme jour par jour</h3>
+                        <div class="program-timeline">
+                            {% for i in 1..min(context.jours|default(3), 7) %}
+                            <div class="program-day">
+                                <div class="program-day-number">{{ i }}</div>
+                                <div class="program-day-content">
+                                    <div class="program-day-title">
+                                        {% if i == 1 %}Départ & Arrivée{% elseif i == context.jours %}Dernier jour{% else %}Journée découverte{% endif %}
+                                    </div>
+                                    {% if i == 1 %}
+                                    <p>Départ de {{ context.depart|default('Tunis') }}, arrivée à {{ context.destination }}, installation et briefing personnalisé.</p>
+                                    {% elseif i == context.jours %}
+                                    <p>Dernières découvertes à {{ context.destination }}, shopping libre puis retour.</p>
+                                    {% else %}
+                                    <p>Programme {{ context.style|lower }} : visite guidée, pause locale et activité recommandée.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="circuit-info-cards">
+                        <div class="info-card info-card--budget"><i class="fa fa-wallet"></i><div><span class="info-card-label">Budget</span><span class="info-card-value">{{ context.budget }}</span></div></div>
+                        <div class="info-card info-card--travelers"><i class="fa fa-users"></i><div><span class="info-card-label">Voyageurs</span><span class="info-card-value">{{ context.participants }}</span></div></div>
+                        <div class="info-card info-card--dates"><i class="fa fa-plane-departure"></i><div><span class="info-card-label">Dates</span><span class="info-card-value">{{ context.date_depart|date('d/m') }} → {{ context.date_retour|date('d/m') }}</span></div></div>
+                    </div>
+                    <div class="circuit-tip">
+                        <i class="fa fa-lightbulb"></i>
+                        <div><strong>Conseil :</strong>
+                            <ul style="margin:.5rem 0 0 1rem;padding:0">
+                                <li>Prévoyez une marge de temps pour les transferts</li>
+                                <li>Gardez une journée flexible</li>
+                                <li>Confirmez les disponibilités 48h avant le départ</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="font-size:.95rem;line-height:1.85;color:var(--text)">{{ circuit.description|nl2br }}</p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p style="font-size:.95rem;line-height:1.85;color:var(--muted)">Aucune description disponible.</p>
+                {% endif %}
+            </div>
+            <div id="pane-reviews" class="tab-pane">
+                {% set positive = 0 %}{% set negative = 0 %}{% set neutral = 0 %}
+                {% for r in circuit.avis %}{% if r.sentimentLabel %}{% if r.sentimentLabel in ['excellent','good','positive'] %}{% set positive = positive + 1 %}{% elseif r.sentimentLabel in ['negative','bad'] %}{% set negative = negative + 1 %}{% else %}{% set neutral = neutral + 1 %}{% endif %}{% endif %}{% endfor %}
+                {% if circuit.avis|length > 0 %}
+                <div class="sentiment-summary" style="background:linear-gradient(135deg,#f8f9fa,#fff);padding:1rem;border-radius:12px;margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center">
+                    <div style="font-weight:600;color:var(--navy)">Analyse IA</div>
+                    <div style="display:flex;gap:1rem"><span style="color:#22c55e"><i class="fa fa-thumbs-up"></i> {{ positive }}</span><span style="color:#eab308"><i class="fa fa-minus"></i> {{ neutral }}</span><span style="color:#ef4444"><i class="fa fa-thumbs-down"></i> {{ negative }}</span></div>
+                    {% if positive + negative + neutral > 0 %}<span style="background:var(--navy);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.8rem">{{ ((positive / (positive + negative + neutral)) * 100)|round }}% satisfait</span>{% endif %}
+                </div>
+                {% endif %}
+                {% for r in circuit.avis %}
+                <div class="review-item">
+                    <div class="review-item__head"><span class="review-item__author">{{ r.author }}</span><span class="review-item__date">{{ r.createdAt|date('d/m/Y') }}</span></div>
+                    <div class="review-item__stars">{% for i in 1..5 %}<i class="fa fa-star" style="color:{{ i <= r.rating ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}
+                        {% if r.sentimentLabel %}<span class="sentiment-badge sentiment-{{ r.sentimentLabel }}" style="margin-left:0.5rem;padding:2px 8px;border-radius:10px;font-size:0.7rem;{% if r.sentimentLabel in ['excellent','good','positive'] %}background:#dcfce7;color:#16a34a{% elseif r.sentimentLabel in ['negative','bad'] %}background:#fee2e2;color:#dc2626{% else %}background:#fef3c7;color:#d97706{% endif %}">{% if r.sentimentLabel == 'excellent' %}<i class="fa fa-smile"></i> excellent{% elseif r.sentimentLabel == 'good' %}<i class="fa fa-smile"></i> bon{% elseif r.sentimentLabel == 'positive' %}<i class="fa fa-smile-o"></i> positif{% elseif r.sentimentLabel == 'neutral' %}<i class="fa fa-meh-o"></i> neutre{% elseif r.sentimentLabel == 'negative' %}<i class="fa fa-frown-o"></i> négatif{% elseif r.sentimentLabel == 'bad' %}<i class="fa fa-frown"></i> mauvais{% endif %}</span>{% endif %}
+                    </div>
+                    <div class="review-item__text">{{ r.comment }}</div>
+                </div>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis encore</p></div>
+                {% endfor %}
+            </div>
+            <div id="pane-add-review" class="tab-pane">
+                {% if app.user %}
+                <form action="{{ path('circuit_review', {id: circuit.id}) }}" method="POST">
+                    <div class="fg-group"><label class="fg-label">Auteur</label><input type="text" class="fg-input" value="{{ app.user.fullName }}" disabled></div>
+                    <div class="fg-group">
+                        <label class="fg-label">Note</label>
+                        <div id="starPickAvis" style="display:flex;gap:.35rem;font-size:1.5rem;cursor:pointer;margin-bottom:.75rem">{% for i in 1..5 %}<i class="fa fa-star" onclick="setRatingAvis({{ i }})" style="color:#F59E0B"></i>{% endfor %}</div>
+                        <input type="hidden" name="rating" id="noteInput" value="5">
+                    </div>
+                    <div class="fg-group"><label class="fg-label">Commentaire</label><textarea name="comment" class="fg-input" rows="4" required></textarea></div>
+                    <button type="submit" class="btn btn-navy"><i class="fa fa-paper-plane"></i> Publier</button>
+                </form>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-lock"></i><p>Connectez-vous pour laisser un avis.</p></div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="detail-sticky">
+            <div class="detail-info">
+                <div class="detail-price"><span class="amount">{{ circuit.prix|number_format(3, ',', ' ') }}</span><span class="per">TND/pers.</span></div>
+                <input type="hidden" id="prixCircuit" value="{{ circuit.prix }}">
+                {% if app.user %}
+                <form action="{{ path('circuit_reserver', {id: circuit.id}) }}" method="POST" onsubmit="return validateCircuitBooking()">
+                    <div class="book-form">
+                        <h4><i class="fa fa-route"></i> Réserver ce circuit</h4>
+                        <div class="fg-group"><label class="fg-label">Compte</label><input type="text" class="fg-input" value="{{ app.user.fullName }} — {{ app.user.email }}" disabled></div>
+                        <div class="fg-group"><label class="fg-label">Date de départ *</label><input type="date" name="date_depart" id="dateDepart" class="fg-input" required min="{{ "now"|date('Y-m-d') }}" onchange="calcDuree()"></div>
+                        <div class="fg-group"><label class="fg-label">Date de retour *</label><input type="date" name="date_retour" id="dateRetour" class="fg-input" min="{{ "now"|date('Y-m-d') }}" onchange="updateDateRetourMin(); calcDuree();"></div>
+                        <div class="fg-group"><label class="fg-label">Durée</label><input type="text" id="dureeCircuit" class="fg-input" readonly style="background:var(--bg);color:var(--navy);font-weight:700"></div>
+                        <div class="fg-group"><label class="fg-label">Nombre de personnes *</label><input type="number" name="nb_personnes" id="nbPersonnes" class="fg-input" value="1" min="1" max="{{ circuit.placesDisponibles ?: 50 }}" required oninput="calcMontantCircuit()"></div>
+                        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;color:var(--muted)">
+                                <span>Sous-total</span><span id="sousTotalCircuit">—</span>
+                            </div>
+                            <div id="promoLineCircuit" style="display:none;justify-content:space-between;margin-bottom:.35rem;color:#10b981">
+                                <span>Code promo</span><span id="promoReductionCircuit">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;color:var(--navy);border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.25rem">
+                                <span>Total estimé</span><span id="montantCircuit">{{ circuit.prix|number_format(3, ',', ' ') }} TND</span>
+                            </div>
+                        </div>
+                        <div class="fg-group" style="margin-bottom:1rem">
+                            <label class="fg-label" style="font-size:.8rem"><i class="fa fa-tag" style="color:var(--gold)"></i> Code promo</label>
+                            <div style="display:flex;gap:.5rem">
+                                <input type="text" id="promoCodeCircuit" class="fg-input" placeholder="Ex: BIENVENUE" style="text-transform:uppercase">
+                                <button type="button" class="btn btn-outline" onclick="applyPromoCircuit()">Appliquer</button>
+                            </div>
+                            <div id="promoMsgCircuit" style="font-size:.75rem;margin-top:.25rem"></div>
+                        </div>
+                        <div class="fg-group" style="margin-bottom:1rem">
+                            <label class="fg-label"><i class="fa fa-credit-card"></i> Mode de paiement</label>
+                            <div style="display:flex;gap:.75rem;margin-top:.5rem">
+                                <label style="flex:1;cursor:pointer;display:flex;align-items:center;gap:.5rem;padding:.75rem;border:2px solid var(--border);border-radius:8px;transition:all .2s" id="stripeLabelCircuit">
+                                    <input type="radio" name="payment_method" value="stripe" checked style="display:none">
+                                    <i class="fab fa-stripe" style="font-size:1.5rem;color:#635bff"></i>
+                                    <span style="font-weight:600">Stripe</span>
+                                </label>
+                                <label style="flex:1;cursor:pointer;display:flex;align-items:center;gap:.5rem;padding:.75rem;border:2px solid var(--border);border-radius:8px;transition:all .2s" id="paypalLabelCircuit">
+                                    <input type="radio" name="payment_method" value="paypal" style="display:none">
+                                    <i class="fab fa-paypal" style="font-size:1.5rem;color:#003087"></i>
+                                    <span style="font-weight:600">PayPal</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-navy btn-lg" style="width:100%"><i class="fa fa-lock"></i> Réserver et payer</button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-lock"></i><p>Connectez-vous pour réserver.</p><a href="{{ path('app_login') }}" class="btn btn-navy">Connexion</a></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.circuit-desc-cards{display:flex;flex-direction:column;gap:1.5rem}
+.circuit-meta-card{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;background:linear-gradient(135deg,var(--navy),var(--navy-d));border-radius:12px;padding:1.25rem;color:#fff}
+.circuit-meta-item{display:flex;align-items:center;gap:.75rem}
+.circuit-meta-item i{font-size:1.25rem;opacity:.8}
+.circuit-meta-item strong{font-weight:700}
+.circuit-meta-item .diff-badge{font-size:.75rem;padding:.2rem .6rem;border-radius:6px}
+.circuit-meta-item .diff-badge--facile{background:rgba(16,185,129,.3)}
+.circuit-meta-item .diff-badge--modéré{background:rgba(249,115,22,.3)}
+.circuit-meta-item .diff-badge--difficile{background:rgba(239,68,68,.3)}
+.circuit-highlights h3,.circuit-program h3{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.circuit-highlights h3 i,.circuit-program h3 i{color:var(--cyan)}
+.highlights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem}
+.highlight-card{display:flex;align-items:center;gap:.6rem;padding:.85rem 1rem;border-radius:10px;font-size:.85rem;font-weight:600;transition:transform .2s}
+.highlight-card:hover{transform:translateY(-2px)}
+.highlight-card i{font-size:1.1rem}
+.highlight-card--adventure{background:linear-gradient(135deg,rgba(239,68,68,.1),rgba(249,115,22,.1));color:#dc2626}
+.highlight-card--romantic{background:linear-gradient(135deg,rgba(236,72,153,.1),rgba(244,114,182,.1));color:#db2777}
+.highlight-card--family{background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(99,102,241,.1));color:#2563eb}
+.highlight-card--default{background:linear-gradient(135deg,rgba(0,180,216,.1),rgba(16,185,129,.1));color:#0891b2}
+.program-timeline{display:flex;flex-direction:column;gap:0}
+.program-day{display:flex;gap:1rem;padding-bottom:1.25rem;position:relative}
+.program-day:not(:last-child)::before{content:'';position:absolute;left:18px;top:40px;bottom:0;width:2px;background:var(--border)}
+.program-day-number{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.program-day-content{flex:1;background:var(--bg);border-radius:10px;padding:1rem;border:1px solid var(--border)}
+.program-day-title{font-weight:700;color:var(--text);margin-bottom:.35rem;font-size:.9rem}
+.program-day-content p{font-size:.85rem;color:var(--muted);line-height:1.5;margin:0}
+.circuit-info-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}
+.info-card{display:flex;align-items:center;gap:.75rem;padding:1rem;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+.info-card i{font-size:1.5rem;color:var(--cyan)}
+.info-card-label{display:block;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.info-card-value{font-size:.95rem;font-weight:700;color:var(--text)}
+.info-card--budget i{color:var(--gold)}
+.info-card--travelers i{color:var(--cyan)}
+.info-card--dates i{color:var(--navy)}
+.circuit-tip{display:flex;gap:.75rem;background:linear-gradient(135deg,rgba(255,183,0,.1),rgba(251,191,36,.1));border:1px solid rgba(255,183,0,.3);border-radius:10px;padding:1rem}
+.circuit-tip i{color:var(--gold);font-size:1.25rem;flex-shrink:0;margin-top:.1rem}
+.circuit-tip p{font-size:.85rem;color:var(--text);line-height:1.6;margin:0}
+.circuit-tip strong{color:var(--navy)}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const prixCircuit = {{ circuit.prix|default(0) }};
+let currentPromoReductionCircuit = 0;
+let originalTotalCircuit = 0;
+
+function updateDateRetourMin() {
+    const dateDepart = document.getElementById('dateDepart').value;
+    const dateRetour = document.getElementById('dateRetour');
+    if (dateDepart) {
+        dateRetour.min = dateDepart;
+        if (dateRetour.value && dateRetour.value < dateDepart) {
+            dateRetour.value = dateDepart;
+        }
+    }
+}
+
+function calcDuree() {
+    const dateDepart = document.getElementById('dateDepart').value;
+    const dateRetour = document.getElementById('dateRetour').value;
+    const dureeInput = document.getElementById('dureeCircuit');
+    
+    if (dateDepart && dateRetour) {
+        const d1 = new Date(dateDepart);
+        const d2 = new Date(dateRetour);
+        const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+        if (diff > 0) {
+            dureeInput.value = diff + ' jour(s)';
+        } else if (diff === 0) {
+            dureeInput.value = '1 jour(s)';
+        } else {
+            dureeInput.value = '';
+        }
+    } else {
+        dureeInput.value = '';
+    }
+}
+
+function calcMontantCircuit() {
+    const persons = parseInt(document.getElementById('nbPersonnes').value) || 1;
+    originalTotalCircuit = prixCircuit * persons;
+    document.getElementById('sousTotalCircuit').textContent = originalTotalCircuit.toLocaleString('fr-FR') + ' TND';
+    applyPromoCircuitToDisplay();
+}
+
+function applyPromoCircuitToDisplay() {
+    const finalTotal = Math.max(0, originalTotalCircuit - currentPromoReductionCircuit);
+    document.getElementById('montantCircuit').textContent = finalTotal.toLocaleString('fr-FR') + ' TND';
+}
+
+async function applyPromoCircuit() {
+    const code = document.getElementById('promoCodeCircuit').value.trim().toUpperCase();
+    const msgEl = document.getElementById('promoMsgCircuit');
+    const promoLine = document.getElementById('promoLineCircuit');
+    const reductionEl = document.getElementById('promoReductionCircuit');
+
+    if (!code) {
+        msgEl.textContent = 'Veuillez entrer un code promo';
+        msgEl.style.color = 'var(--red)';
+        return;
+    }
+
+    if (originalTotalCircuit <= 0) {
+        calcMontantCircuit();
+    }
+
+    try {
+        const response = await fetch('/ajax/apply-promo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ code, price: originalTotalCircuit })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            currentPromoReductionCircuit = data.reduction;
+            promoLine.style.display = 'flex';
+            reductionEl.textContent = '-' + data.reduction.toLocaleString('fr-FR') + ' TND';
+            msgEl.textContent = data.message;
+            msgEl.style.color = '#10b981';
+            applyPromoCircuitToDisplay();
+        } else {
+            currentPromoReductionCircuit = 0;
+            promoLine.style.display = 'none';
+            msgEl.textContent = data.message;
+            msgEl.style.color = 'var(--red)';
+            applyPromoCircuitToDisplay();
+        }
+    } catch (e) {
+        msgEl.textContent = 'Erreur lors de l\'application';
+        msgEl.style.color = 'var(--red)';
+    }
+}
+
+function validateCircuitBooking() {
+    const date = document.getElementById('dateDepart').value;
+    const persons = parseInt(document.getElementById('nbPersonnes').value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (!date) { alert('Veuillez choisir une date de départ.'); return false; }
+    
+    const selectedDate = new Date(date);
+    if (selectedDate < today) { alert('La date de départ ne peut pas être dans le passé.'); return false; }
+    
+    if (persons < 1) { alert('Le nombre de personnes doit être au moins 1.'); return false; }
+    
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const nbInput = document.getElementById('nbPersonnes');
+    if (nbInput) {
+        nbInput.addEventListener('input', calcMontantCircuit);
+        calcMontantCircuit();
+    }
+    
+    const stripeLabel = document.getElementById('stripeLabelCircuit');
+    const paypalLabel = document.getElementById('paypalLabelCircuit');
+    const stripeRadio = stripeLabel ? stripeLabel.querySelector('input') : null;
+    const paypalRadio = paypalLabel ? paypalLabel.querySelector('input') : null;
+    
+    if (stripeRadio && paypalRadio) {
+        function updatePaymentStyle() {
+            if (stripeRadio.checked) {
+                stripeLabel.style.borderColor = '#635bff';
+                stripeLabel.style.background = 'rgba(99,91,255,0.1)';
+                paypalLabel.style.borderColor = 'var(--border)';
+                paypalLabel.style.background = 'transparent';
+            } else {
+                paypalLabel.style.borderColor = '#003087';
+                paypalLabel.style.background = 'rgba(0,48,135,0.1)';
+                stripeLabel.style.borderColor = 'var(--border)';
+                stripeLabel.style.background = 'transparent';
+            }
+        }
+        
+        stripeLabel.addEventListener('click', function() {
+            stripeRadio.checked = true;
+            updatePaymentStyle();
+        });
+        
+        paypalLabel.addEventListener('click', function() {
+            paypalRadio.checked = true;
+            updatePaymentStyle();
+        });
+        
+        updatePaymentStyle();
+    }
+});
+
+{% if mapData %}
+// Initialize map with Leaflet (no API key needed)
+document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('leafletMap').setView([{{ mapData.lat }}, {{ mapData.lng }}], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+    L.marker([{{ mapData.lat }}, {{ mapData.lng }}]).addTo(map)
+        .bindPopup('<strong>{{ mapData.destination }}</strong>');
+});
+{% endif %}
+</script>
+{% endblock %}
