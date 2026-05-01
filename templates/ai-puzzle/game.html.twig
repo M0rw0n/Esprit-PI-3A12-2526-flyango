@@ -1,0 +1,2699 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Passport Quest - {{ destination.country }}{% endblock %}
+
+{% block body %}
+<style>
+    :root {
+        --pq-blue-900: #1B3A6B;
+        --pq-blue-800: #1B3A6B;
+        --pq-blue-700: #2a4a7f;
+        --pq-blue-600: #2a4a7f;
+        --pq-blue-500: #3d5a8f;
+        --pq-blue-100: #e8eff5;
+        --pq-surface: #ffffff;
+        --pq-bg: #f4f8ff;
+        --pq-border: #d7e3f7;
+        --pq-border-strong: #b7c9e8;
+        --pq-text: #153055;
+        --pq-muted: #6f86a7;
+        --pq-success: #12b981;
+        --pq-warning: #ffb648;
+        --pq-danger: #ef4444;
+        --pq-shadow-sm: 0 8px 22px rgba(27, 62, 128, 0.08);
+        --pq-shadow-md: 0 16px 40px rgba(27, 62, 128, 0.12);
+        --pq-shadow-lg: 0 24px 60px rgba(16, 55, 121, 0.18);
+        --pq-shadow-glow: 0 0 40px rgba(42, 74, 127, 0.3);
+        --pq-radius-xl: 28px;
+        --pq-radius-lg: 22px;
+        --pq-radius-md: 16px;
+        --pq-radius-sm: 12px;
+        --glass-bg: rgba(255, 255, 255, 0.72);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        background:
+            radial-gradient(ellipse at 20% 0%, rgba(99, 145, 255, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 100%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+            linear-gradient(180deg, #f0f5ff 0%, #e0e8ff 50%, #f5f0ff 100%);
+        color: var(--pq-text);
+        font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        min-height: 60vh;
+    }
+
+    .pq-page {
+        min-height: 60vh;
+        display: flex;
+        flex-direction: column;
+        background: 
+            radial-gradient(circle at 12% 8%, rgba(42, 74, 127, 0.08) 0%, transparent 30%),
+            radial-gradient(circle at 88% 12%, rgba(139, 92, 246, 0.06) 0%, transparent 25%),
+            linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+    }
+
+    .pq-topbar {
+        background: linear-gradient(135deg, rgba(15, 59, 143, 0.95) 0%, rgba(23, 84, 199, 0.92) 50%, rgba(33, 98, 214, 0.9) 100%);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 4px 30px rgba(15, 59, 143, 0.25);
+        color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 1rem;
+    }
+
+    .pq-topbar-inner {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .pq-brand-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+
+    .pq-back {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #fff;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255, 0.15);
+        font-size: 1.1rem;
+        transition: all .25s ease;
+    }
+
+    .pq-back:hover {
+        transform: translateY(-2px) scale(1.05);
+        background: rgba(255,255,255, 0.2);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .pq-brand {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .pq-brand-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #fff 0%, #e0e8ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .pq-brand-subtitle {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+    }
+
+    .pq-header-center {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .pq-chip {
+        background: rgba(255,255,255, 0.1);
+        border: 1px solid rgba(255,255,255, 0.15);
+        padding: 0.45rem 0.85rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        white-space: nowrap;
+        backdrop-filter: blur(10px);
+    }
+
+    .pq-chip-emoji { font-size: 1rem; }
+
+    .pq-header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .pq-stat {
+        min-width: 90px;
+        padding: 0.5rem 0.75rem;
+        border-radius: 12px;
+        background: rgba(255,255,255, 0.1);
+        border: 1px solid rgba(255,255,255, 0.12);
+        display: flex;
+        flex-direction: column;
+        gap: 0.05rem;
+        text-align: center;
+    }
+
+    .pq-stat-label {
+        font-size: 0.6rem;
+        opacity: 0.7;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 700;
+    }
+
+    .pq-stat-value {
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .pq-stat.timer.is-warning {
+        background: linear-gradient(135deg, rgba(255, 182, 72, 0.4), rgba(255, 103, 103, 0.35));
+        border-color: rgba(255, 182, 72, 0.3);
+        animation: pulse-warning 1s ease infinite;
+    }
+
+    @keyframes pulse-warning {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(255, 182, 72, 0.4); }
+        50% { box-shadow: 0 0 0 8px rgba(255, 182, 72, 0); }
+    }
+
+    .pq-content {
+        width: 100%;
+        max-width: 100%;
+        padding: 0.5rem 0.75rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    .pq-panel {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow);
+        border-radius: var(--pq-radius-md);
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+    }
+
+    .pq-main-panel {
+        padding: 0.5rem 0.75rem;
+    }
+
+.pq-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .pq-title-group h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--pq-text);
+    }
+
+    .pq-title-group p {
+        margin: 0.25rem 0 0;
+        font-size: 0.82rem;
+        color: var(--pq-muted);
+    }
+
+    .pq-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .pq-btn {
+        border: none;
+        border-radius: 10px;
+        padding: 0.6rem 0.85rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .25s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+
+    .pq-btn:hover { transform: translateY(-2px); }
+
+    .pq-btn-primary {
+        background: linear-gradient(135deg, var(--pq-blue-800), var(--pq-blue-600));
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(33, 98, 214, 0.28);
+    }
+
+    .pq-btn-secondary {
+        background: rgba(255,255,255, 0.85);
+        color: var(--pq-text);
+        border: 1px solid rgba(200, 210, 235, 0.6);
+        backdrop-filter: blur(10px);
+    }
+
+    .pq-btn-secondary:hover {
+        background: #fff;
+        box-shadow: 0 8px 20px rgba(21, 48, 85, 0.12);
+    }
+
+    .pq-btn-warning {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #78350f;
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.28);
+    }
+
+    .pq-game-shell {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .pq-board-card {
+        background: linear-gradient(145deg, rgba(255,255,255, 0.9) 0%, rgba(248,250,255, 0.85) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 24px;
+        padding: 0.75rem;
+        box-shadow: 
+            0 4px 24px rgba(31, 58, 128, 0.08),
+            inset 0 1px 0 rgba(255,255,255, 0.8);
+    }
+
+    .pq-board-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.7rem;
+        flex-wrap: wrap;
+    }
+
+    .pq-board-meta-left {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .pq-board-caption {
+        font-weight: 800;
+        color: var(--pq-text);
+        font-size: 0.88rem;
+    }
+
+    .pq-board-note {
+        color: var(--pq-muted);
+        font-size: 0.75rem;
+    }
+
+    .pq-mini-progress {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.38rem 0.65rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(42, 74, 127, 0.12), rgba(99, 145, 255, 0.08));
+        color: var(--pq-blue-800);
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .pq-board-wrap {
+        position: relative;
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(15, 59, 143, 0.04), rgba(42, 74, 127, 0.02));
+        border: 1px solid rgba(42, 74, 127, 0.08);
+        overflow: hidden;
+    }
+
+    .pq-board-silhouette {
+        position: absolute;
+        inset: 12px;
+        opacity: 0.05;
+        pointer-events: none;
+        background-size: cover;
+        background-position: center;
+        border-radius: 18px;
+        filter: blur(12px);
+    }
+
+    .pq-board-grid {
+        position: relative;
+        display: grid;
+        gap: 0;
+        background: 
+            radial-gradient(circle at 35% 30%, rgba(42, 74, 127, 0.05) 0%, transparent 40%),
+            linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        box-shadow: 
+            inset 0 2px 8px rgba(27, 58, 128, 0.06),
+            inset 0 0 40px rgba(42, 74, 127, 0.04);
+    }
+
+    .pq-slot {
+        position: relative;
+        border: none;
+        background:
+            radial-gradient(circle at top left, rgba(255,255,255, 0.9), rgba(241,246,255, 0.85));
+        min-width: 0;
+        min-height: 0;
+        overflow: visible;
+        transition: all .2s ease;
+    }
+
+    .pq-slot.is-active {
+        background: linear-gradient(180deg, rgba(42, 74, 127, 0.08) 0%, rgba(42, 74, 127, 0.06) 100%);
+        box-shadow: inset 0 0 0 2px rgba(42, 74, 127, 0.25);
+    }
+
+    .pq-slot.is-targetable {
+        cursor: pointer;
+        box-shadow: inset 0 0 0 2px rgba(42, 74, 127, 0.18);
+    }
+
+    .pq-slot.is-incorrect {
+        animation: pqShake .32s ease;
+        background: linear-gradient(180deg, rgba(254, 215, 215, 0.9) 0%, rgba(254, 226, 226, 0.85) 100%);
+        box-shadow: inset 0 0 0 2px rgba(220, 38, 38, 0.2);
+    }
+
+    .pq-slot.is-correct {
+        background: linear-gradient(180deg, rgba(42, 74, 127, 0.04) 0%, rgba(16, 185, 129, 0.03) 100%);
+    }
+
+    .pq-slot.is-locked {
+        box-shadow: inset 0 0 0 2px rgba(16, 185, 129, 0.25);
+    }
+
+    .pq-piece {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        justify-content: stretch;
+        cursor: grab;
+        border-radius: 0;
+        transition: transform .2s ease, filter .2s ease, opacity .2s ease;
+        user-select: none;
+        -webkit-user-drag: element;
+    }
+
+    .pq-piece:active { cursor: grabbing; }
+
+    .pq-piece.is-in-tray {
+        filter: drop-shadow(0 8px 16px rgba(20, 56, 114, 0.2));
+    }
+
+    .pq-piece:hover.is-in-tray {
+        transform: translateY(-5px) scale(1.03);
+        z-index: 6;
+        filter: drop-shadow(0 16px 28px rgba(20, 56, 114, 0.25));
+    }
+
+    .pq-piece.is-selected {
+        transform: translateY(-6px) scale(1.05);
+        z-index: 8;
+        filter: drop-shadow(0 20px 35px rgba(20, 56, 114, 0.3));
+    }
+
+    .pq-piece.is-selected .pq-piece-badge {
+        background: var(--pq-blue-800);
+        color: #fff;
+        border-color: rgba(15, 59, 143, 0.3);
+    }
+
+    .pq-piece.is-locked {
+        cursor: default;
+    }
+
+    .pq-piece.is-locked .pq-piece-svg,
+    .pq-piece.is-placed .pq-piece-svg {
+        filter: drop-shadow(0 6px 12px rgba(31, 81, 168, 0.14));
+    }
+
+    .pq-piece-svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        display: block;
+    }
+
+    .pq-piece-badge {
+        position: absolute;
+        right: 6px;
+        top: 6px;
+        min-width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255, 0.92);
+        border: 1px solid rgba(187, 205, 231, 0.9);
+        color: var(--pq-blue-800);
+        font-size: 0.7rem;
+        font-weight: 800;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(28, 65, 133, 0.12);
+    }
+
+    .pq-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+
+    .pq-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 0.85rem;
+        box-shadow: var(--glass-shadow);
+        backdrop-filter: blur(20px);
+    }
+
+    .pq-card-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.4rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .pq-card-title h3 {
+        margin: 0;
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: var(--pq-text);
+    }
+
+    .pq-card-title .pq-sub {
+        font-size: 0.7rem;
+        color: var(--pq-muted);
+        font-weight: 700;
+    }
+
+    .pq-progress-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .pq-progress-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        font-size: 0.78rem;
+        color: var(--pq-muted);
+    }
+
+    .pq-progress-row strong {
+        color: var(--pq-text);
+        font-size: 0.9rem;
+    }
+
+    .pq-progress-bar {
+        width: 100%;
+        height: 10px;
+        background: linear-gradient(180deg, rgba(226, 235, 250, 0.8), rgba(214, 228, 247, 0.6));
+        border-radius: 999px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(34, 73, 140, 0.1);
+    }
+
+    .pq-progress-fill {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--pq-blue-700), var(--pq-blue-500));
+        transition: width .3s ease;
+        box-shadow: 0 0 12px rgba(42, 74, 127, 0.4);
+    }
+
+    .pq-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
+    }
+
+    .pq-mini-stat {
+        border-radius: 14px;
+        padding: 0.75rem;
+        background: rgba(42, 74, 127, 0.06);
+        border: 1px solid rgba(42, 74, 127, 0.1);
+    }
+
+    .pq-mini-stat span {
+        display: block;
+        font-size: 0.68rem;
+        color: var(--pq-muted);
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .pq-mini-stat strong {
+        font-size: 0.95rem;
+        color: var(--pq-text);
+        font-weight: 800;
+    }
+
+    .pq-tray-shell {
+        position: relative;
+        border-radius: 20px;
+        padding: 0.75rem;
+        background: linear-gradient(180deg, rgba(248, 250, 255, 0.9), rgba(238, 244, 255, 0.85));
+        border: 1px solid rgba(216, 230, 251, 0.6);
+    }
+
+    .pq-tray-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.7rem;
+    }
+
+    .pq-inline-actions {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+    }
+
+    .pq-chip-btn {
+        border: 1px solid rgba(213, 227, 248, 0.7);
+        background: rgba(255,255,255, 0.8);
+        color: var(--pq-text);
+        border-radius: 999px;
+        padding: 0.4rem 0.7rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+        transition: all .2s ease;
+    }
+
+    .pq-chip-btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(42, 74, 127, 0.4);
+        box-shadow: 0 6px 16px rgba(21, 48, 85, 0.1);
+    }
+
+    .pq-chip-btn.is-active {
+        color: #fff;
+        border-color: rgba(42, 74, 127, 0.3);
+        background: linear-gradient(135deg, var(--pq-blue-700), var(--pq-blue-500));
+    }
+
+    .pq-tray {
+        position: relative;
+        min-height: 380px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px dashed rgba(188, 209, 242, 0.5);
+        background: 
+            radial-gradient(circle at 20% 25%, rgba(42, 74, 127, 0.06) 0%, transparent 35%),
+            radial-gradient(circle at 80% 30%, rgba(139, 92, 246, 0.04) 0%, transparent 28%),
+            linear-gradient(180deg, #fcfdff 0%, #f4f8ff 100%);
+        isolation: isolate;
+    }
+
+    .pq-tray::before {
+        content: 'Pièces';
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        padding: 0.28rem 0.6rem;
+        border-radius: 999px;
+        background: rgba(255,255,255, 0.9);
+        border: 1px solid rgba(216, 230, 251, 0.8);
+        color: var(--pq-blue-800);
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        z-index: 1;
+    }
+
+    .pq-tray::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+            linear-gradient(rgba(42, 74, 127, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(42, 74, 127, 0.04) 1px, transparent 1px);
+        background-size: 22px 22px;
+        opacity: 0.4;
+    }
+
+    .pq-piece-cloud {
+        position: absolute;
+        aspect-ratio: 1 / 1;
+        padding: 0.15rem;
+        z-index: 2;
+        transition: left .3s ease, top .3s ease, transform .2s ease, filter .2s ease;
+        will-change: left, top, transform;
+    }
+
+    .pq-piece-cloud:hover {
+        z-index: 6;
+        filter: drop-shadow(0 14px 24px rgba(16, 55, 121, 0.2));
+    }
+
+    .pq-piece-cloud.is-selected {
+        z-index: 10;
+    }
+
+    .pq-piece-cloud.is-selected .pq-piece {
+        transform: translateY(-8px) scale(1.06);
+    }
+
+    .pq-piece-cloud.is-tidy {
+        transform: rotate(0deg) !important;
+    }
+
+    .pq-piece-cloud .pq-piece {
+        width: 100%;
+        height: 100%;
+    }
+
+    .pq-tray-empty {
+        display: none;
+        text-align: center;
+        padding: 0.85rem;
+        border-radius: 14px;
+        background: rgba(42, 74, 127, 0.06);
+        color: var(--pq-muted);
+        font-weight: 700;
+        border: 1px dashed rgba(42, 74, 127, 0.2);
+    }
+
+    .pq-helper-note {
+        margin-top: 0.65rem;
+        padding: 0.7rem 0.8rem;
+        border-radius: 12px;
+        background: rgba(42, 74, 127, 0.06);
+        border: 1px solid rgba(42, 74, 127, 0.1);
+        color: var(--pq-muted);
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .pq-answer-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .pq-input {
+        width: 100%;
+        padding: 0.75rem 0.9rem;
+        border-radius: 12px;
+        border: 1px solid rgba(205, 220, 241, 0.8);
+        background: rgba(255,255,255, 0.85);
+        color: var(--pq-text);
+        font-size: 0.88rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        transition: all .2s ease;
+    }
+
+    .pq-input:focus {
+        outline: none;
+        border-color: rgba(42, 74, 127, 0.5);
+        box-shadow: 0 0 0 4px rgba(42, 74, 127, 0.12);
+    }
+
+    .pq-input:disabled {
+        background: rgba(244, 247, 252, 0.8);
+        color: rgba(156, 174, 201, 0.8);
+        cursor: not-allowed;
+    }
+
+    .pq-message {
+        display: none;
+        border-radius: 12px;
+        padding: 0.7rem 0.85rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .pq-message.show { display: block; }
+    .pq-message.success { background: rgba(16, 185, 129, 0.1); color: #047857; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .pq-message.error { background: rgba(220, 38, 38, 0.08); color: #b91c1c; border: 1px solid rgba(220, 38, 38, 0.15); }
+    .pq-message.info { background: rgba(42, 74, 127, 0.08); color: #1d4ed8; border: 1px solid rgba(42, 74, 127, 0.15); }
+
+    .pq-footer-link {
+        width: 100%;
+    }
+
+    .pq-overlay,
+    .pq-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+        padding: 1.5rem;
+    }
+
+    .pq-overlay.show,
+    .pq-modal.show {
+        display: flex;
+    }
+
+    .pq-overlay {
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(8px);
+    }
+
+    .pq-preview-box {
+        width: min(920px, 96vw);
+        background: #fff;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 25px 80px rgba(15, 23, 42, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .pq-preview-head {
+        padding: 0.9rem 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.85rem;
+        background: linear-gradient(90deg, #f8fbff, #f0f5ff);
+        border-bottom: 1px solid rgba(222, 235, 255, 0.8);
+    }
+
+    .pq-preview-title {
+        font-weight: 800;
+        color: var(--pq-text);
+    }
+
+    .pq-title-group h2 {
+        margin: 0;
+        font-size: 1.24rem;
+        font-weight: 800;
+        color: var(--pq-text);
+    }
+
+    .pq-title-group p {
+        margin: 0.35rem 0 0;
+        font-size: 0.9rem;
+        color: var(--pq-muted);
+        max-width: 740px;
+    }
+
+    .pq-actions {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .pq-btn {
+        border: none;
+        border-radius: 12px;
+        padding: 0.78rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+    }
+
+    .pq-btn:hover { transform: translateY(-1px); }
+
+    .pq-btn-primary {
+        background: linear-gradient(135deg, var(--pq-blue-900), var(--pq-blue-700));
+        color: #fff;
+        box-shadow: 0 10px 24px rgba(33, 98, 214, 0.22);
+    }
+
+    .pq-btn-secondary {
+        background: #fff;
+        color: var(--pq-text);
+        border: 1px solid var(--pq-border);
+    }
+
+    .pq-btn-warning {
+        background: linear-gradient(135deg, #ffd77a, #ffb648);
+        color: #5a3b00;
+        box-shadow: 0 10px 24px rgba(255, 182, 72, 0.25);
+    }
+
+    .pq-game-shell {
+        display: flex;
+        gap: 1.25rem;
+        align-items: start;
+    }
+
+    .pq-board-card {
+        background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+        border: 1px solid var(--pq-border);
+        border-radius: 22px;
+        padding: 0.95rem;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), var(--pq-shadow-sm);
+    }
+
+    .pq-board-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.7rem;
+        flex-wrap: wrap;
+    }
+
+    .pq-board-meta-left {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .pq-board-caption {
+        font-weight: 800;
+        color: var(--pq-text);
+        font-size: 0.88rem;
+    }
+
+    .pq-board-note {
+        color: var(--pq-muted);
+        font-size: 0.75rem;
+    }
+
+    .pq-mini-progress {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.38rem 0.65rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(42, 74, 127, 0.12), rgba(99, 145, 255, 0.08));
+        color: var(--pq-blue-800);
+        font-size: 0.78rem;
+        font-weight: 800;
+    }
+
+    .pq-board-wrap {
+        position: relative;
+        width: 100%;
+        padding: 0.55rem;
+        border-radius: 24px;
+        background:
+            linear-gradient(180deg, rgba(237,244,255,0.9), rgba(247,250,255,0.98));
+        border: 1px solid #e2ebf8;
+        overflow: hidden;
+    }
+
+    .pq-board-silhouette {
+        position: absolute;
+        inset: 14px;
+        opacity: 0.06;
+        pointer-events: none;
+        background-size: cover;
+        background-position: center;
+        border-radius: 16px;
+        filter: blur(8px);
+    }
+
+    .pq-board-grid {
+        position: relative;
+        display: grid;
+        gap: 0;
+        background: 
+            radial-gradient(circle at 30% 25%, rgba(77,134,255,0.04) 0%, transparent 42%),
+            linear-gradient(180deg, #f9fcff 0%, #edf5ff 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        box-shadow: inset 0 2px 8px rgba(27, 58, 128, 0.06);
+    }
+
+    .pq-slot {
+        position: relative;
+        border: none;
+        background:
+            radial-gradient(circle at top left, rgba(255,255,255,0.95), rgba(241,246,255,0.92));
+        min-width: 0;
+        min-height: 0;
+        overflow: visible;
+        transition: background .18s ease, box-shadow .18s ease;
+    }
+
+    .pq-slot.is-active {
+        background: linear-gradient(180deg, #eff6ff 0%, #e2edff 100%);
+        box-shadow: inset 0 0 0 2px rgba(56, 124, 255, 0.22);
+    }
+
+    .pq-slot.is-targetable {
+        cursor: pointer;
+        box-shadow: inset 0 0 0 2px rgba(77, 134, 255, 0.16);
+    }
+
+    .pq-slot.is-incorrect {
+        animation: pqShake .34s ease;
+        background: linear-gradient(180deg, #fff3f3 0%, #ffe6e6 100%);
+        box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.18);
+    }
+
+    .pq-slot.is-correct {
+        background: linear-gradient(180deg, #f5fbff 0%, #eef8ff 100%);
+    }
+
+    .pq-slot.is-locked {
+        box-shadow: inset 0 0 0 2px rgba(18, 185, 129, 0.2);
+    }
+
+    .pq-piece {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        justify-content: stretch;
+        cursor: grab;
+        border-radius: 0;
+        transition: transform .18s ease, filter .18s ease, opacity .18s ease;
+        user-select: none;
+        -webkit-user-drag: element;
+    }
+
+    .pq-piece:active { cursor: grabbing; }
+
+    .pq-piece.is-in-tray {
+        filter: drop-shadow(0 10px 18px rgba(20, 56, 114, 0.18));
+    }
+
+    .pq-piece:hover.is-in-tray {
+        transform: translateY(-4px) scale(1.02);
+        z-index: 4;
+    }
+
+    .pq-piece.is-selected {
+        transform: translateY(-4px) scale(1.03);
+        z-index: 5;
+    }
+
+    .pq-piece.is-selected .pq-piece-badge {
+        background: var(--pq-blue-900);
+        color: #fff;
+        border-color: rgba(15, 59, 143, 0.24);
+    }
+
+    .pq-piece.is-locked {
+        cursor: default;
+    }
+
+    .pq-piece.is-locked .pq-piece-svg,
+    .pq-piece.is-placed .pq-piece-svg {
+        filter: drop-shadow(0 8px 14px rgba(31, 81, 168, 0.12));
+    }
+
+    .pq-piece-svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        display: block;
+    }
+
+    .pq-piece-badge {
+        position: absolute;
+        right: 8px;
+        top: 8px;
+        min-width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        padding: 0 7px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(187, 205, 231, 0.95);
+        color: var(--pq-blue-900);
+        font-size: 0.75rem;
+        font-weight: 800;
+        pointer-events: none;
+        box-shadow: 0 6px 14px rgba(28, 65, 133, 0.10);
+    }
+
+    .pq-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        position: sticky;
+        top: 96px;
+    }
+
+    .pq-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,250,255,0.98));
+        border: 1px solid var(--pq-border);
+        border-radius: 20px;
+        padding: 1rem;
+        box-shadow: var(--pq-shadow-sm);
+    }
+
+    .pq-card-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .pq-card-title h3 {
+        margin: 0;
+        font-size: 0.96rem;
+        font-weight: 800;
+        color: var(--pq-text);
+    }
+
+    .pq-card-title .pq-sub {
+        font-size: 0.76rem;
+        color: var(--pq-muted);
+        font-weight: 700;
+    }
+
+    .pq-progress-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pq-progress-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        font-size: 0.84rem;
+        color: var(--pq-muted);
+    }
+
+    .pq-progress-row strong {
+        color: var(--pq-text);
+        font-size: 0.96rem;
+    }
+
+    .pq-progress-bar {
+        width: 100%;
+        height: 12px;
+        background: #e7eefb;
+        border-radius: 999px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 2px rgba(34, 73, 140, 0.08);
+    }
+
+    .pq-progress-fill {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--pq-blue-800), #49a2ff);
+        transition: width .28s ease;
+    }
+
+    .pq-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+    }
+
+    .pq-mini-stat {
+        border-radius: 16px;
+        padding: 0.9rem;
+        background: #f3f8ff;
+        border: 1px solid #dce8fa;
+    }
+
+    .pq-mini-stat span {
+        display: block;
+        font-size: 0.74rem;
+        color: var(--pq-muted);
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .pq-mini-stat strong {
+        font-size: 1rem;
+        color: var(--pq-text);
+        font-weight: 800;
+    }
+
+    .pq-tray-shell {
+        position: relative;
+        border-radius: 22px;
+        padding: 0.9rem;
+        background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+        border: 1px solid #d8e6fb;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.92);
+    }
+
+    .pq-tray-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.9rem;
+    }
+
+    .pq-inline-actions {
+        display: flex;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+    }
+
+    .pq-chip-btn {
+        border: 1px solid #d5e3f8;
+        background: #fff;
+        color: var(--pq-text);
+        border-radius: 999px;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.78rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(21, 48, 85, 0.08);
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .pq-chip-btn:hover {
+        transform: translateY(-1px);
+        border-color: #8fb2f1;
+        box-shadow: 0 12px 22px rgba(21, 48, 85, 0.12);
+    }
+
+    .pq-chip-btn.is-active {
+        color: #fff;
+        border-color: rgba(45, 109, 224, 0.25);
+        background: linear-gradient(135deg, var(--pq-blue-900), var(--pq-blue-700));
+    }
+
+    .pq-tray {
+        position: relative;
+        min-height: 420px;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px dashed #bcd1f2;
+        background:
+            radial-gradient(circle at 15% 18%, rgba(77,134,255,0.11), transparent 32%),
+            radial-gradient(circle at 86% 22%, rgba(56,189,248,0.11), transparent 26%),
+            linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.82);
+        isolation: isolate;
+    }
+
+    .pq-tray::before {
+        content: 'Zone de pièces mélangées';
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        padding: 0.34rem 0.7rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid #d8e6fb;
+        color: var(--pq-blue-900);
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        z-index: 1;
+        box-shadow: 0 10px 18px rgba(22, 50, 101, 0.08);
+    }
+
+    .pq-tray::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+            linear-gradient(rgba(120, 153, 209, 0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(120, 153, 209, 0.08) 1px, transparent 1px);
+        background-size: 28px 28px;
+        opacity: 0.35;
+    }
+
+    .pq-piece-cloud {
+        position: absolute;
+        aspect-ratio: 1 / 1;
+        padding: 0.2rem;
+        z-index: 2;
+        transition: left .28s ease, top .28s ease, transform .18s ease, filter .18s ease;
+        will-change: left, top, transform;
+    }
+
+    .pq-piece-cloud:hover {
+        z-index: 5;
+        filter: drop-shadow(0 16px 22px rgba(16, 55, 121, 0.18));
+    }
+
+    .pq-piece-cloud.is-selected {
+        z-index: 7;
+    }
+
+    .pq-piece-cloud.is-selected .pq-piece {
+        transform: translateY(-6px) scale(1.04);
+    }
+
+    .pq-piece-cloud.is-tidy {
+        transform: rotate(0deg) !important;
+    }
+
+    .pq-piece-cloud .pq-piece {
+        width: 100%;
+        height: 100%;
+    }
+
+    .pq-tray-empty {
+        display: none;
+        text-align: center;
+        padding: 1rem;
+        border-radius: 16px;
+        background: #f3f8ff;
+        color: var(--pq-muted);
+        font-weight: 700;
+        border: 1px dashed #c7d9f5;
+    }
+
+    .pq-helper-note {
+        margin-top: 0.8rem;
+        padding: 0.85rem 0.95rem;
+        border-radius: 14px;
+        background: #f6f9ff;
+        border: 1px solid #dbe7fb;
+        color: var(--pq-muted);
+        font-size: 0.84rem;
+        font-weight: 700;
+        line-height: 1.45;
+    }
+
+    .pq-answer-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pq-input {
+        width: 100%;
+        padding: 0.9rem 1rem;
+        border-radius: 14px;
+        border: 1px solid #cddcf1;
+        background: #fff;
+        color: var(--pq-text);
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .pq-input:focus {
+        outline: none;
+        border-color: #5a8dff;
+        box-shadow: 0 0 0 4px rgba(90, 141, 255, 0.14);
+    }
+
+    .pq-input:disabled {
+        background: #f4f7fc;
+        color: #9caec9;
+        cursor: not-allowed;
+    }
+
+    .pq-message {
+        display: none;
+        border-radius: 14px;
+        padding: 0.85rem 0.95rem;
+        font-size: 0.88rem;
+        font-weight: 700;
+    }
+
+    .pq-message.show { display: block; }
+    .pq-message.success { background: #eafaf4; color: #0f7f58; border: 1px solid #b9efd5; }
+    .pq-message.error { background: #fff0f0; color: #b42318; border: 1px solid #ffd0d0; }
+    .pq-message.info { background: #eff6ff; color: #2350a3; border: 1px solid #cfe0ff; }
+
+    .pq-footer-link {
+        width: 100%;
+    }
+
+    .pq-overlay,
+    .pq-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 1.5rem;
+    }
+
+    .pq-overlay.show,
+    .pq-modal.show {
+        display: flex;
+    }
+
+    .pq-overlay {
+        background: rgba(13, 39, 86, 0.82);
+        backdrop-filter: blur(6px);
+    }
+
+    .pq-preview-box {
+        width: min(980px, 96vw);
+        background: #fff;
+        border-radius: 26px;
+        overflow: hidden;
+        box-shadow: var(--pq-shadow-lg);
+        border: 1px solid rgba(215, 227, 247, 0.9);
+    }
+
+    .pq-preview-head {
+        padding: 1rem 1.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        background: linear-gradient(90deg, #f5f9ff, #edf4ff);
+        border-bottom: 1px solid #deebff;
+    }
+
+    .pq-preview-title {
+        font-weight: 800;
+        color: var(--pq-text);
+    }
+
+    .pq-preview-timer {
+        padding: 0.38rem 0.7rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--pq-blue-800), var(--pq-blue-600));
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .pq-preview-body {
+        padding: 0.85rem;
+        background: rgba(248, 250, 255, 0.8);
+    }
+
+    .pq-preview-image {
+        width: 100%;
+        max-height: 65vh;
+        object-fit: contain;
+        border-radius: 20px;
+        background: rgba(233, 241, 255, 0.6);
+    }
+
+    .pq-modal {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(12px);
+    }
+
+    .pq-modal-card {
+        width: min(340px, 92%);
+        background: linear-gradient(145deg, rgba(255,255,255, 0.98), rgba(248, 250, 255, 0.95));
+        border-radius: 24px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .pq-modal-emoji {
+        font-size: 2rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .pq-modal-image {
+        width: 100%;
+        max-height: 120px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
+    }
+
+    .pq-modal-card h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--pq-text);
+    }
+
+    .pq-modal-card p {
+        margin: 0.4rem 0 0;
+        color: var(--pq-muted);
+    }
+
+    .pq-fact {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 10px;
+        text-align: left;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border: 1px solid #ffd98c;
+        color: #7a4f00;
+    }
+
+    .pq-fact h4 {
+        margin: 0 0 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 900;
+    }
+
+    .pq-final-score {
+        margin-top: 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--pq-blue-900);
+    }
+
+    .pq-promo-box {
+        margin-top: 0.5rem;
+        padding: 0.4rem 0.6rem;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border: 1px dashed #f59e0b;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+    }
+
+    .pq-promo-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #92400e;
+    }
+
+    .pq-promo-code {
+        font-size: 0.8rem;
+        font-weight: 900;
+        color: #b45309;
+        background: #fff;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+    }
+
+    .pq-promo-copy {
+        border: none;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #fff;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform .2s ease;
+    }
+
+    .pq-promo-copy:hover {
+        transform: scale(1.05);
+    }
+
+    .pq-modal-actions {
+        margin-top: 0.75rem;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .pq-toast {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 70;
+        min-width: 250px;
+        max-width: 420px;
+        padding: 0.9rem 1rem;
+        border-radius: 16px;
+        background: #fff;
+        border: 1px solid #dbe7fa;
+        box-shadow: var(--pq-shadow-md);
+        color: var(--pq-text);
+        font-weight: 800;
+        display: none;
+    }
+
+    .pq-toast.show { display: block; animation: pqToastIn .18s ease; }
+    .pq-toast.success { border-color: #b6efcf; color: #0d8058; }
+    .pq-toast.error { border-color: #ffd1d1; color: #b42318; }
+    .pq-toast.info { border-color: #cfe0ff; color: #2350a3; }
+
+    @keyframes pqToastIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pqShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        50% { transform: translateX(4px); }
+        75% { transform: translateX(-3px); }
+    }
+
+    @keyframes pqSnapBounce {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.12); }
+        70% { transform: scale(0.96); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes pqCompletePulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(18, 185, 129, 0.4); }
+        50% { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(18, 185, 129, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(18, 185, 129, 0); }
+    }
+
+    @keyframes float-in {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes glow-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(42, 74, 127, 0); }
+        50% { box-shadow: 0 0 20px 4px rgba(42, 74, 127, 0.25); }
+    }
+
+    @keyframes confetti-fall {
+        0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .pq-piece.is-snapped {
+        animation: pqSnapBounce 0.32s ease-out;
+    }
+
+    .pq-piece.is-complete {
+        animation: pqCompletePulse 0.6s ease-out;
+    }
+
+    @media (max-width: 1220px) {
+        .pq-content { flex-direction: row; }
+        .pq-game-shell { flex-direction: row; }
+    }
+
+    @media (max-width: 900px) {
+        .pq-content { flex-direction: column; }
+        .pq-game-shell { flex-direction: column; }
+        .pq-sidebar {
+            order: -1;
+            position: static;
+        }
+
+        .pq-toolbar,
+        .pq-board-meta,
+        .pq-topbar-inner {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .pq-header-center,
+        .pq-header-right {
+            justify-content: flex-start;
+        }
+
+        .pq-tray-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .pq-tray { min-height: 320px; }
+    }
+
+    @media (max-width: 560px) {
+        .pq-content { padding: 1rem; }
+        .pq-main-panel { padding: 1rem; }
+        .pq-tray-shell { padding: 0.7rem; }
+        .pq-tray { min-height: 280px; }
+        .pq-stats-grid { grid-template-columns: 1fr; }
+        .pq-modal-actions { flex-direction: column; }
+    }
+</style>
+
+<div class="pq-page">
+    <header class="pq-topbar">
+        <div class="pq-topbar-inner">
+            <div class="pq-brand-wrap">
+                <a href="{{ path('ai_puzzle_index') }}" class="pq-back" aria-label="Retour au menu">←</a>
+                <div class="pq-brand">
+                    <div class="pq-brand-title">Passport Quest</div>
+                    <div class="pq-brand-subtitle">Quiz • Drag & Drop • Puzzle Voyage</div>
+                </div>
+            </div>
+
+            <div class="pq-header-center">
+                <div class="pq-chip">
+                    <span class="pq-chip-emoji">{{ destination.emoji }}</span>
+                    <span>{{ destination.country }}</span>
+                </div>
+                <div class="pq-chip">📍 {{ destination.landmark }}</div>
+                <div class="pq-chip">🧠 Niveau {{ difficulty|upper }}</div>
+            </div>
+
+            <div class="pq-header-right">
+                <div class="pq-stat timer" id="timer-box">
+                    <span class="pq-stat-label">Temps</span>
+                    <span class="pq-stat-value" id="timer">00:00</span>
+                </div>
+                <div class="pq-stat">
+                    <span class="pq-stat-label">Score</span>
+                    <span class="pq-stat-value" id="score">0</span>
+                </div>
+                <div class="pq-stat">
+                    <span class="pq-stat-label">Pièces</span>
+                    <span class="pq-stat-value" id="piece-count">0 / {{ gridSize.total }}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="pq-content">
+        <section class="pq-panel pq-main-panel">
+            <div class="pq-toolbar">
+                <div class="pq-title-group">
+                    <h2>Quelle destination se cache ici&nbsp;?</h2>
+                    <p>Indice : cette ville est célèbre pour <strong>{{ destination.landmark }}</strong>. Glissez chaque pièce vers sa case exacte pour reconstruire l'image.</p>
+                </div>
+                <div class="pq-actions">
+                    <button type="button" class="pq-btn pq-btn-warning" id="hint-btn">💡 Aperçu</button>
+                    <button type="button" class="pq-btn pq-btn-secondary" id="shuffle-btn">🔀 Mélanger</button>
+                    <button type="button" class="pq-btn pq-btn-secondary" id="reset-btn">↺ Recommencer</button>
+                </div>
+            </div>
+
+            <div class="pq-game-shell">
+                <div class="pq-board-card">
+                    <div class="pq-board-meta">
+                        <div class="pq-board-meta-left">
+                            <div class="pq-board-caption">Plateau de puzzle</div>
+                            <div class="pq-board-note">Déposez les pièces dans l'ordre visuel correct. Les cases justes s'aimantent automatiquement.</div>
+                        </div>
+                        <div class="pq-mini-progress" id="board-progress">0 / {{ gridSize.total }} pièces</div>
+                    </div>
+
+                    <div class="pq-board-wrap">
+                        <img
+                            class="pq-board-silhouette"
+                            id="board-silhouette"
+                            src="{{ destination.image }}"
+                            alt=""
+                        >
+                        <div
+                            class="pq-board-grid"
+                            id="board-grid"
+                            style="grid-template-columns: repeat({{ gridSize.cols }}, 1fr); grid-template-rows: repeat({{ gridSize.rows }}, 1fr);"
+                        ></div>
+                    </div>
+                </div>
+
+                <aside class="pq-sidebar">
+                    <div class="pq-card">
+                        <div class="pq-card-title">
+                            <h3>Progression</h3>
+                            <span class="pq-sub" id="status-text">En cours</span>
+                        </div>
+                        <div class="pq-progress-wrap">
+                            <div class="pq-progress-row">
+                                <span>Assemblage</span>
+                                <strong id="progress-text">0%</strong>
+                            </div>
+                            <div class="pq-progress-bar">
+                                <div class="pq-progress-fill" id="progress-fill"></div>
+                            </div>
+                            <div class="pq-stats-grid">
+                                <div class="pq-mini-stat">
+                                    <span>Mouvements</span>
+                                    <strong id="moves">0</strong>
+                                </div>
+                                <div class="pq-mini-stat">
+                                    <span>Restantes</span>
+                                    <strong id="pieces-left">{{ gridSize.total }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pq-card">
+                        <div class="pq-card-title">
+                            <h3>Pièces — faites glisser vers la grille</h3>
+                            <span class="pq-sub" id="tray-subtitle">Glisser ou toucher</span>
+                        </div>
+                        <div class="pq-tray-shell">
+                            <div class="pq-tray-toolbar">
+                                <span class="pq-sub">Espace libre moderne</span>
+                                <div class="pq-inline-actions">
+                                    <button type="button" class="pq-chip-btn is-active" id="remix-btn">🔀 Remixer</button>
+                                    <button type="button" class="pq-chip-btn" id="tidy-btn">🧩 Aligner</button>
+                                </div>
+                            </div>
+                            <div class="pq-tray" id="pieces-tray"></div>
+                        </div>
+                        <div class="pq-tray-empty" id="tray-empty">Toutes les pièces sont placées. Bravo ✨</div>
+                        <div class="pq-helper-note" id="selection-hint">Astuce : les pièces apparaissent dans un espace mélangé. Glissez-les vers la grille ou touchez une pièce puis une case sur mobile.</div>
+                    </div>
+
+                    <div class="pq-card">
+                        <div class="pq-card-title">
+                            <h3>Devine le pays</h3>
+                            <span class="pq-sub">Débloqué après 35%</span>
+                        </div>
+                        <div class="pq-answer-box">
+                            <input type="text" id="answer-input" class="pq-input" placeholder="Exemple : France" disabled>
+                            <button type="button" id="answer-btn" class="pq-btn pq-btn-primary" disabled>Valider la réponse</button>
+                            <div class="pq-message info" id="result-msg">Continue encore un peu pour débloquer la réponse.</div>
+                        </div>
+                    </div>
+
+                    <div class="pq-card">
+                        <a href="{{ path('ai_puzzle_index') }}" class="pq-btn pq-btn-secondary pq-footer-link">🏠 Retour au menu principal</a>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div class="pq-overlay" id="preview-overlay">
+    <div class="pq-preview-box">
+        <div class="pq-preview-head">
+            <div class="pq-preview-title">Aperçu rapide de la destination</div>
+            <div style="display:flex;align-items:center;gap:.6rem;">
+                <div class="pq-preview-timer" id="preview-timer">3s</div>
+                <button type="button" class="pq-btn pq-btn-secondary" id="close-preview-btn">Fermer</button>
+            </div>
+        </div>
+        <div class="pq-preview-body">
+            <img src="{{ destination.image }}" alt="Aperçu destination" class="pq-preview-image">
+        </div>
+    </div>
+</div>
+
+<div class="pq-modal" id="completion-modal">
+    <div class="pq-modal-card">
+        <img src="{{ destination.image }}" alt="{{ destination.country }}" class="pq-modal-image">
+        <div class="pq-modal-emoji">{{ destination.emoji }}</div>
+        <h2>Félicitations !</h2>
+        <p>Vous avez reconstitué <strong>{{ destination.country }}</strong> avec succès.</p>
+
+        <div class="pq-fact">
+            <h4>💡 Le saviez-vous ?</h4>
+            <div><strong>Capitale :</strong> {{ destination.capital }}</div>
+            <div style="margin-top:.3rem;">{{ destination.fun_fact }}</div>
+        </div>
+
+        <div class="pq-final-score" id="final-score">+0 pts</div>
+
+        <div class="pq-promo-box">
+            <div class="pq-promo-label">🎁 Code Promo -50%</div>
+            <div class="pq-promo-code" id="promo-code">SOLDE50</div>
+            <button type="button" class="pq-promo-copy" onclick="copyPromoCode()">Copier</button>
+        </div>
+
+        <div class="pq-modal-actions">
+            <button type="button" class="pq-btn pq-btn-secondary" id="play-again-btn">🔄 Rejouer</button>
+            <a href="{{ path('ai_puzzle_index') }}" class="pq-btn pq-btn-primary">🏠 Menu</a>
+        </div>
+    </div>
+</div>
+
+<div class="pq-toast" id="game-toast"></div>
+
+<script>
+const GAME_CONFIG = {
+    destination: {{ destination|json_encode|raw }},
+    grid: {{ gridSize|json_encode|raw }},
+    timeLimit: {{ timeLimit }},
+    difficulty: {{ difficulty|json_encode|raw }},
+    baseScore: {{ difficulty == 'easy' ? 100 : difficulty == 'medium' ? 150 : 220 }}
+};
+
+class PassportQuestGame {
+    constructor(config) {
+        this.destination = config.destination;
+        this.rows = config.grid.rows;
+        this.cols = config.grid.cols;
+        this.totalPieces = config.grid.total;
+        this.timeLimit = config.timeLimit;
+        this.baseScore = config.baseScore;
+        this.difficulty = config.difficulty;
+
+        this.board = document.getElementById('board-grid');
+        this.tray = document.getElementById('pieces-tray');
+        this.answerInput = document.getElementById('answer-input');
+        this.answerBtn = document.getElementById('answer-btn');
+        this.toast = document.getElementById('game-toast');
+        this.timerBox = document.getElementById('timer-box');
+        this.resultMsg = document.getElementById('result-msg');
+        this.selectionHint = document.getElementById('selection-hint');
+
+        this.image = new Image();
+        this.image.crossOrigin = 'anonymous';
+        this.pieces = [];
+        this.slotElements = [];
+        this.draggedPieceId = null;
+        this.selectedPieceId = null;
+        this.placedCount = 0;
+        this.moves = 0;
+        this.score = 0;
+        this.timeLeft = this.timeLimit;
+        this.gameCompleted = false;
+        this.answerUnlocked = false;
+        this.previewInterval = null;
+        this.timerInterval = null;
+        this.lockedPieceId = 0;
+        this.toastTimeout = null;
+        this.trayMode = 'mix';
+        this.trayPositions = new Map();
+        this.resizeTimer = null;
+    }
+
+    async init() {
+        this.bindStaticEvents();
+        await this.loadImage();
+        this.createBoard();
+        this.createPieces();
+        this.renderTray();
+        this.renderBoard();
+        this.updateSelectedState();
+        this.updateUI();
+        this.startTimer();
+        this.showMessage('Astuce : commencez par la pièce déjà placée puis reconstituez les bords.', 'info');
+    }
+
+    bindStaticEvents() {
+        document.getElementById('hint-btn').addEventListener('click', () => this.openPreview());
+        document.getElementById('shuffle-btn').addEventListener('click', () => this.shuffleTrayPieces());
+        document.getElementById('reset-btn').addEventListener('click', () => this.restart());
+        document.getElementById('close-preview-btn').addEventListener('click', () => this.closePreview());
+        document.getElementById('preview-overlay').addEventListener('click', (event) => {
+            if (event.target.id === 'preview-overlay') this.closePreview();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') this.closePreview();
+        });
+        document.getElementById('play-again-btn').addEventListener('click', () => {
+            document.getElementById('completion-modal').classList.remove('show');
+            this.restart();
+        });
+        this.answerBtn.addEventListener('click', () => this.submitAnswer());
+        this.answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.submitAnswer();
+        });
+
+        const remixBtn = document.getElementById('remix-btn');
+        const tidyBtn = document.getElementById('tidy-btn');
+        remixBtn?.addEventListener('click', () => this.setTrayMode('mix', true));
+        tidyBtn?.addEventListener('click', () => {
+            const nextMode = this.trayMode === 'tidy' ? 'mix' : 'tidy';
+            this.setTrayMode(nextMode, true);
+        });
+
+        window.addEventListener('resize', () => {
+            if (this.resizeTimer) window.clearTimeout(this.resizeTimer);
+            this.resizeTimer = window.setTimeout(() => {
+                this.renderTray();
+                this.updateSelectedState();
+            }, 120);
+        });
+    }
+
+    loadImage() {
+        return new Promise((resolve) => {
+            const fallbackUrl = 'https://picsum.photos/900/900';
+            const finalize = () => resolve();
+
+            this.image.crossOrigin = 'anonymous';
+            this.image.onload = finalize;
+            this.image.onerror = () => {
+                if (this.image.src !== fallbackUrl) {
+                    this.image.src = fallbackUrl;
+                } else {
+                    finalize();
+                }
+            };
+            this.image.src = this.destination.image || fallbackUrl;
+        });
+    }
+
+    createBoard() {
+        this.board.innerHTML = '';
+        this.slotElements = [];
+
+        for (let index = 0; index < this.totalPieces; index++) {
+            const slot = document.createElement('div');
+            slot.className = 'pq-slot';
+            slot.dataset.slotId = String(index);
+            slot.dataset.slotNumber = String(index + 1);
+            slot.dataset.correctPiece = String(index);
+
+            slot.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (this.gameCompleted) return;
+                slot.classList.add('is-active');
+            });
+
+            slot.addEventListener('dragleave', () => slot.classList.remove('is-active'));
+            slot.addEventListener('drop', (e) => {
+                e.preventDefault();
+                slot.classList.remove('is-active');
+                if (this.gameCompleted) return;
+                const pieceId = Number(e.dataTransfer.getData('text/plain'));
+                this.handleDrop(pieceId, index);
+            });
+
+            slot.addEventListener('click', () => {
+                if (this.gameCompleted || this.selectedPieceId === null) return;
+                this.handleDrop(this.selectedPieceId, index);
+            });
+
+            this.board.appendChild(slot);
+            this.slotElements.push(slot);
+        }
+    }
+
+    createPieces() {
+        this.pieces = [];
+        const lockedId = this.lockedPieceId;
+
+        for (let index = 0; index < this.totalPieces; index++) {
+            const row = Math.floor(index / this.cols);
+            const col = index % this.cols;
+            const edges = {
+                t: row === 0 ? 0 : -this.pieces[index - this.cols].edges.b,
+                l: col === 0 ? 0 : -this.pieces[index - 1].edges.r,
+                r: col === this.cols - 1 ? 0 : (Math.random() > 0.5 ? 1 : -1),
+                b: row === this.rows - 1 ? 0 : (Math.random() > 0.5 ? 1 : -1)
+            };
+
+            this.pieces.push({
+                id: index,
+                row,
+                col,
+                edges,
+                placed: index === lockedId,
+                locked: index === lockedId,
+                inTray: index !== lockedId,
+                element: null,
+                slotElement: null
+            });
+        }
+
+        this.placedCount = this.pieces.filter(piece => piece.placed).length;
+    }
+
+    renderBoard() {
+        this.pieces.forEach((piece) => {
+            const slot = this.slotElements[piece.id];
+            slot.classList.toggle('is-correct', piece.placed);
+            slot.classList.toggle('is-locked', piece.locked);
+            slot.innerHTML = '';
+
+            if (piece.placed) {
+                const pieceEl = this.buildPieceElement(piece, false);
+                pieceEl.classList.add('is-placed');
+                if (piece.locked) pieceEl.classList.add('is-locked');
+                slot.appendChild(pieceEl);
+                piece.slotElement = pieceEl;
+            } else {
+                piece.slotElement = null;
+            }
+        });
+    }
+
+    renderTray(forceRemix = false) {
+        this.tray.innerHTML = '';
+        const trayPieces = this.pieces.filter(piece => !piece.placed);
+
+        if (this.trayMode === 'tidy') {
+            this.applyTidyLayout(trayPieces);
+        } else {
+            this.applyMixedLayout(trayPieces, forceRemix);
+        }
+
+        trayPieces.forEach((piece) => {
+            const shell = document.createElement('div');
+            const position = this.trayPositions.get(piece.id) || { x: 10, y: 40, rotation: 0, size: 112 };
+            shell.className = 'pq-piece-cloud' + (this.selectedPieceId === piece.id ? ' is-selected' : '');
+            if (this.trayMode === 'tidy') shell.classList.add('is-tidy');
+            shell.dataset.pieceId = String(piece.id);
+            shell.style.width = `${position.size}px`;
+            shell.style.left = `${position.x}px`;
+            shell.style.top = `${position.y}px`;
+            shell.style.transform = `rotate(${position.rotation}deg)`;
+
+            const pieceEl = this.buildPieceElement(piece, true);
+            shell.appendChild(pieceEl);
+            this.tray.appendChild(shell);
+            piece.element = pieceEl;
+        });
+
+        document.getElementById('tray-empty').style.display = trayPieces.length === 0 ? 'block' : 'none';
+        document.getElementById('tray-subtitle').textContent = trayPieces.length === 0
+            ? 'Terminé'
+            : (this.trayMode === 'mix' ? `${trayPieces.length} pièces dans la zone mélangée` : `${trayPieces.length} pièces alignées`);
+        this.updateTrayActionState();
+        this.updateSelectedState();
+    }
+
+    getTrayMetrics(pieceCount) {
+        const trayWidth = this.tray.clientWidth || 320;
+        const size = Math.max(86, Math.min(132, Math.floor(trayWidth / (trayWidth < 420 ? 2.85 : 3.15))));
+        const columns = Math.max(2, Math.min(4, Math.floor(trayWidth / Math.max(90, size * 0.9))));
+        const rows = Math.max(1, Math.ceil(Math.max(pieceCount, 1) / columns));
+        const height = Math.max(320, rows * Math.max(76, Math.round(size * 0.72)) + size + 42);
+        this.tray.style.minHeight = `${height}px`;
+        return { width: trayWidth, height, size, columns };
+    }
+
+    applyMixedLayout(pieces, forceRemix = false) {
+        const { width, height, size, columns } = this.getTrayMetrics(pieces.length);
+        const stepX = columns > 1 ? (width - size - 28) / (columns - 1) : 0;
+        const stepY = Math.max(54, Math.round(size * 0.58));
+
+        pieces.forEach((piece, index) => {
+            if (!forceRemix && this.trayPositions.has(piece.id)) {
+                const previous = this.trayPositions.get(piece.id);
+                this.trayPositions.set(piece.id, { ...previous, size });
+                return;
+            }
+
+            const col = index % columns;
+            const row = Math.floor(index / columns);
+            const baseX = 14 + (col * stepX);
+            const baseY = 46 + (row * stepY);
+            const jitterX = Math.round((Math.random() - 0.5) * Math.min(30, size * 0.34));
+            const jitterY = Math.round((Math.random() - 0.5) * Math.min(26, size * 0.28));
+            const x = this.clamp(baseX + jitterX, 10, Math.max(10, width - size - 10));
+            const y = this.clamp(baseY + jitterY, 38, Math.max(38, height - size - 10));
+            const rotation = Math.round((Math.random() - 0.5) * 18);
+            this.trayPositions.set(piece.id, { x, y, rotation, size });
+        });
+    }
+
+    applyTidyLayout(pieces) {
+        const { width, size } = this.getTrayMetrics(pieces.length);
+        const gap = 12;
+        const columns = Math.max(2, Math.floor((width - 24) / (size + gap)));
+        const rows = Math.max(1, Math.ceil(Math.max(pieces.length, 1) / columns));
+        const height = Math.max(280, rows * (size + gap) + 44);
+        this.tray.style.minHeight = `${height}px`;
+
+        pieces.forEach((piece, index) => {
+            const col = index % columns;
+            const row = Math.floor(index / columns);
+            const x = 12 + col * (size + gap);
+            const y = 42 + row * (size + gap);
+            this.trayPositions.set(piece.id, { x, y, rotation: 0, size });
+        });
+    }
+
+    updateTrayActionState() {
+        const remixBtn = document.getElementById('remix-btn');
+        const tidyBtn = document.getElementById('tidy-btn');
+        remixBtn?.classList.toggle('is-active', this.trayMode === 'mix');
+        tidyBtn?.classList.toggle('is-active', this.trayMode === 'tidy');
+        if (tidyBtn) {
+            tidyBtn.textContent = this.trayMode === 'tidy' ? '🌪️ Éparpiller' : '🧩 Aligner';
+        }
+    }
+
+    setTrayMode(mode = 'mix', forceRemix = false) {
+        this.trayMode = mode;
+        if (forceRemix || mode === 'mix') {
+            this.trayPositions.clear();
+        }
+        this.renderTray(forceRemix);
+        this.showToast(
+            mode === 'mix'
+                ? 'Les pièces sont maintenant éparpillées dans la zone de mélange.'
+                : 'Les pièces ont été alignées pour vous aider à progresser.',
+            'info'
+        );
+    }
+
+    clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    buildPieceElement(piece, draggable = true) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pq-piece' + (draggable ? ' is-in-tray' : '') + (this.selectedPieceId === piece.id ? ' is-selected' : '');
+        wrapper.dataset.pieceId = String(piece.id);
+        wrapper.draggable = draggable && !this.gameCompleted;
+        if (draggable) {
+            wrapper.setAttribute('title', 'Cliquez ou glissez cette pièce');
+        }
+
+        if (draggable && !piece.locked) {
+            wrapper.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.selectPiece(piece.id);
+            });
+
+            wrapper.addEventListener('dragstart', (e) => {
+                this.selectPiece(piece.id, false);
+                this.draggedPieceId = piece.id;
+                e.dataTransfer.setData('text/plain', String(piece.id));
+                e.dataTransfer.effectAllowed = 'move';
+                wrapper.style.opacity = '0.5';
+            });
+
+            wrapper.addEventListener('dragend', () => {
+                this.draggedPieceId = null;
+                wrapper.style.opacity = '1';
+                this.clearSlotStates();
+                this.updateSelectedState();
+            });
+        }
+
+        const view = 100;
+        const extra = 22;
+        const total = view + extra * 2;
+        const tab = 18;
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', `${-extra} ${-extra} ${total} ${total}`);
+        svg.setAttribute('class', 'pq-piece-svg');
+        svg.setAttribute('preserveAspectRatio', 'none');
+
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        const clipId = `pq-clip-${piece.id}-${piece.placed ? 'board' : 'tray'}`;
+        clipPath.setAttribute('id', clipId);
+
+        const clipShape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        clipShape.setAttribute('d', this.getPiecePath(piece.edges, view, tab));
+        clipPath.appendChild(clipShape);
+        defs.appendChild(clipPath);
+        svg.appendChild(defs);
+
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bg.setAttribute('x', String(-extra));
+        bg.setAttribute('y', String(-extra));
+        bg.setAttribute('width', String(total));
+        bg.setAttribute('height', String(total));
+        bg.setAttribute('rx', '10');
+        bg.setAttribute('fill', 'rgba(237,244,255,0.65)');
+        svg.appendChild(bg);
+
+        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        image.setAttribute('href', this.image.src);
+        image.setAttribute('x', String(-(piece.col * view)));
+        image.setAttribute('y', String(-(piece.row * view)));
+        image.setAttribute('width', String(this.cols * view));
+        image.setAttribute('height', String(this.rows * view));
+        image.setAttribute('clip-path', `url(#${clipId})`);
+        image.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+        svg.appendChild(image);
+
+        const whiteStroke = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        whiteStroke.setAttribute('d', this.getPiecePath(piece.edges, view, tab));
+        whiteStroke.setAttribute('fill', 'none');
+        whiteStroke.setAttribute('stroke', 'rgba(255,255,255,0.92)');
+        whiteStroke.setAttribute('stroke-width', '5');
+        whiteStroke.setAttribute('stroke-linejoin', 'round');
+        svg.appendChild(whiteStroke);
+
+        const darkStroke = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        darkStroke.setAttribute('d', this.getPiecePath(piece.edges, view, tab));
+        darkStroke.setAttribute('fill', 'none');
+        darkStroke.setAttribute('stroke', piece.locked ? 'rgba(18,185,129,0.7)' : 'rgba(28, 63, 126, 0.24)');
+        darkStroke.setAttribute('stroke-width', piece.locked ? '3' : '2');
+        darkStroke.setAttribute('stroke-linejoin', 'round');
+        svg.appendChild(darkStroke);
+
+        wrapper.appendChild(svg);
+
+        if (!draggable) {
+            const badge = document.createElement('span');
+            badge.className = 'pq-piece-badge';
+            badge.textContent = String(piece.id + 1);
+            wrapper.appendChild(badge);
+        }
+
+        return wrapper;
+    }
+
+    getPiecePath(edges, size = 100, tab = 18) {
+        const s = size;
+        const mid = s / 2;
+        const third = s * 0.28;
+        const twoThird = s * 0.72;
+        let d = `M 0 0 `;
+
+        d += this.edgePath('top', edges.t, s, mid, third, twoThird, tab);
+        d += this.edgePath('right', edges.r, s, mid, third, twoThird, tab);
+        d += this.edgePath('bottom', edges.b, s, mid, third, twoThird, tab);
+        d += this.edgePath('left', edges.l, s, mid, third, twoThird, tab);
+
+        return `${d} Z`;
+    }
+
+    edgePath(side, type, s, mid, third, twoThird, tab) {
+        if (side === 'top') {
+            if (type === 0) return `L ${s} 0 `;
+            const out = type === 1 ? -tab : tab;
+            return `L ${third} 0 C ${third + 6} 0 ${mid - 16} ${out} ${mid} ${out} C ${mid + 16} ${out} ${twoThird - 6} 0 ${twoThird} 0 L ${s} 0 `;
+        }
+        if (side === 'right') {
+            if (type === 0) return `L ${s} ${s} `;
+            const out = type === 1 ? tab : -tab;
+            return `L ${s} ${third} C ${s} ${third + 6} ${s + out} ${mid - 16} ${s + out} ${mid} C ${s + out} ${mid + 16} ${s} ${twoThird - 6} ${s} ${twoThird} L ${s} ${s} `;
+        }
+        if (side === 'bottom') {
+            if (type === 0) return `L 0 ${s} `;
+            const out = type === 1 ? tab : -tab;
+            return `L ${twoThird} ${s} C ${twoThird - 6} ${s} ${mid + 16} ${s + out} ${mid} ${s + out} C ${mid - 16} ${s + out} ${third + 6} ${s} ${third} ${s} L 0 ${s} `;
+        }
+        if (side === 'left') {
+            if (type === 0) return `L 0 0 `;
+            const out = type === 1 ? -tab : tab;
+            return `L 0 ${twoThird} C 0 ${twoThird - 6} ${out} ${mid + 16} ${out} ${mid} C ${out} ${mid - 16} 0 ${third + 6} 0 ${third} L 0 0 `;
+        }
+        return '';
+    }
+
+    selectPiece(pieceId, notify = true) {
+        if (this.gameCompleted) return;
+        const piece = this.pieces.find(item => item.id === pieceId);
+        if (!piece || piece.placed) return;
+
+        this.selectedPieceId = this.selectedPieceId === pieceId ? null : pieceId;
+        this.updateSelectedState();
+
+        if (!notify) return;
+        if (this.selectedPieceId === null) {
+            this.showToast('Sélection annulée.', 'info');
+            return;
+        }
+
+        this.showToast(`Pièce ${pieceId + 1} sélectionnée. Choisissez une case du plateau.`, 'info');
+    }
+
+    clearSelection() {
+        this.selectedPieceId = null;
+        this.updateSelectedState();
+    }
+
+    updateSelectedState() {
+        this.slotElements.forEach((slot) => {
+            const slotId = Number(slot.dataset.slotId);
+            const slotPiece = this.pieces[slotId];
+            const isTargetable = this.selectedPieceId !== null && !this.gameCompleted && slotPiece && !slotPiece.placed;
+            slot.classList.toggle('is-targetable', isTargetable);
+        });
+
+        this.tray.querySelectorAll('.pq-piece-cloud').forEach((cloud) => {
+            const pieceId = Number(cloud.dataset.pieceId ?? -1);
+            cloud.classList.toggle('is-selected', pieceId === this.selectedPieceId);
+        });
+
+        this.tray.querySelectorAll('.pq-piece').forEach((pieceNode) => {
+            const pieceId = Number(pieceNode.dataset.pieceId ?? -1);
+            pieceNode.classList.toggle('is-selected', pieceId === this.selectedPieceId);
+        });
+    }
+
+    handleDrop(pieceId, slotId) {
+        const piece = this.pieces.find(item => item.id === pieceId);
+        const slot = this.slotElements[slotId];
+        if (!piece || !slot || piece.placed || this.gameCompleted) return;
+
+        this.moves += 1;
+
+        if (piece.id === slotId) {
+            piece.placed = true;
+            piece.inTray = false;
+            this.trayPositions.delete(piece.id);
+            this.placedCount += 1;
+            if (this.selectedPieceId === piece.id) {
+                this.selectedPieceId = null;
+            }
+            const gain = Math.max(4, Math.floor(this.baseScore / this.totalPieces));
+            this.score += gain;
+            this.playSnap();
+            this.renderTray();
+            this.renderBoard();
+            this.triggerSnapAnimation(slot);
+            this.updateSelectedState();
+            this.updateUI();
+
+            if (!this.answerUnlocked && this.placedCount >= Math.ceil(this.totalPieces * 0.35)) {
+                this.unlockAnswer();
+            }
+
+            if (this.placedCount >= this.totalPieces) {
+                this.completeGame();
+            } else {
+                this.showToast(`Bonne pièce ! +${gain} pts`, 'success');
+            }
+        } else {
+            slot.classList.add('is-incorrect');
+            window.setTimeout(() => slot.classList.remove('is-incorrect'), 420);
+            this.score = Math.max(0, this.score - 1);
+            this.updateSelectedState();
+            this.updateUI();
+            this.showToast('Cette pièce ne correspond pas à cette case.', 'error');
+        }
+    }
+
+    shuffleTrayPieces() {
+        if (this.gameCompleted) return;
+        this.trayMode = 'mix';
+        this.trayPositions.clear();
+        this.renderTray(true);
+        this.showToast('Les pièces ont été remélangées dans la zone libre.', 'info');
+    }
+
+    unlockAnswer() {
+        this.answerUnlocked = true;
+        this.answerInput.disabled = false;
+        this.answerBtn.disabled = false;
+        this.resultMsg.className = 'pq-message show info';
+        this.resultMsg.textContent = 'La réponse est débloquée. Vous pouvez maintenant deviner le pays.';
+        this.showToast('Réponse débloquée.', 'success');
+    }
+
+    submitAnswer() {
+        if (!this.answerUnlocked || this.gameCompleted) return;
+
+        const value = this.normalize(this.answerInput.value);
+        const expected = this.normalize(this.destination.country);
+        const altExpected = this.normalize(this.destination.capital);
+
+        if (!value) {
+            this.resultMsg.className = 'pq-message show error';
+            this.resultMsg.textContent = 'Veuillez saisir une réponse.';
+            return;
+        }
+
+        if (value === expected || value.includes(expected) || value === altExpected) {
+            const gain = Math.max(12, Math.floor(this.timeLeft * 0.25));
+            this.score += gain;
+            this.resultMsg.className = 'pq-message show success';
+            this.resultMsg.textContent = `Bonne réponse ! +${gain} pts.`;
+            this.updateUI();
+            this.completeGame(true);
+        } else {
+            this.resultMsg.className = 'pq-message show error';
+            this.resultMsg.textContent = 'Ce n\'est pas la bonne réponse. Réessayez.';
+            this.answerInput.value = '';
+        }
+    }
+
+    normalize(value) {
+        return (value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9 ]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    updateUI() {
+        const progress = Math.round((this.placedCount / this.totalPieces) * 100);
+        document.getElementById('timer').textContent = this.formatTime(this.timeLeft);
+        document.getElementById('score').textContent = String(this.score);
+        document.getElementById('piece-count').textContent = `${this.placedCount} / ${this.totalPieces}`;
+        document.getElementById('board-progress').textContent = `${this.placedCount} / ${this.totalPieces} pièces`;
+        document.getElementById('progress-text').textContent = `${progress}%`;
+        document.getElementById('progress-fill').style.width = `${progress}%`;
+        document.getElementById('moves').textContent = String(this.moves);
+        document.getElementById('pieces-left').textContent = String(this.totalPieces - this.placedCount);
+        document.getElementById('status-text').textContent = this.gameCompleted
+            ? 'Terminé'
+            : (this.answerUnlocked ? 'Réponse ouverte' : (progress >= 60 ? 'Presque fini' : 'En cours'));
+
+        if (this.selectionHint) {
+            this.selectionHint.textContent = this.selectedPieceId !== null
+                ? `Pièce ${this.selectedPieceId + 1} sélectionnée : cliquez maintenant sur sa case correcte.`
+                : 'Astuce : glissez une pièce avec la souris, ou touchez une pièce puis une case sur mobile.';
+        }
+
+        this.timerBox.classList.toggle('is-warning', this.timeLeft <= 60);
+        this.resultMsg.classList.toggle('show', this.answerUnlocked || this.resultMsg.classList.contains('success') || this.resultMsg.classList.contains('error'));
+    }
+
+    startTimer() {
+        if (this.timerInterval) window.clearInterval(this.timerInterval);
+        this.updateUI();
+
+        this.timerInterval = window.setInterval(() => {
+            if (this.gameCompleted) {
+                window.clearInterval(this.timerInterval);
+                return;
+            }
+
+            this.timeLeft -= 1;
+            if (this.timeLeft <= 0) {
+                this.timeLeft = 0;
+                this.updateUI();
+                window.clearInterval(this.timerInterval);
+                this.showToast('Temps écoulé. La partie recommence.', 'error');
+                window.setTimeout(() => this.restart(), 700);
+                return;
+            }
+
+            this.updateUI();
+        }, 1000);
+    }
+
+    formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    openPreview() {
+        const overlay = document.getElementById('preview-overlay');
+        const timer = document.getElementById('preview-timer');
+        overlay.classList.add('show');
+
+        let count = 3;
+        timer.textContent = `${count}s`;
+        if (this.previewInterval) window.clearInterval(this.previewInterval);
+
+        this.previewInterval = window.setInterval(() => {
+            count -= 1;
+            if (count <= 0) {
+                this.closePreview();
+            } else {
+                timer.textContent = `${count}s`;
+            }
+        }, 1000);
+    }
+
+    closePreview() {
+        if (this.previewInterval) {
+            window.clearInterval(this.previewInterval);
+            this.previewInterval = null;
+        }
+        document.getElementById('preview-overlay').classList.remove('show');
+    }
+
+    clearSlotStates() {
+        this.slotElements.forEach(slot => slot.classList.remove('is-active'));
+    }
+
+    completeGame(fromAnswer = false) {
+        if (this.gameCompleted) return;
+        this.gameCompleted = true;
+        if (this.timerInterval) window.clearInterval(this.timerInterval);
+
+        const bonusTime = Math.floor(this.timeLeft * 0.4);
+        const movePenalty = Math.max(0, Math.floor(this.moves / 10) * 3);
+        if (!fromAnswer) {
+            this.score += Math.max(0, bonusTime - movePenalty);
+        }
+
+        this.updateUI();
+        document.getElementById('final-score').textContent = `+${this.score} pts`;
+        document.getElementById('completion-modal').classList.add('show');
+        this.playComplete();
+        this.triggerCompleteAnimation();
+        this.launchConfetti();
+    }
+
+    triggerCompleteAnimation() {
+        this.slotElements.forEach((slot, index) => {
+            const pieceEl = slot?.querySelector('.pq-piece');
+            if (pieceEl) {
+                setTimeout(() => {
+                    pieceEl.classList.add('is-complete');
+                    setTimeout(() => pieceEl.classList.remove('is-complete'), 650);
+                }, index * 18);
+            }
+        });
+    }
+
+    restart() {
+        if (this.timerInterval) window.clearInterval(this.timerInterval);
+        this.closePreview();
+        document.getElementById('completion-modal').classList.remove('show');
+
+        this.draggedPieceId = null;
+        this.selectedPieceId = null;
+        this.placedCount = 0;
+        this.moves = 0;
+        this.score = 0;
+        this.timeLeft = this.timeLimit;
+        this.gameCompleted = false;
+        this.answerUnlocked = false;
+        this.answerInput.disabled = true;
+        this.answerBtn.disabled = true;
+        this.answerInput.value = '';
+        this.resultMsg.className = 'pq-message info';
+        this.resultMsg.textContent = 'Continue encore un peu pour débloquer la réponse.';
+
+        this.createBoard();
+        this.createPieces();
+        this.renderTray();
+        this.renderBoard();
+        this.updateSelectedState();
+        this.updateUI();
+        this.startTimer();
+        this.showToast('Nouvelle partie lancée.', 'info');
+    }
+
+    showMessage(text, type = 'info') {
+        this.resultMsg.className = `pq-message show ${type}`;
+        this.resultMsg.textContent = text;
+    }
+
+    showToast(text, type = 'info') {
+        if (this.toastTimeout) window.clearTimeout(this.toastTimeout);
+        this.toast.className = `pq-toast show ${type}`;
+        this.toast.textContent = text;
+        this.toastTimeout = window.setTimeout(() => {
+            this.toast.className = 'pq-toast';
+        }, 1800);
+    }
+
+    playSnap() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(620, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(420, ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.12);
+        } catch (e) {}
+    }
+
+    triggerSnapAnimation(slotElement) {
+        const pieceEl = slotElement?.querySelector('.pq-piece');
+        if (pieceEl) {
+            pieceEl.classList.remove('is-snapped');
+            void pieceEl.offsetWidth;
+            pieceEl.classList.add('is-snapped');
+            setTimeout(() => pieceEl.classList.remove('is-snapped'), 350);
+        }
+    }
+
+    playComplete() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99];
+            notes.forEach((note, index) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                const start = ctx.currentTime + index * 0.12;
+                osc.frequency.setValueAtTime(note, start);
+                gain.gain.setValueAtTime(0.001, start);
+                gain.gain.linearRampToValueAtTime(0.08, start + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
+                osc.start(start);
+                osc.stop(start + 0.3);
+            });
+        } catch (e) {}
+    }
+
+    launchConfetti() {
+        const colors = ['#1d4ed8', '#38bdf8', '#f59e0b', '#10b981', '#ef4444'];
+        for (let i = 0; i < 42; i++) {
+            const node = document.createElement('div');
+            node.style.position = 'fixed';
+            node.style.left = `${Math.random() * 100}vw`;
+            node.style.top = '-16px';
+            node.style.width = `${8 + Math.random() * 7}px`;
+            node.style.height = `${8 + Math.random() * 10}px`;
+            node.style.background = colors[i % colors.length];
+            node.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px';
+            node.style.opacity = '0.95';
+            node.style.pointerEvents = 'none';
+            node.style.zIndex = '100';
+            node.animate([
+                { transform: 'translate3d(0,0,0) rotate(0deg)', opacity: 1 },
+                { transform: `translate3d(${(Math.random() - 0.5) * 120}px, ${window.innerHeight + 40}px, 0) rotate(${520 + Math.random() * 240}deg)`, opacity: 0 }
+            ], {
+                duration: 2200 + Math.random() * 900,
+                easing: 'cubic-bezier(.2,.8,.3,1)'
+            });
+            document.body.appendChild(node);
+            window.setTimeout(() => node.remove(), 3400);
+        }
+    }
+}
+
+function copyPromoCode() {
+    const code = document.getElementById('promo-code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.pq-promo-copy');
+        btn.textContent = '✓ Copié!';
+        setTimeout(() => btn.textContent = 'Copier', 2000);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const game = new PassportQuestGame(GAME_CONFIG);
+    window.passportQuestGame = game;
+    await game.init();
+});
+</script>
+{% endblock %}

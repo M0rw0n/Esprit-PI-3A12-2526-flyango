@@ -1,0 +1,118 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Activités — Admin{% endblock %}
+{% block breadcrumb %}Activités{% endblock %}
+{% block admin_body %}
+{% set q = app.request.query.get('q', '') %}
+{% set lieu = app.request.query.get('lieu', '') %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+    <div><h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Activités</h2>
+    <p style="color:var(--muted);font-size:.85rem">{{ activities.totalItemCount }} activités</p></div>
+    <a href="{{ path('admin_activity_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Nouvelle activité</a>
+</div>
+
+<div class="admin-toolbar">
+    <form method="GET" action="{{ path('admin_activities') }}" id="filterForm">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher une activité..." data-auto-submit>
+            </div>
+            <div class="admin-toolbar__select">
+                <select name="lieu" data-auto-submit>
+                    <option value="">Tous lieux</option>
+                    {% for l in ['Tunis','Sousse','Sfax','Djerba','Hammamet','Tozeur','Kairouan','Mahdia','Tabarka'] %}
+                    <option value="{{ l }}" {{ lieu == l ? 'selected' : '' }}>{{ l }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <select name="tri" class="admin-toolbar__sort" data-auto-submit>
+                <option value="recent" {{ tri|default('recent') == 'recent' ? 'selected' : '' }}>Plus récentes</option>
+                <option value="oldest" {{ tri|default('recent') == 'oldest' ? 'selected' : '' }}>Plus anciennes</option>
+                <option value="price_asc" {{ tri|default('recent') == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                <option value="price_desc" {{ tri|default('recent') == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+            </select>
+            {% if q or lieu %}
+            <a href="{{ path('admin_activities') }}" class="btn btn-outline btn-sm"><i class="fa fa-times"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="admin-acts">
+    {% for a in activities %}
+    <div class="adm-act">
+        <div class="adm-act__img">
+            {% if a.image %}<img src="{{ asset(a.image) }}" alt="{{ a.title }}" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=300&q=70'">
+            {% else %}<div style="height:130px;background:var(--bg2);display:flex;align-items:center;justify-content:center"><i class="fa fa-hiking" style="font-size:2rem;color:var(--border)"></i></div>{% endif %}
+        </div>
+        <div class="adm-act__body">
+            <div class="adm-act__title">{{ a.title }}</div>
+            <div class="adm-act__meta">
+                {% if a.lieu %}<span><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ a.lieu }}</span>{% endif %}
+                {% if a.duration %}<span><i class="fa fa-clock"></i> {{ a.duration }}</span>{% endif %}
+                <span><i class="fa fa-users"></i> {{ a.capacity }} places</span>
+            </div>
+            <div class="adm-act__foot">
+                <div class="price price--sm">
+                    <span class="price__val">{{ a.price|number_format(3, ',', ' ') }}</span>
+                    <span class="price__cur">TND</span>
+                    <span class="price__per">/pers.</span>
+                </div>
+                <div class="adm-act__actions">
+                    <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-outline btn-sm" target="_blank"><i class="fa fa-eye"></i></a>
+                    <a href="{{ path('admin_activity_edit', {id: a.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-edit"></i></a>
+                    <form action="{{ path('admin_activity_delete', {id: a.id}) }}" method="POST" onsubmit="return confirm('Supprimer ?')">
+                        <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1"><i class="fa fa-hiking"></i><h3>Aucune activité</h3>
+        <a href="{{ path('admin_activity_new') }}" class="btn btn-navy">Ajouter</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if activities.totalItemCount > activities.itemNumberPerPage %}
+<div class="admin-pagination">
+    <div class="admin-pagination__info">
+        {{ (activities.currentPageNumber - 1) * activities.itemNumberPerPage + 1 }} - {{ min(activities.currentPageNumber * activities.itemNumberPerPage, activities.totalItemCount) }} sur {{ activities.totalItemCount }}
+    </div>
+    <div class="admin-pagination__pages">
+        {% if activities.currentPageNumber > 1 %}
+        <a href="{{ path('admin_activities', {page: activities.currentPageNumber - 1, q: q, lieu: lieu, tri: tri|default('recent')}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page in activities.paginationData.pagesInRange %}
+            {% if page == activities.currentPageNumber %}
+                <span class="admin-pagination__current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path('admin_activities', {page: page, q: q, lieu: lieu, tri: tri|default('recent')}) }}" class="admin-pagination__btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if activities.currentPageNumber < activities.pageCount %}
+        <a href="{{ path('admin_activities', {page: activities.currentPageNumber + 1, q: q, lieu: lieu, tri: tri|default('recent')}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+            let timeout;
+            el.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => filterForm.submit(), 600);
+            });
+            el.addEventListener('change', () => filterForm.submit());
+        });
+    }
+});
+</script>
+{% endblock %}

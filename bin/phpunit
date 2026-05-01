@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+if (!class_exists('PHPUnit\TextUI\Command')) {
+    echo "PHPUnit n'est pas installé. Lancez : composer require --dev phpunit/phpunit\n";
+    exit(1);
+}
+
+$command = new PHPUnit\TextUI\Command();
+exit($command->run($_SERVER['argv']));

@@ -1,0 +1,11 @@
+fos_rest:
+    body_listener:
+        enabled: true
+    format_listener:
+        rules:
+            - { path: ^/api, priorities: [json, xml], fallback_format: json }
+            - { path: ^/, priorities: [html, json, xml], fallback_format: html }
+    view:
+        formats:
+            json: true
+            xml: true

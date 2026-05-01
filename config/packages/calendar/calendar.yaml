@@ -1,0 +1,24 @@
+# FlyAndGoCalendar Bundle Configuration
+flyandgo_calendar:
+    version: '6.1.10'
+    cdn_base_url: 'https://cdn.jsdelivr.net/npm/fullcalendar@%version%'
+    locales:
+        - fr
+        - en
+        - ar
+    theme: 'standard' # standard, material, bootstrap5
+    default_view: 'dayGridMonth'
+    calendar_options:
+        header_toolbar:
+            left: 'prev,next today'
+            center: 'title'
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        button_text:
+            today: "Aujourd'hui"
+            month: 'Mois'
+            week: 'Semaine'
+            day: 'Jour'
+            list: 'Liste'
+        first_day: 1
+        weekends: true
+        locale: 'fr'

@@ -1,0 +1,17 @@
+knp_gaufrette:
+    adapters:
+        local_activity:
+            local:
+                directory: '%kernel.project_dir%/public/uploads/activities'
+                create: true
+        local_circuit:
+            local:
+                directory: '%kernel.project_dir%/public/uploads/circuits'
+                create: true
+    filesystems:
+        activity_fs:
+            adapter: local_activity
+            alias: ActivityFileSystem
+        circuit_fs:
+            adapter: local_circuit
+            alias: CircuitFileSystem

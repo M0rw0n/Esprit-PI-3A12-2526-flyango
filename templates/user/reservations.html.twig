@@ -1,0 +1,169 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Mes réservations — Fly&Go{% endblock %}
+{% block body %}
+<div style="max-width:1280px;margin:0 auto;padding:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900">Mes Réservations</h1>
+            <p style="color:var(--muted)">Hébergements, activités, circuits et transports rattachés à votre compte.</p>
+        </div>
+        <div style="display:flex;gap:.75rem">
+            <a href="{{ path('user_profile') }}" class="btn btn-outline"><i class="fa fa-user"></i> Mon profil</a>
+            <a href="{{ path('user_dashboard') }}" class="btn btn-outline">Mon espace</a>
+        </div>
+    </div>
+
+    <div class="acard-wrap" style="margin-bottom:1.5rem">
+        <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-hotel"></i> Hébergements</span></div>
+        <div class="bookings-list">
+            {% for r in hebergements %}
+            <div class="booking-card">
+                <div class="booking-card__av" style="background:linear-gradient(135deg,var(--navy),var(--cyan))">H</div>
+                <div class="booking-card__info">
+                    <div class="booking-card__name">{{ r.hebergement.nom }}</div>
+                    <div class="booking-card__meta">
+                        <span><i class="fa fa-calendar"></i> {{ r.dateDebut|date('d/m/Y') }} → {{ r.dateFin|date('d/m/Y') }}</span>
+                        <span><i class="fa fa-users"></i> {{ r.nombrePersonnes }} pers.</span>
+                        <span class="status status--{{ r.statut == 'CONFIRMEE' ? 'confirmed' : 'pending' }}">{{ r.statut }}</span>
+                    </div>
+                </div>
+                <div class="booking-card__price"><strong>{{ r.montantTotal|number_format(3, ',', ' ') }}</strong><span>TND</span></div>
+                <div style="display:flex;gap:.5rem">
+                    {% if r.qrCode %}
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('qrModal{{ r.id }}').style.display='flex'" class="btn btn-navy btn-sm" title="QR Code"><i class="fa fa-qrcode"></i></a>
+                    <div id="qrModal{{ r.id }}" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center" onclick="this.style.display='none'">
+                        <div style="background:white;padding:25px;border-radius:15px;text-align:center;max-width:350px" onclick="event.stopPropagation()">
+                            <h3 style="margin:0 0 15px 0;color:#1b436b">Réservation #{{ r.id }}</h3>
+                            <img src="{{ r.qrCode }}" style="width:250px;height:250px;border:3px solid #1b436b;border-radius:10px">
+                            <p style="margin:15px 0 5px;color:#666;font-size:14px"><strong>{{ r.hebergement.nom }}</strong></p>
+                            <p style="margin:0;color:#888;font-size:12px">{{ r.dateDebut|date('d/m/Y') }} - {{ r.dateFin|date('d/m/Y') }}</p>
+                            <p style="margin:10px 0 0;color:#1b436b;font-size:18px;font-weight:bold">{{ r.montantTotal|number_format(3) }} TND</p>
+                            {% if r.facturePdf %}
+                            <a href="{{ path('reservation_invoice', {id: r.id}) }}" class="btn btn-cyan" style="margin-top:15px;display:block" target="_blank"><i class="fa fa-file-pdf-o"></i> Voir Facture</a>
+                            {% endif %}
+                            <button onclick="document.getElementById('qrModal{{ r.id }}').style.display='none'" class="btn btn-navy" style="margin-top:20px;width:100%">Fermer</button>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if r.facturePdf %}
+                    <a href="{{ path('reservation_invoice', {id: r.id}) }}" class="btn btn-cyan btn-sm" title="Télécharger PDF"><i class="fa fa-file-pdf-o"></i></a>
+                    {% endif %}
+                </div>
+                <form action="{{ path('user_hebergement_cancel', {id: r.id}) }}" method="POST">
+                    <button class="btn btn-red btn-sm" onclick="return confirm('Annuler cette réservation ?')"><i class="fa fa-times"></i></button>
+                </form>
+            </div>
+            {% else %}
+            <div class="empty" style="padding:2rem"><i class="fa fa-hotel"></i><p>Aucune réservation hébergement.</p></div>
+            {% endfor %}
+        </div>
+        {% if hebergements.totalItemCount > hebergements.itemNumberPerPage %}
+        <div style="padding:1rem;text-align:center">
+            {% for page in 1..hebergements.pageCount %}
+                <a href="{{ path('user_reservations', {page: page}) }}" class="btn {{ page == hebergements.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="acard-wrap" style="margin-bottom:1.5rem">
+        <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-hiking"></i> Activités</span></div>
+        <div class="bookings-list">
+            {% for r in activities %}
+            <div class="booking-card">
+                <div class="booking-card__av" style="background:linear-gradient(135deg,#10b981,#059669)">A</div>
+                <div class="booking-card__info">
+                    <div class="booking-card__name">{{ r.activity.title }}</div>
+                    <div class="booking-card__meta">
+                        <span><i class="fa fa-calendar"></i> {{ r.bookingDate|date('d/m/Y') }}</span>
+                        <span><i class="fa fa-users"></i> {{ r.persons }} pers.</span>
+                        <span class="status status--{{ r.status == 'PAID' ? 'confirmed' : 'pending' }}">{{ r.status }}</span>
+                    </div>
+                </div>
+                <div class="booking-card__price"><strong>{{ r.totalPrice|number_format(3, ',', ' ') }}</strong><span>TND</span></div>
+                <form action="{{ path('user_activity_cancel', {id: r.id}) }}" method="POST">
+                    <button class="btn btn-red btn-sm" onclick="return confirm('Annuler cette réservation ?')"><i class="fa fa-times"></i></button>
+                </form>
+            </div>
+            {% else %}
+            <div class="empty" style="padding:2rem"><i class="fa fa-hiking"></i><p>Aucune réservation activité.</p></div>
+            {% endfor %}
+        </div>
+        {% if activities.totalItemCount > activities.itemNumberPerPage %}
+        <div style="padding:1rem;text-align:center">
+            {% for page in 1..activities.pageCount %}
+                <a href="{{ path('user_reservations', {page: page}) }}" class="btn {{ page == activities.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="acard-wrap" style="margin-bottom:1.5rem">
+        <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-route"></i> Circuits</span></div>
+        <div class="bookings-list">
+            {% for r in circuits %}
+            <div class="booking-card">
+                <div class="booking-card__av" style="background:linear-gradient(135deg,#f59e0b,#d97706)">C</div>
+                <div class="booking-card__info">
+                    <div class="booking-card__name">{{ r.circuit.titre }}</div>
+                    <div class="booking-card__meta">
+                        <span><i class="fa fa-calendar"></i> {{ r.dateReservation|date('d/m/Y') }}</span>
+                        <span><i class="fa fa-users"></i> {{ r.nbPersonnes }} pers.</span>
+                        <span class="status status--{{ r.statut == 'CONFIRMEE' ? 'confirmed' : 'pending' }}">{{ r.statut }}</span>
+                    </div>
+                </div>
+                <div class="booking-card__price"><strong>{{ r.montantTotal|number_format(3, ',', ' ') }}</strong><span>TND</span></div>
+                <form action="{{ path('user_circuit_cancel', {id: r.id}) }}" method="POST">
+                    <button class="btn btn-red btn-sm" onclick="return confirm('Annuler cette réservation ?')"><i class="fa fa-times"></i></button>
+                </form>
+            </div>
+            {% else %}
+            <div class="empty" style="padding:2rem"><i class="fa fa-route"></i><p>Aucune réservation circuit.</p></div>
+            {% endfor %}
+        </div>
+        {% if circuits.totalItemCount > circuits.itemNumberPerPage %}
+        <div style="padding:1rem;text-align:center">
+            {% for page in 1..circuits.pageCount %}
+                <a href="{{ path('user_reservations', {page: page}) }}" class="btn {{ page == circuits.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="acard-wrap">
+        <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-plane"></i> Transports</span></div>
+        <div class="bookings-list">
+            {% if transports is defined %}
+            {% for r in transports %}
+            <div class="booking-card">
+                <div class="booking-card__av" style="background:linear-gradient(135deg,var(--cyan),var(--gold))">
+                    <i class="fas {{ r.transportOffer.transportIcon|default('fa-plane') }}"></i>
+                </div>
+                <div class="booking-card__info">
+                    <div class="booking-card__name">{{ r.transportOffer.companyName }} — {{ r.transportOffer.departureCity }} → {{ r.transportOffer.arrivalCity }}</div>
+                    <div class="booking-card__meta">
+                        <span><i class="fa fa-calendar"></i> {{ r.pickupDatetime ? r.pickupDatetime|date('d/m/Y H:i') : r.bookingDate|date('d/m/Y') }}</span>
+                        <span><i class="fa fa-users"></i> {{ r.passengers }} passager{% if r.passengers > 1 %}s{% endif %}</span>
+                        <span class="status status--{{ r.status == 'PAID' ? 'confirmed' : 'pending' }}">{{ r.status }}</span>
+                    </div>
+                </div>
+                <div class="booking-card__price"><strong>{{ r.totalPrice|number_format(3, ',', ' ') }}</strong><span>TND</span></div>
+                <form action="{{ path('transport_cancel_booking', {id: r.id}) }}" method="POST">
+                    <button class="btn btn-red btn-sm" onclick="return confirm('Annuler cette réservation ?')"><i class="fa fa-times"></i></button>
+                </form>
+            </div>
+            {% else %}
+            <div class="empty" style="padding:2rem"><i class="fa fa-plane"></i><p>Aucune réservation transport.</p></div>
+            {% endfor %}
+            {% if transports.totalItemCount > transports.itemNumberPerPage %}
+            <div style="padding:1rem;text-align:center">
+                {% for page in 1..transports.pageCount %}
+                    <a href="{{ path('user_reservations', {page: page}) }}" class="btn {{ page == transports.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

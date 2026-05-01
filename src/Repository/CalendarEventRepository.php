@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Repository;
+
+use App\Entity\CalendarEvent;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+/**
+ * @extends ServiceEntityRepository<CalendarEvent>
+ */
+class CalendarEventRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, CalendarEvent::class);
+    }
+
+    public function findAll(): array
+    {
+        return $this->findBy([], ['startDate' => 'ASC']);
+    }
+
+    public function findById(int $id): ?CalendarEvent
+    {
+        return $this->find($id);
+    }
+}

@@ -1,0 +1,94 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Avis hébergements — Admin{% endblock %}
+{% block breadcrumb %}Avis hébergements{% endblock %}
+{% block admin_body %}
+{% set q = app.request.query.get('q', '') %}
+<div style="margin-bottom:1.5rem">
+    <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Avis hébergements</h2>
+    <p style="color:var(--muted);font-size:.85rem">{{ avis.totalItemCount }} avis</p>
+</div>
+
+<div class="admin-toolbar">
+    <form method="GET" action="{{ path('admin_avis') }}" id="filterForm">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search" style="flex:1">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="Auteur, hébergement..." data-auto-submit>
+            </div>
+            {% if q %}
+            <a href="{{ path('admin_avis') }}" class="btn btn-outline btn-sm"><i class="fa fa-times"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="admin-acts" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    {% for a in avis %}
+    <div class="adm-act">
+        <div class="adm-act__body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+                <div style="display:flex;gap:2px">
+                    {% for i in 1..5 %}
+                    <i class="fa fa-star" style="color:{{ i <= a.note ? '#F59E0B' : 'var(--border)' }};font-size:.9rem"></i>
+                    {% endfor %}
+                </div>
+                <span style="font-size:.72rem;color:var(--muted)">{{ a.createdAt|date('d/m/Y') }}</span>
+            </div>
+            <div style="font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:.85rem">{{ a.commentaire }}</div>
+            <div class="adm-act__foot">
+                <div>
+                    <div style="font-size:.8rem;font-weight:700">{{ a.auteur }}</div>
+                    <div style="font-size:.73rem;color:var(--cyan-d)"><i class="fa fa-hotel fa-xs"></i> {{ a.hebergement.nom }}</div>
+                </div>
+                <form action="{{ path('admin_avis_delete', {id: a.id}) }}" method="POST" onsubmit="return confirm('Supprimer cet avis ?')">
+                    <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1"><i class="fa fa-star"></i><h3>Aucun avis</h3></div>
+    {% endfor %}
+</div>
+
+{% if avis.totalItemCount > avis.itemNumberPerPage %}
+<div class="admin-pagination">
+    <div class="admin-pagination__info">
+        {{ (avis.currentPageNumber - 1) * avis.itemNumberPerPage + 1 }} - {{ min(avis.currentPageNumber * avis.itemNumberPerPage, avis.totalItemCount) }} sur {{ avis.totalItemCount }}
+    </div>
+    <div class="admin-pagination__pages">
+        {% if avis.currentPageNumber > 1 %}
+        <a href="{{ path('admin_avis', {page: avis.currentPageNumber - 1, q: q}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page in avis.paginationData.pagesInRange %}
+            {% if page == avis.currentPageNumber %}
+                <span class="admin-pagination__current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path('admin_avis', {page: page, q: q}) }}" class="admin-pagination__btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if avis.currentPageNumber < avis.pageCount %}
+        <a href="{{ path('admin_avis', {page: avis.currentPageNumber + 1, q: q}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+            let timeout;
+            el.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => filterForm.submit(), 600);
+            });
+            el.addEventListener('change', () => filterForm.submit());
+        });
+    }
+});
+</script>
+{% endblock %}

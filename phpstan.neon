@@ -1,0 +1,18 @@
+parameters:
+    level: 5
+    paths:
+        - src/Service/CircuitManager.php
+        - tests/Service/CircuitManagerTest.php
+        - src/Service/UserManager.php
+        - tests/Service/UserManagerTest.php
+        - src/Service/HebergementManager.php
+        - tests/Service/HebergementManagerTest.php
+        - src/Service/ActivityManager.php
+        - tests/Service/ActivityManagerTest.php
+        - src/Service/ForumPostManager.php
+        - tests/Service/ForumPostManagerTest.php
+        - src/Controller/CircuitController.php
+        - src/Controller/UserSpaceController.php
+        - src/Controller/HebergementController.php
+        - src/Controller/ActivityController.php
+        - src/Controller/ForumController.php

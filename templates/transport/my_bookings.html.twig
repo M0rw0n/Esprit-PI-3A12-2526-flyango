@@ -1,0 +1,66 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Mes réservations transport — Fly&Go{% endblock %}
+{% block body %}
+
+<section class="page-hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Mes réservations transport</h1>
+        <p class="hero-subtitle">Gérez vos réservations de transport</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="results-header" style="margin-bottom:1.5rem">
+        <div>
+            <strong class="results-count">{{ bookings|length }} réservation{{ bookings|length > 1 ? 's' : '' }}</strong>
+        </div>
+        <a href="{{ path('transport_index') }}" class="btn btn-outline btn-sm"><i class="fa fa-plus"></i> Nouveau</a>
+    </div>
+
+    {% if bookings %}
+    <div class="cards-grid">
+        {% for b in bookings %}
+        <div class="hcard anim">
+            <div style="background:linear-gradient(135deg,var(--navy),var(--cyan));padding:20px;text-align:center">
+                <div style="width:60px;height:60px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto">
+                    <i class="fas {{ b.transportOffer.transportIcon }}" style="font-size:1.5rem;color:white"></i>
+                </div>
+            </div>
+            <div class="hcard__body">
+                <h3 class="hcard__name">{{ b.transportOffer.companyName ?: 'Transport' }}</h3>
+                <p class="hcard__loc">
+                    <i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i>
+                    {{ b.transportOffer.departureCity }} → {{ b.transportOffer.arrivalCity }}
+                </p>
+                <div class="hcard__meta">
+                    <span><i class="fa fa-calendar"></i> {{ b.pickupDatetime ? b.pickupDatetime|date('d/m/Y') : b.transportOffer.departureDatetime|date('d/m/Y') }}</span>
+                    <span><i class="fa fa-users"></i> {{ b.passengers }} pers.</span>
+                </div>
+                <span class="status status--{{ b.status == 'CONFIRMED' ? 'confirmed' : b.status == 'CANCELLED' ? 'cancelled' : 'pending' }}">
+                    {{ b.status }}
+                </span>
+                <div class="hcard__foot">
+                    <div class="price price--sm">
+                        <span class="price__val">{{ b.totalPrice|number_format(3, ',', ' ') }}</span>
+                        <span class="price__cur">TND</span>
+                    </div>
+                    {% if b.status != 'CANCELLED' and b.status != 'COMPLETED' %}
+                    <form action="{{ path('transport_cancel_booking', {id: b.id}) }}" method="POST" onsubmit="return confirm('Annuler cette réservation?')">
+                        <button type="submit" class="btn btn-outline btn-sm"><i class="fa fa-times"></i></button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fa fa-plane"></i>
+        <h3>Aucune réservation</h3>
+        <p>Vous n'avez pas encore réservé de transport</p>
+        <a href="{{ path('transport_index') }}" class="btn btn-primary">Rechercher</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

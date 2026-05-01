@@ -1,0 +1,729 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ circuit.titre|default('Circuit') }} — Fly&Go{% endblock %}
+{% block ogmeta %}
+    <meta property="og:url" content="{{ app.request.schemeAndHttpHost }}{{ path('circuit_show', {id: circuit.id|default(0)}) }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ circuit.titre|default('Circuit') }} - Fly&Go">
+    <meta property="og:description" content="{{ circuit.description|default('Découvrez ce circuit en Tunisie')|striptags|slice(0, 160) }}">
+    <meta property="og:image" content="{{ circuit.image ? asset(circuit.image) : 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600' }}">
+{% endblock %}
+{% block body %}
+<style>
+.detail-tabs { display: flex; gap: 0.25rem; background: var(--bg); padding: 0.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+.detail-tab { flex: 1; padding: 0.75rem; border: none; background: transparent; border-radius: 8px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+.detail-tab:hover { color: var(--navy); background: rgba(27,58,107,0.05); }
+.detail-tab.on { background: var(--navy); color: #fff; }
+.tab-pane { display: none; }
+.tab-pane.on { display: block; }
+.sentiment-summary { background: linear-gradient(135deg,#f8f9fa,#fff); padding: 1rem; border-radius: 12px; margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; border: 1px solid var(--border); }
+.review-item { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; transition: all 0.2s; }
+.review-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.review-item__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.review-item__author { font-weight: 700; color: var(--navy); }
+.review-item__date { color: var(--muted); font-size: 0.8rem; }
+.review-item__stars { margin-bottom: 0.5rem; }
+.review-item__text { color: var(--text); line-height: 1.7; }
+.empty { text-align: center; padding: 3rem; color: var(--muted); background: #fff; border-radius: 16px; border: 1px solid var(--border); }
+.empty i { font-size: 2.5rem; opacity: 0.2; display: block; margin-bottom: 1rem; }
+.weather-current { background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 16px; padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.fg-group { margin-bottom: 1rem; }
+.fg-label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; font-weight: 500; }
+.fg-input { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; transition: all 0.2s; }
+.fg-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,58,107,0.1); }
+</style>
+
+<div style="max-width:1380px;margin:0 auto;padding:2rem">
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
+            <a href="{{ path('home') }}" style="color:var(--muted);text-decoration:none">Accueil</a>
+            <i class="fa fa-chevron-right fa-xs"></i>
+            <a href="{{ path('circuit_index') }}" style="color:var(--muted);text-decoration:none">Circuits</a>
+            <i class="fa fa-chevron-right fa-xs"></i>
+            <span style="color:var(--text);font-weight:600">{{ circuit.titre|default('Circuit') }}</span>
+        </div>
+        <div style="display:flex;gap:.4rem">
+            <div id="fb-root"></div>
+            <script async defer crossorigin="anonymous" src="https://connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v18.0" nonce="random-nonce"></script>
+            <button onclick="shareToFacebook()" style="background:linear-gradient(135deg,var(--gold),#d4a017);color:#fff;padding:.4rem .75rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:.4rem;font-size:.8rem">
+                <i class="fa fa-share-alt"></i> Partager
+            </button>
+            <button onclick="shareToFacebookDirect()" style="background:#1877f2;color:#fff;padding:.4rem .6rem;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center" title="Partager sur Facebook">
+                <i class="fab fa-facebook"></i>
+            </button>
+            <button onclick="shareToWhatsApp()" style="background:#25d366;color:#fff;padding:.4rem .6rem;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center" title="Partager sur WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+            </button>
+            <button onclick="shareToEmail()" style="background:var(--muted);color:#fff;padding:.4rem .6rem;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center" title="Envoyer par email">
+                <i class="fa fa-envelope"></i>
+            </button>
+            <button onclick="copyLink()" style="background:var(--bg);color:var(--navy);padding:.4rem .6rem;border-radius:8px;border:1px solid var(--border);cursor:pointer;display:flex;align-items:center">
+                <i class="fa fa-link"></i>
+            </button>
+        </div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,var(--navy) 0%,#2d5a9e 100%);border-radius:24px;padding:2.5rem;color:#fff;margin-bottom:2rem;position:relative;overflow:hidden">
+        <div style="position:absolute;right:-50px;top:-50px;width:300px;height:300px;background:radial-gradient(circle, rgba(255,183,0,0.15) 0%, transparent 70%);border-radius:50%"></div>
+        <div style="position:absolute;bottom:-20px;left:-20px;width:150px;height:150px;background:radial-gradient(circle, rgba(0,180,216,0.15) 0%, transparent 70%);border-radius:50%"></div>
+        <div style="position:relative;z-index:1">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:2rem">
+                <div style="flex:1">
+                    <h1 style="font-size:2rem;font-weight:900;margin-bottom:.75rem;letter-spacing:-.02em">{{ circuit.titre|default('Circuit') }}</h1>
+                    <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;font-size:.95rem;opacity:.9">
+                        {% if circuit.depart %}<span><i class="fa fa-map-marker-alt" style="color:var(--gold)"></i> {{ circuit.depart }} → {{ circuit.destination }}</span>{% endif %}
+                        {% if circuit.duree %}<span><i class="fa fa-clock" style="color:var(--gold)"></i> {{ circuit.duree }} jour(s)</span>{% endif %}
+                        {% if circuit.placesDisponibles %}<span><i class="fa fa-users" style="color:var(--gold)"></i> {{ circuit.placesDisponibles }} places</span>{% endif %}
+                        {% if circuit.noteMoyenne|default(0) > 0 %}<span><i class="fa fa-star" style="color:var(--gold)"></i> {{ circuit.noteMoyenne }} ({{ circuit.avis|length|default(0) }} avis)</span>{% endif %}
+                    </div>
+                </div>
+                <div style="text-align:center">
+                    <div style="font-size:.8rem;opacity:.8">Prix/pers.</div>
+                    <div style="font-size:2.5rem;font-weight:900;line-height:1">{{ circuit.prix|default(0)|number_format(0, '', ' ') }}</div>
+                    <div style="font-size:1rem;opacity:.8">TND</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:2rem;align-items:start">
+        <div>
+            <div style="border-radius:20px;overflow:hidden;margin-bottom:2rem;box-shadow:0 8px 30px rgba(0,0,0,0.1)">
+                {% if circuit.image %}<img src="{{ asset(circuit.image) }}" alt="{{ circuit.titre }}" style="width:100%;height:450px;object-fit:cover" onerror="this.src='https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=900&q=85'">
+                {% else %}<img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=900&q=85" alt="{{ circuit.titre }}" style="width:100%;height:450px;object-fit:cover">{% endif %}
+            </div>
+
+            <div class="detail-tabs">
+                <button class="detail-tab on" data-tab="desc" onclick="switchTab('desc')"><i class="fa fa-info-circle"></i> Description</button>
+                <button class="detail-tab" data-tab="map" onclick="switchTab('map')"><i class="fa fa-map"></i> Carte</button>
+                {% if storytellingConfig %}
+                <button class="detail-tab" data-tab="story" onclick="switchTab('story')"><i class="fa fa-history"></i> Storytelling</button>
+                {% endif %}
+                {% if segmentRequirements|length > 0 %}
+                <button class="detail-tab" data-tab="sherpa" onclick="switchTab('sherpa')"><i class="fa fa-passport"></i> Sherpa</button>
+                {% endif %}
+                <button class="detail-tab" data-tab="weather" onclick="switchTab('weather')"><i class="fa fa-cloud-sun"></i> Météo</button>
+                <button class="detail-tab" data-tab="avis" onclick="switchTab('avis')"><i class="fa fa-star"></i> Avis ({{ circuit.avis|length|default(0) }})</button>
+            </div>
+
+            <div id="pane-desc" class="tab-pane on">
+                <div style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);border:1px solid var(--border)">
+                    <div style="background:linear-gradient(135deg,var(--navy),var(--cyan));padding:1.5rem;color:#fff">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <h3 style="margin:0;font-weight:700;font-size:1.25rem"><i class="fa fa-clipboard-list"></i> Programme du circuit</h3>
+                                <p style="margin:.25rem 0 0;font-size:.85rem;opacity:.9">{{ circuit.duree|default(1) }} jour(s) • {{ circuit.destination }}</p>
+                            </div>
+                            {% if circuit.duree %}
+                            <div style="text-align:center;padding:.75rem 1.5rem;background:rgba(255,255,255,0.2);border-radius:12px">
+                                <div style="font-size:1.5rem;font-weight:900">{{ circuit.duree }}</div>
+                                <div style="font-size:.7rem;opacity:.8">jours</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="padding:2rem">
+                        <div style="font-size:1rem;line-height:2.2;color:var(--text);white-space:pre-wrap">{{ circuit.description|default('Aucune description disponible pour ce circuit.') }}</div>
+                    </div>
+                    {% if circuit.duree and circuit.duree > 0 %}
+                    <div style="padding:1.5rem;background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+                        <div style="display:flex;align-items:center;gap:.75rem;color:var(--navy)">
+                            <i class="fa fa-clock" style="font-size:1.25rem;color:var(--gold)"></i>
+                            <div>
+                                <div style="font-weight:600">Durée totale</div>
+                                <div style="font-size:.85rem;color:var(--muted)">{{ circuit.duree }} jour(s)</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:.75rem;color:var(--navy)">
+                            <i class="fa fa-tag" style="font-size:1.25rem;color:var(--gold)"></i>
+                            <div>
+                                <div style="font-weight:600">Prix</div>
+                                <div style="font-size:.85rem;color:var(--muted)">{{ circuit.prix|default(0) }} TND/pers.</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if circuit.duree and circuit.duree > 1 %}
+                <div style="margin-top:2rem">
+                    <h4 style="color:var(--navy);margin-bottom:1rem;font-weight:700"><i class="fa fa-list-ol" style="color:var(--gold)"></i>Étapes du circuit</h4>
+                    <div style="display:flex;flex-direction:column;gap:1rem">
+                        {% for i in 1..circuit.duree %}
+                        <div style="background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 4px 15px rgba(0,0,0,0.06);border:1px solid var(--border);display:flex;align-items:center;gap:1.25rem;transition:all .2s">
+                            <div style="width:50px;height:50px;background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.25rem">{{ i }}</div>
+                            <div style="flex:1">
+                                <div style="font-weight:600;color:var(--navy)">Jour {{ i }}</div>
+                                <div style="font-size:.85rem;color:var(--muted)">Programme de la journée</div>
+                            </div>
+                            <i class="fa fa-chevron-right" style="color:var(--muted)"></i>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div id="pane-map" class="tab-pane">
+                <div style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);border:1px solid var(--border)">
+                    <div style="background:linear-gradient(135deg,var(--navy),var(--cyan));padding:1.25rem;color:#fff">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h3 style="margin:0;font-weight:700;font-size:1.1rem"><i class="fa fa-map-marked-alt"></i> Localisation</h3>
+                            {% if circuit.destination %}
+                            <a href="https://www.openstreetmap.org/search?query={{ circuit.destination|url_encode }}" target="_blank" style="color:#fff;font-size:.85rem;text-decoration:none;opacity:.9">
+                                <i class="fa fa-external-link-alt"></i> Grande carte
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="height:450px;width:100%">
+                        {% if mapData|default(null) and mapData.lat|default(null) and mapData.lng|default(null) %}
+                        <iframe width="100%" height="100%" frameborder="0" style="border:0" src="https://www.openstreetmap.org/export/embed.html?bbox={{ (mapData.lng-0.5) }}%2C{{ (mapData.lat-0.5) }}%2C{{ (mapData.lng+0.5) }}%2C{{ (mapData.lat+0.5) }}&layer=mapnik&marker={{ mapData.lat }}%2C{{ mapData.lng }}" allowfullscreen loading="lazy"></iframe>
+                        {% else %}
+                        <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#f8f9fa,#fff)">
+                            <div style="width:100px;height:100px;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem">
+                                <i class="fa fa-map" style="font-size:2.5rem;color:var(--muted);opacity:.4"></i>
+                            </div>
+                            <p style="color:var(--navy);font-weight:600;margin-bottom:.5rem">{{ circuit.destination|default('Destination') }}</p>
+                            <p style="color:var(--muted);font-size:.9rem;margin-bottom:1.5rem">Carte interactive non disponible</p>
+                            {% if circuit.destination %}
+                            <div style="display:flex;gap:.75rem">
+                                <a href="https://www.openstreetmap.org/search?query={{ circuit.destination|url_encode }}" target="_blank" class="btn btn-navy">
+                                    <i class="fa fa-external-link-alt"></i> OpenStreetMap
+                                </a>
+                                <a href="https://www.google.com/maps/search/{{ circuit.destination|url_encode }}" target="_blank" class="btn btn-outline">
+                                    <i class="fab fa-google"></i> Google Maps
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if staticMapUrl %}
+                    <div style="padding:1.5rem;background:#f8f9fa;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:2rem">
+                        <div style="flex:1">
+                            <h4 style="margin:0 0 1rem;font-size:0.9rem;color:var(--navy);display:flex;align-items:center;gap:0.5rem">
+                                <i class="fab fa-instagram" style="font-size:1.2rem;color:#E1306C"></i> Image partageable du circuit
+                            </h4>
+                            <img src="{{ staticMapUrl }}" style="width:100%;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.1);border:4px solid #fff">
+                            <p style="font-size:0.8rem;color:var(--muted);margin-top:1rem;line-height:1.4">
+                                <i class="fa fa-info-circle"></i> Cette image générée par Mapbox contient le tracé réel de votre circuit. Elle est optimisée pour vos réseaux sociaux.
+                            </p>
+                        </div>
+                        <div style="width:200px;display:flex;flex-direction:column;gap:0.75rem;padding-top:2.5rem">
+                            <a href="{{ staticMapUrl }}" download="mon-circuit-flyandgo.png" target="_blank" class="btn btn-navy" style="width:100%;text-align:center;font-size:0.85rem">
+                                <i class="fa fa-download"></i> Télécharger
+                            </a>
+                            <button onclick="copyToClipboard('{{ staticMapUrl }}')" class="btn btn-outline" style="width:100%;font-size:0.85rem">
+                                <i class="fa fa-link"></i> Copier le lien
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if circuit.destination %}
+                    <div style="padding:1.25rem;border-top:1px solid var(--border);background:var(--bg)">
+                        <div style="display:flex;align-items:center;gap:.75rem;color:var(--muted);font-size:.9rem">
+                            <i class="fa fa-info-circle" style="color:var(--cyan)"></i>
+                            <span>Cliquez sur markers pour voir les points d'intérêt</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if storytellingConfig %}
+            <div id="pane-story" class="tab-pane">
+                <div style="background:#fff;border-radius:24px;overflow:hidden;box-shadow:var(--s2);border:1px solid var(--border);position:relative">
+                    <div style="background:linear-gradient(135deg,var(--navy),#2d5a9e);padding:1.5rem 2rem;color:#fff;display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                            <h3 style="margin:0;font-weight:800;font-size:1.3rem;letter-spacing:-0.02em"><i class="fa fa-history" style="color:var(--gold)"></i> Récit immersif du voyage</h3>
+                            <p style="margin:0.25rem 0 0;font-size:0.85rem;opacity:0.8">Scrollez pour découvrir les étapes de votre aventure</p>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.1);padding:0.5rem 1rem;border-radius:30px;font-size:0.8rem;font-weight:600">
+                            <i class="fa fa-mouse-pointer"></i> Navigation par scroll
+                        </div>
+                    </div>
+                    
+                    <div id="story-map-container" style="height:700px;display:flex">
+                        <div id="map-story" style="flex:1;height:100%"></div>
+                        
+                        <div id="story-features" style="width:380px;height:100%;overflow-y:auto;background:linear-gradient(to bottom, #f8fafc, #fff);padding:2rem 1.5rem;scrollbar-width: thin;scrollbar-color: var(--navy) transparent; scroll-behavior: smooth;">
+                            {% for chapter in storytellingConfig.chapters %}
+                            <div class="story-chapter" id="{{ chapter.id }}" 
+                                 style="margin-bottom:4rem;padding:1.5rem;border-radius:20px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,0.05);border:1px solid var(--border);transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);opacity:0.6;transform:scale(0.95);cursor:pointer"
+                                 onclick="flyToChapter('{{ chapter.id }}')">
+                                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem">
+                                    <div style="width:36px;height:36px;background:{{ loop.first ? 'var(--gold)' : (loop.last ? '#1B3A6B' : 'var(--navy)') }};color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem">
+                                        {{ loop.first ? 'S' : (loop.last ? 'E' : loop.index) }}
+                                    </div>
+                                    <h5 style="margin:0;color:var(--navy);font-size:1.1rem;font-weight:700">{{ chapter.title }}</h5>
+                                </div>
+                                <p style="font-size:0.95rem;color:var(--text);margin:0;line-height:1.6;font-style:italic">"{{ chapter.description }}"</p>
+                                <div style="margin-top:1.25rem;display:flex;align-items:center;gap:0.5rem;color:var(--gold);font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">
+                                    <i class="fa fa-map-marker-alt"></i> Explorer cette étape
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div style="height:200px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted)">
+                                <div>
+                                    <i class="fa fa-flag-checkered" style="font-size:2rem;margin-bottom:1rem;opacity:0.3"></i>
+                                    <p style="font-weight:600">Fin du voyage</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if segmentRequirements|length > 0 %}
+            <div id="pane-sherpa" class="tab-pane">
+                <div style="background:#fff;border-radius:24px;overflow:hidden;box-shadow:var(--s2);border:1px solid var(--border)">
+                    <div style="background:linear-gradient(135deg,#1B3A6B,#00B4D8);padding:1.5rem 2rem;color:#fff">
+                        <h3 style="margin:0;font-weight:800;font-size:1.3rem"><i class="fa fa-passport"></i> Exigences de Voyage & Santé (Sherpa)</h3>
+                        <p style="margin:0.25rem 0 0;font-size:0.85rem;opacity:0.8">Informations temps réel pour chaque segment de votre voyage</p>
+                    </div>
+                    <div style="padding:2rem">
+                        <div style="display:flex;flex-direction:column;gap:1.5rem">
+                            {% for req in segmentRequirements %}
+                            <div style="background:var(--bg);border-radius:16px;padding:1.5rem;border-left:4px solid var(--gold)">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                                    <h4 style="margin:0;color:var(--navy);font-size:1rem;font-weight:700">
+                                        <i class="fa fa-route"></i> Segment {{ loop.index }} : {{ req.origin }} → {{ req.destination }}
+                                    </h4>
+                                    <span style="background:rgba(27,58,107,0.1);color:var(--navy);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700">Vérifié par Sherpa</span>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+                                    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+                                        <div style="color:var(--gold);font-weight:700;font-size:0.8rem;text-transform:uppercase;margin-bottom:0.5rem"><i class="fa fa-id-card"></i> Visa</div>
+                                        <p style="margin:0;font-size:0.9rem;color:var(--text)">{{ req.visa }}</p>
+                                    </div>
+                                    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+                                        <div style="color:var(--cyan);font-weight:700;font-size:0.8rem;text-transform:uppercase;margin-bottom:0.5rem"><i class="fa fa-heartbeat"></i> Santé</div>
+                                        <p style="margin:0;font-size:0.9rem;color:var(--text)">{{ req.health }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div style="margin-top:2rem;padding:1rem;background:rgba(255,183,0,0.1);border-radius:12px;display:flex;gap:1rem;align-items:flex-start">
+                            <i class="fa fa-info-circle" style="color:var(--gold);font-size:1.2rem;margin-top:0.2rem"></i>
+                            <p style="margin:0;font-size:0.85rem;color:var(--navy);line-height:1.5">
+                                <b>Note importante :</b> Les exigences de visa et de santé peuvent changer rapidement. Nous vous recommandons de vérifier auprès des ambassades officielles avant votre départ. Les informations affichées sont basées sur une nationalité tunisienne (TN).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div id="pane-weather" class="tab-pane">
+                <div style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);border:1px solid var(--border)">
+                    <div style="background:linear-gradient(135deg,var(--navy),var(--cyan));padding:1.25rem;color:#fff">
+                        <h3 style="margin:0;font-weight:700;font-size:1.1rem"><i class="fa fa-cloud-sun"></i> Météo à {{ circuit.destination|default('destination') }}</h3>
+                    </div>
+                    {% if weather|default(null) and weather.temperature|default(null) %}
+                    <div style="padding:2rem">
+                        <div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-bottom:2rem">
+                            <div style="display:flex;align-items:center;gap:1.5rem">
+                                <img src="https://openweathermap.org/img/wn/{{ weather.icon|default('01d') }}@4x.png" style="width:100px;height:100px">
+                                <div>
+                                    <div style="font-size:3rem;font-weight:900;color:var(--navy);line-height:1">{{ weather.temperature }}°C</div>
+                                    <div style="color:var(--navy);font-size:1.1rem;text-transform:capitalize">{{ weather.description|default('') }}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:2rem;margin-left:auto">
+                                <div style="text-align:center;padding:1rem 1.5rem;background:var(--bg);border-radius:12px;min-width:100px">
+                                    <i class="fa fa-tint" style="font-size:1.5rem;color:var(--cyan);margin-bottom:.5rem;display:block"></i>
+                                    <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase">Humidité</div>
+                                    <div style="font-size:1.25rem;font-weight:700;color:var(--navy)">{{ weather.humidity|default('-') }}%</div>
+                                </div>
+                                <div style="text-align:center;padding:1rem 1.5rem;background:var(--bg);border-radius:12px;min-width:100px">
+                                    <i class="fa fa-wind" style="font-size:1.5rem;color:var(--cyan);margin-bottom:.5rem;display:block"></i>
+                                    <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase">Vent</div>
+                                    <div style="font-size:1.25rem;font-weight:700;color:var(--navy)">{{ weather.windSpeed|default('-') }} km/h</div>
+                                </div>
+                                <div style="text-align:center;padding:1rem 1.5rem;background:var(--bg);border-radius:12px;min-width:100px">
+                                    <i class="fa fa-thermometer-half" style="font-size:1.5rem;color:var(--gold);margin-bottom:.5rem;display:block"></i>
+                                    <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase">Ressenti</div>
+                                    <div style="font-size:1.25rem;font-weight:700;color:var(--navy)">{{ (weather.temperature)|number_format(0) }}°C</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);padding:1.5rem;border-radius:16px;display:flex;align-items:center;gap:1rem">
+                            <i class="fa fa-lightbulb" style="font-size:1.5rem;color:var(--gold)"></i>
+                            <div>
+                                <div style="font-weight:600;color:var(--navy)">Conseil voyage</div>
+                                <div style="color:var(--navy);font-size:.9rem">Préparez-vous pour des températures agréables. N'oubliez pas crème solaire!</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div style="padding:4rem;text-align:center">
+                        <div style="width:100px;height:100px;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem">
+                            <i class="fa fa-cloud-sun" style="font-size:2.5rem;color:var(--muted);opacity:.4"></i>
+                        </div>
+                        <p style="color:var(--navy);font-weight:600;margin-bottom:.5rem">Météo non disponible</p>
+                        <p style="color:var(--muted);font-size:.9rem">Les données météo pour {{ circuit.destination|default('cette destination') }} ne sont pas disponibles</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="pane-avis" class="tab-pane">
+                {% if app.user %}
+                <div style="background:#fff;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,0.05);border:1px solid var(--border)">
+                    <h4 style="color:var(--navy);margin-bottom:1rem;font-weight:700"><i class="fa fa-pen" style="color:var(--gold)"></i> Donner votre avis</h4>
+                    <form action="{{ path('circuit_review', {id: circuit.id|default(0)}) }}" method="POST">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                            <div class="fg-group"><label class="fg-label">Votre nom</label><input type="text" name="author" class="fg-input" required value="{{ app.user.fullName }}"></div>
+                            <div class="fg-group">
+                                <label class="fg-label">Note</label>
+                                <div id="starPick" style="display:flex;gap:.25rem;font-size:1.5rem;margin-top:.5rem">
+                                    {% for i in 1..5 %}<i class="fa fa-star" onclick="setRating({{ i }})" style="color:#F59E0B;cursor:pointer"></i>{% endfor %}
+                                </div>
+                                <input type="hidden" name="rating" id="ratingInput" value="5">
+                            </div>
+                        </div>
+                        <div class="fg-group"><label class="fg-label">Commentaire</label><textarea name="comment" class="fg-input" rows="3" required placeholder="Partagez votre expérience..."></textarea></div>
+                        <button type="submit" class="btn btn-navy"><i class="fa fa-paper-plane"></i> Publier</button>
+                    </form>
+                </div>
+                {% endif %}
+                
+                {% set avisList = circuit.avis|default([]) %}
+                {% if avisList|length > 0 %}
+                {% set positive = 0 %}{% set negative = 0 %}{% set neutral = 0 %}
+                {% for a in avisList %}{% if a.sentimentLabel %}{% if a.sentimentLabel in ['excellent','good','positive'] %}{% set positive = positive + 1 %}{% elseif a.sentimentLabel in ['negative','bad'] %}{% set negative = negative + 1 %}{% else %}{% set neutral = neutral + 1 %}{% endif %}{% endif %}{% endfor %}
+                <div class="sentiment-summary">
+                    <span style="font-weight:700;color:var(--navy)">💡 Analyse IA</span>
+                    <span style="color:#22c55e"><i class="fa fa-thumbs-up"></i> {{ positive }}</span>
+                    <span style="color:#eab308"><i class="fa fa-minus"></i> {{ neutral }}</span>
+                    <span style="color:#ef4444"><i class="fa fa-thumbs-down"></i> {{ negative }}</span>
+                    {% if positive + negative + neutral > 0 %}<span style="background:var(--navy);color:#fff;padding:4px 12px;border-radius:20px;font-size:.8rem">{{ ((positive / (positive + negative + neutral)) * 100)|round }}% satisfait</span>{% endif %}
+                </div>
+                {% endif %}
+                {% for a in avisList %}
+                <div class="review-item">
+                    <div class="review-item__head">
+                        <span class="review-item__author">{{ a.author|default('Anonyme') }}</span>
+                        <span class="review-item__date">{{ a.createdAt|default('now')|date('d/m/Y') }}</span>
+                    </div>
+                    <div class="review-item__stars">{% for i in 1..5 %}<i class="fa fa-star" style="color:{{ i <= (a.rating|default(0)) ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}</div>
+                    <div class="review-item__text">{{ a.comment|default('') }}</div>
+                </div>
+                {% else %}
+                <div class="empty"><i class="fa fa-star"></i><p>Aucun avis. Connectez-vous pour donner votre avis!</p></div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div style="position:sticky;top:2rem">
+            <div style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.1)">
+                <div style="background:linear-gradient(135deg,var(--navy),#2d5a9e);padding:2rem;color:#fff;text-align:center">
+                    <div style="font-size:.85rem;opacity:.9">Prix par personne</div>
+                    <div style="font-size:2.75rem;font-weight:900;line-height:1">{{ circuit.prix|default(0)|number_format(0, '', ' ') }}</div>
+                    <div style="font-size:1rem;opacity:.9">TND / pers.</div>
+                </div>
+                <div style="padding:1.5rem">
+                    <form action="{{ path('circuit_reserver', {id: circuit.id|default(0)}) }}" method="POST" onsubmit="return validateCircuitBooking()">
+                        <h4 style="color:var(--navy);margin-bottom:1.25rem;font-weight:700"><i class="fa fa-calendar-check"></i> Réserver ce circuit</h4>
+                        <div class="fg-group"><label class="fg-label">Nom complet *</label><input type="text" name="customer_name" id="customerName" class="fg-input" required minlength="2" placeholder="Prénom Nom" value="{{ app.user ? app.user.fullName : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Email *</label><input type="email" name="email" id="customerEmail" class="fg-input" required placeholder="email@example.com" value="{{ app.user ? app.user.email : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Téléphone</label><input type="tel" name="phone" id="customerPhone" class="fg-input" placeholder="+216 XX XXX XXX" value="{{ app.user ? app.user.telephone : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Date départ *</label><input type="date" name="date_depart" id="dateDepart" class="fg-input" required min="{{ "now"|date('Y-m-d') }}"></div>
+                        <div class="fg-group"><label class="fg-label">Personnes *</label><input type="number" name="nb_personnes" id="nbPersonnes" class="fg-input" value="1" min="1" max="{{ circuit.placesDisponibles|default(50) }}" required oninput="calcMontant()"></div>
+                        
+                        <div style="background:var(--bg);border-radius:12px;padding:1rem;margin-bottom:1rem">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;color:var(--muted);font-size:.9rem"><span>Sous-total</span><span id="sousTotal">—</span></div>
+                            <div id="promoLine" style="display:none;justify-content:space-between;margin-bottom:.35rem;color:#10b981;font-size:.9rem"><span>Code promo</span><span id="promoReduction">—</span></div>
+                            <div style="display:flex;justify-content:space-between;font-weight:800;color:var(--navy);border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.25rem;font-size:1.1rem"><span>Total</span><span id="montant">{{ circuit.prix|default(0) }} TND</span></div>
+                        </div>
+                        
+                        <div class="fg-group">
+                            <label class="fg-label"><i class="fa fa-tag" style="color:var(--gold)"></i> Code promo</label>
+                            <div style="display:flex;gap:.5rem">
+                                <input type="text" id="promoCode" class="fg-input" placeholder="Ex: BIENVENUE" style="text-transform:uppercase">
+                                <button type="button" class="btn btn-outline" onclick="applyPromo()">Appliquer</button>
+                            </div>
+                            <div id="promoMsg" style="font-size:.75rem;margin-top:.25rem"></div>
+                        </div>
+                        
+                        <div class="fg-group">
+                            <label class="fg-label"><i class="fa fa-credit-card"></i> Mode de paiement</label>
+                            <div style="display:flex;gap:.75rem;margin-top:.5rem">
+                                <label style="flex:1;cursor:pointer;display:flex;align-items:center;gap:.5rem;padding:.75rem;border:2px solid var(--border);border-radius:10px;transition:all .2s" id="stripeLabel">
+                                    <input type="radio" name="payment_method" value="stripe" checked style="display:none">
+                                    <i class="fab fa-stripe" style="font-size:1.5rem;color:#635bff"></i>
+                                    <span style="font-weight:600">Stripe</span>
+                                </label>
+                                <label style="flex:1;cursor:pointer;display:flex;align-items:center;gap:.5rem;padding:.75rem;border:2px solid var(--border);border-radius:10px;transition:all .2s" id="paypalLabel">
+                                    <input type="radio" name="payment_method" value="paypal" style="display:none">
+                                    <i class="fab fa-paypal" style="font-size:1.5rem;color:#003087"></i>
+                                    <span style="font-weight:600">PayPal</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        {% if app.user %}
+                        <button type="submit" class="btn btn-navy btn-lg" style="width:100%;padding:1rem;font-size:1.1rem"><i class="fa fa-lock"></i> Réserver et payer</button>
+                        {% else %}
+                        <a href="{{ path('app_login') }}" class="btn btn-navy btn-lg" style="width:100%;display:block;text-align:center;padding:1rem;font-size:1.1rem"><i class="fa fa-sign-in-alt"></i> Connexion pour réserver</a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+<script>
+const storytellingConfig = {{ storytellingConfig|default(null)|json_encode|raw }};
+
+function initStorytelling() {
+    if (!storytellingConfig || !storytellingConfig.chapters.length) return;
+    
+    mapboxgl.accessToken = storytellingConfig.accessToken;
+    const map = new mapboxgl.Map({
+        container: 'map-story',
+        style: storytellingConfig.style,
+        center: storytellingConfig.chapters[0].location.center,
+        zoom: storytellingConfig.chapters[0].location.zoom,
+        pitch: storytellingConfig.chapters[0].location.pitch,
+        bearing: storytellingConfig.chapters[0].location.bearing,
+        interactive: false,
+        antialias: true
+    });
+
+    if (storytellingConfig.showMarkers) {
+        storytellingConfig.chapters.forEach((chapter, i) => {
+            const el = document.createElement('div');
+            el.className = 'marker';
+            el.style.width = '32px';
+            el.style.height = '32px';
+            el.style.background = i === 0 ? 'var(--gold)' : (i === storytellingConfig.chapters.length - 1 ? '#1B3A6B' : 'var(--navy)');
+            el.style.borderRadius = '10px';
+            el.style.border = '2px solid #fff';
+            el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+            el.style.color = '#fff';
+            el.style.fontSize = '0.75rem';
+            el.style.fontWeight = '900';
+            el.innerHTML = i === 0 ? 'S' : (i === storytellingConfig.chapters.length - 1 ? 'E' : i);
+
+            new mapboxgl.Marker(el)
+                .setLngLat(chapter.location.center)
+                .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<b>${chapter.title}</b>`))
+                .addTo(map);
+        });
+    }
+
+    window.storyMap = map; // Store for flyToChapter
+    
+    // Improved Scroll listener with Intersection Observer for better performance
+    const chapters = document.querySelectorAll('.story-chapter');
+    const options = {
+        root: document.getElementById('story-features'),
+        threshold: 0.5
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const activeId = entry.target.id;
+                chapters.forEach(c => {
+                    const isActive = c.id === activeId;
+                    c.style.opacity = isActive ? '1' : '0.4';
+                    c.style.transform = isActive ? 'scale(1.02)' : 'scale(0.95)';
+                    c.style.borderColor = isActive ? 'var(--navy)' : 'var(--border)';
+                });
+                flyToChapter(activeId, map);
+            }
+        });
+    }, options);
+
+    chapters.forEach(chapter => observer.observe(chapter));
+    
+    // Initial state
+    if (chapters.length > 0) {
+        chapters[0].style.opacity = '1';
+        chapters[0].style.transform = 'scale(1.02)';
+        chapters[0].style.borderColor = 'var(--navy)';
+    }
+}
+
+let lastActiveChapter = null;
+function flyToChapter(id, mapInstance = null) {
+    if (id === lastActiveChapter) return;
+    lastActiveChapter = id;
+    
+    const config = storytellingConfig.chapters.find(c => c.id === id);
+    const map = mapInstance || window.storyMap; // fallback if needed
+    
+    if (config && map) {
+        map.flyTo({
+            ...config.location,
+            duration: 3000,
+            essential: true,
+            curve: 1.42,
+            speed: 0.8
+        });
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('Lien copié dans le presse-papier !', 'success');
+    });
+}
+
+const prixCircuit = {{ circuit.prix|default(0) }};
+let currentPromoReduction = 0;
+let originalTotal = 0;
+
+function calcMontant() {
+    const persons = parseInt(document.getElementById('nbPersonnes').value) || 1;
+    originalTotal = prixCircuit * persons;
+    document.getElementById('sousTotal').textContent = originalTotal.toLocaleString('fr-FR') + ' TND';
+    applyPromoToDisplay();
+}
+
+function applyPromoToDisplay() {
+    const finalTotal = Math.max(0, originalTotal - currentPromoReduction);
+    document.getElementById('montant').textContent = finalTotal.toLocaleString('fr-FR') + ' TND';
+}
+
+async function applyPromo() {
+    const code = document.getElementById('promoCode').value.trim().toUpperCase();
+    const msgEl = document.getElementById('promoMsg');
+    const promoLine = document.getElementById('promoLine');
+    const reductionEl = document.getElementById('promoReduction');
+    if (!code) { msgEl.textContent = 'Entrez un code promo'; msgEl.style.color = 'var(--red)'; return; }
+    if (originalTotal <= 0) calcMontant();
+    try {
+        const res = await fetch('/ajax/apply-promo', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ code, price: originalTotal }) });
+        const data = await res.json();
+        if (data.success) {
+            currentPromoReduction = data.reduction;
+            promoLine.style.display = 'flex';
+            reductionEl.textContent = '-' + data.reduction.toLocaleString('fr-FR') + ' TND';
+            msgEl.textContent = '✓ ' + data.message; msgEl.style.color = '#10b981';
+        } else {
+            currentPromoReduction = 0; promoLine.style.display = 'none';
+            msgEl.textContent = '✗ ' + data.message; msgEl.style.color = 'var(--red)';
+        }
+        applyPromoToDisplay();
+    } catch (e) { msgEl.textContent = 'Erreur'; msgEl.style.color = 'var(--red)'; }
+}
+
+function validateCircuitBooking() {
+    const name = document.getElementById('customerName').value.trim();
+    const email = document.getElementById('customerEmail').value.trim();
+    const date = document.getElementById('dateDepart').value;
+    const persons = parseInt(document.getElementById('nbPersonnes').value);
+    if (name.length < 2) { alert('Veuillez entrer un nom valide'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Veuillez entrer un email valide'); return false; }
+    if (!date) { alert('Veuillez choisir une date'); return false; }
+    if (persons < 1) { alert('Minimum 1 personne'); return false; }
+    return true;
+}
+
+function setRating(rating) {
+    document.getElementById('ratingInput').value = rating;
+    const stars = document.querySelectorAll('#starPick .fa-star');
+    stars.forEach((star, index) => { star.style.color = index < rating ? '#F59E0B' : '#ddd'; });
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('on'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('on'));
+    document.querySelector('.detail-tab[data-tab="'+tab+'"]')?.classList.add('on');
+    document.getElementById('pane-'+tab)?.classList.add('on');
+    if (tab === 'story') {
+        setTimeout(initStorytelling, 100);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const nb = document.getElementById('nbPersonnes');
+    if (nb) { nb.addEventListener('input', calcMontant); calcMontant(); }
+    
+    const stripeLabel = document.getElementById('stripeLabel');
+    const paypalLabel = document.getElementById('paypalLabel');
+    const stripeRadio = stripeLabel.querySelector('input');
+    const paypalRadio = paypalLabel.querySelector('input');
+    
+    function updatePaymentStyle() {
+        if (stripeRadio.checked) {
+            stripeLabel.style.borderColor = '#635bff';
+            stripeLabel.style.background = 'rgba(99,91,255,0.08)';
+            paypalLabel.style.borderColor = 'var(--border)';
+            paypalLabel.style.background = 'transparent';
+        } else {
+            paypalLabel.style.borderColor = '#003087';
+            paypalLabel.style.background = 'rgba(0,48,135,0.08)';
+            stripeLabel.style.borderColor = 'var(--border)';
+            stripeLabel.style.background = 'transparent';
+        }
+    }
+    stripeLabel.addEventListener('click', function() { stripeRadio.checked = true; updatePaymentStyle(); });
+    paypalLabel.addEventListener('click', function() { paypalRadio.checked = true; updatePaymentStyle(); });
+    updatePaymentStyle();
+});
+
+const circuitTitle = "{{ circuit.titre|default('Circuit Fly&Go')|e('js') }}";
+const circuitUrl = "{{ app.request.schemeAndHttpHost }}{{ path('circuit_show', {id: circuit.id}) }}";
+const circuitImage = "{{ circuit.image ? asset(circuit.image) : 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600' }}";
+const circuitDescription = "{{ circuit.description|default('Découvrez ce circuit amazing en Tunisie')|replace({'\n':' '})|e('js') }}";
+
+function shareToFacebook() {
+    FB.ui({
+        method: 'share',
+        href: circuitUrl,
+    }, function(response) {
+        if (response && response.post_id) {
+            alert('Publié sur Facebook !');
+        }
+    });
+}
+
+// Alternative: Direct Facebook share URL
+function shareToFacebookDirect() {
+    const fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(circuitUrl) + '&quote=' + encodeURIComponent(circuitTitle);
+    window.open(fbUrl, '_blank', 'width=600,height=500');
+}
+
+function shareToWhatsApp() {
+    const waText = encodeURIComponent(circuitTitle + '\n\n' + circuitUrl);
+    window.open('https://wa.me/?text=' + waText, '_blank');
+}
+
+function shareToEmail() {
+    const subject = encodeURIComponent(circuitTitle);
+    const body = encodeURIComponent('Bonjour!\n\nJ\'ai trouvé ce circuit intéressant:\n\n' + circuitTitle + '\n' + circuitUrl + '\n\nDécouvrez plus de circuits sur Fly&Go!');
+    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(circuitUrl).then(() => {
+        showToast('Lien copié !', 'success');
+    }).catch(() => {
+        prompt('Copiez ce lien:', circuitUrl);
+    });
+}
+
+function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;right:20px;padding:1rem 1.5rem;border-radius:8px;color:#fff;font-weight:600;z-index:10000;animation:slideIn .3s;background:' + (type==='error'?'#EF4444':'#10B981');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+</script>
+{% endblock %}

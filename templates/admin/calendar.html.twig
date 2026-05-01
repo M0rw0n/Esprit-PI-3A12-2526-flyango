@@ -1,0 +1,362 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Calendrier de Gestion — Fly&Go Admin{% endblock %}
+{% block breadcrumb %}Calendrier{% endblock %}
+
+{% block admin_body %}
+<style>
+    .calendar-container {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 1.5rem;
+        margin-top: 1rem;
+        height: calc(100vh - 180px);
+    }
+    .side-panel {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        overflow-y: auto;
+        box-shadow: var(--s1);
+    }
+    .main-panel {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        box-shadow: var(--s1);
+        overflow: hidden;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #f1f5f9;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        background: #f8fafc;
+    }
+    .form-control:focus {
+        border-color: var(--navy);
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(27,58,107,0.1);
+    }
+    .btn-save {
+        width: 100%;
+        padding: 0.8rem;
+        background: var(--navy);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(27,58,107,0.2);
+    }
+    .notes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .note-item {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 12px;
+        border-left: 4px solid #8B5CF6;
+        position: relative;
+    }
+    .note-item__date {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #8B5CF6;
+        margin-bottom: 0.25rem;
+    }
+    .note-item__text {
+        font-size: 0.85rem;
+        color: var(--text);
+        line-height: 1.4;
+    }
+    .note-item__actions {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: flex;
+        gap: 0.25rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .note-item:hover .note-item__actions {
+        opacity: 1;
+    }
+    .action-btn {
+        padding: 0.3rem;
+        border: none;
+        background: #fff;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+    #calendar {
+        height: 100%;
+    }
+    .fc .fc-toolbar-title { font-size: 1.25rem; font-weight: 800; color: var(--navy); }
+    .fc .fc-button-primary { background: var(--navy); border: none; font-weight: 600; text-transform: capitalize; }
+    .fc .fc-button-primary:hover { background: #1e3a5f; }
+    .fc .fc-daygrid-day-number { font-weight: 600; color: #64748b; }
+</style>
+
+<div class="calendar-container">
+    <div class="side-panel">
+        <div>
+            <h4 style="margin:0 0 1rem; color: var(--navy); display: flex; align-items: center; gap: 0.5rem">
+                <i class="fa fa-plus-circle" style="color: var(--gold)"></i> Nouvelle Note
+            </h4>
+            <div class="form-group">
+                <label>Date de l'événement</label>
+                <input type="date" id="noteDate" class="form-control">
+            </div>
+            <div class="form-group" style="position: relative">
+                <label>Détails / Note</label>
+                <textarea id="noteText" class="form-control" style="min-height: 120px" placeholder="Notez un rappel..."></textarea>
+                <div id="grammarStatus" style="position:absolute;bottom:10px;right:10px;font-size:.7rem;display:flex;align-items:center;gap:.25rem;background:#fff;padding:.2rem .4rem;border-radius:4px;border:1px solid #e2e8f0"></div>
+            </div>
+            <button onclick="checkAndSaveNote()" class="btn-save">
+                <i class="fa fa-save" style="margin-right: 0.5rem"></i> Sauvegarder
+            </button>
+        </div>
+
+        <hr style="border:none; border-top: 1px solid var(--border); margin: 0.5rem 0">
+
+        <div>
+            <h4 style="margin:0 0 1rem; color: var(--navy); display: flex; justify-content: space-between; align-items: center">
+                <span><i class="fa fa-sticky-note" style="color: var(--gold)"></i> Mes Notes</span>
+                <span id="notesCount" style="background:var(--gold); color:var(--navy); padding: 2px 8px; border-radius: 8px; font-size: 0.75rem">0</span>
+            </h4>
+            <div id="notesContent" class="notes-list">
+                <!-- Dynamically filled -->
+            </div>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+{# Correction Modal #}
+<div id="correctionModal" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;padding:2rem;border-radius:20px;width:90%;max-width:480px;box-shadow:0 25px 80px rgba(0,0,0,0.4)">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+            <div style="width:56px;height:56px;background:#fef3c7;border-radius:14px;display:flex;align-items:center;justify-content:center">
+                <i class="fa fa-exclamation-triangle" style="color:#d97706;font-size:1.5rem"></i>
+            </div>
+            <div>
+                <h3 style="margin:0;color:var(--navy);font-size:1.25rem;font-weight:700">Correction suggérée</h3>
+                <p style="margin:0;color:#64748b;font-size:.85rem">Voulez-vous appliquer ces changements ?</p>
+            </div>
+        </div>
+        <div id="correctionContent" style="margin-bottom:1.5rem;max-height:220px;overflow-y:auto;background:#f8fafc;padding:1rem;border-radius:12px"></div>
+        <div style="display:flex;gap:.75rem">
+            <button onclick="document.getElementById('correctionModal').style.display='none'" style="flex:1;padding:.6rem;background:#f1f5f9;color:var(--navy);border:none;border-radius:8px;font-weight:600;cursor:pointer">Ignorer</button>
+            <button id="applyCorrectionBtn" style="flex:1;padding:.6rem;background:var(--navy);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">Appliquer</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    const reservationEvents = {{ reservationEvents|default([])|json_encode|raw }};
+    let calendarNotes = JSON.parse(localStorage.getItem('calendarNotes') || '{}');
+    let calendar;
+
+    function showToast(msg, type) {
+        const t = document.createElement('div');
+        t.style.cssText = 'position:fixed;top:20px;right:20px;padding:1rem 1.5rem;border-radius:8px;color:#fff;font-weight:600;z-index:10000;animation:slideIn .3s;background:' + (type==='error'?'#EF4444':'#10B981');
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+    }
+
+    function initCalendar() {
+        const calEl = document.getElementById('calendar');
+        const allEvents = [...reservationEvents];
+        
+        Object.keys(calendarNotes).forEach(date => {
+            if (calendarNotes[date]) {
+                allEvents.push({
+                    title: '📝 ' + calendarNotes[date].substring(0, 25),
+                    start: date,
+                    allDay: true,
+                    color: '#8B5CF6'
+                });
+            }
+        });
+
+        calendar = new FullCalendar.Calendar(calEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listWeek'
+            },
+            buttonText: {
+                today: "Aujourd'hui",
+                month: "Mois",
+                week: "Semaine",
+                list: "Liste"
+            },
+            events: allEvents,
+            height: '100%',
+            dateClick: function(info) {
+                document.getElementById('noteDate').value = info.dateStr;
+                document.getElementById('noteText').focus();
+            },
+            eventClick: function(info) {
+                if (info.event.title.startsWith('📝')) {
+                    editNote(info.event.startStr);
+                } else {
+                    alert('Réservation: ' + info.event.title + '\nDate: ' + info.event.startStr);
+                }
+            }
+        });
+        calendar.render();
+    }
+
+    function saveNote() {
+        const date = document.getElementById('noteDate').value;
+        const note = document.getElementById('noteText').value;
+        if (!date) { showToast('Sélectionnez une date', 'error'); return; }
+        
+        if (note.trim()) {
+            calendarNotes[date] = note;
+        } else if (calendarNotes[date]) {
+            delete calendarNotes[date];
+        }
+        
+        localStorage.setItem('calendarNotes', JSON.stringify(calendarNotes));
+        document.getElementById('noteText').value = '';
+        document.getElementById('noteDate').value = '';
+        showToast('Note sauvegardée !', 'success');
+        renderNotes();
+        initCalendar();
+    }
+
+    let pendingCorrection = null;
+    async function checkAndSaveNote() {
+        const date = document.getElementById('noteDate').value;
+        const note = document.getElementById('noteText').value;
+        if (!date) { showToast('Sélectionnez une date', 'error'); return; }
+        if (!note.trim()) { saveNote(); return; }
+
+        const statusEl = document.getElementById('grammarStatus');
+        statusEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+        try {
+            const response = await fetch('https://api.languagetool.org/v2/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'text=' + encodeURIComponent(note) + '&language=fr'
+            });
+            const result = await response.json();
+
+            if (result.matches && result.matches.length > 0) {
+                const fixes = result.matches.slice(0, 5).filter(m => m.replacements && m.replacements[0]);
+                if (fixes.length > 0) {
+                    let corrected = note;
+                    fixes.slice().reverse().forEach(m => {
+                        corrected = corrected.slice(0, m.offset) + m.replacements[0].value + corrected.slice(m.offset + m.length);
+                    });
+                    pendingCorrection = corrected;
+                    let html = '';
+                    fixes.forEach(m => {
+                        html += '<div style="background:#f8fafc;padding:.6rem;border-radius:6px;margin-bottom:.5rem;font-size:.85rem"><strong style="color:var(--red)">' + (m.context?.text?.substring(m.offset - 10, m.offset) || '') + '</strong><mark style="background:#fee2e2;color:#dc2626;padding:0 .25rem;border-radius:3px">' + (m.shortMessage || m.message.substring(0, 50)) + '</mark></div>';
+                    });
+                    document.getElementById('correctionContent').innerHTML = html;
+                    document.getElementById('applyCorrectionBtn').onclick = function() {
+                        document.getElementById('noteText').value = pendingCorrection;
+                        document.getElementById('correctionModal').style.display = 'none';
+                        statusEl.innerHTML = '<i class="fa fa-check-circle" style="color:var(--green)"></i>';
+                        pendingCorrection = null;
+                    };
+                    document.getElementById('correctionModal').style.display = 'flex';
+                }
+                statusEl.innerHTML = '<i class="fa fa-exclamation-circle" style="color:var(--gold)"></i>';
+            } else {
+                statusEl.innerHTML = '<i class="fa fa-check-circle" style="color:var(--green)"></i>';
+                saveNote();
+            }
+        } catch(e) {
+            console.error('LT error:', e);
+            saveNote();
+        }
+    }
+
+    function renderNotes() {
+        const content = document.getElementById('notesContent');
+        const countEl = document.getElementById('notesCount');
+        const dates = Object.keys(calendarNotes).sort().reverse();
+        countEl.textContent = dates.length;
+
+        if (dates.length === 0) {
+            content.innerHTML = '<p style="color:var(--muted);text-align:center;padding:1rem;font-size:0.8rem">Aucune note</p>';
+            return;
+        }
+
+        let html = '';
+        dates.forEach(date => {
+            html += `
+                <div class="note-item">
+                    <div class="note-item__date">${date}</div>
+                    <div class="note-item__text">${calendarNotes[date]}</div>
+                    <div class="note-item__actions">
+                        <button class="action-btn" onclick="editNote('${date}')" title="Modifier" style="color: #0284c7"><i class="fa fa-pen"></i></button>
+                        <button class="action-btn" onclick="deleteNote('${date}')" title="Supprimer" style="color: #ef4444"><i class="fa fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        content.innerHTML = html;
+    }
+
+    function editNote(date) {
+        document.getElementById('noteDate').value = date;
+        document.getElementById('noteText').value = calendarNotes[date];
+        document.getElementById('noteText').focus();
+    }
+
+    function deleteNote(date) {
+        if (confirm('Supprimer la note du ' + date + ' ?')) {
+            delete calendarNotes[date];
+            localStorage.setItem('calendarNotes', JSON.stringify(calendarNotes));
+            renderNotes();
+            initCalendar();
+            showToast('Note supprimée !', 'success');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initCalendar();
+        renderNotes();
+    });
+</script>
+{% endblock %}

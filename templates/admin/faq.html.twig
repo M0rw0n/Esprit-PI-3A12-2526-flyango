@@ -1,0 +1,354 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}FAQ Chatbot — Admin{% endblock %}
+{% block breadcrumb %}FAQ Chatbot{% endblock %}
+
+{% block admin_body %}
+{% set q = app.request.query.get('q', '') %}
+
+{# Stats #}
+{% set totalFaqs = faqs.totalItemCount %}
+{% set withEmbed = 0 %}
+{% set withoutEmbed = 0 %}
+{% set totalPositive = 0 %}
+{% set totalNegative = 0 %}
+{% for f in faqs %}
+    {% if f.embedding %}{% set withEmbed = withEmbed + 1 %}{% else %}{% set withoutEmbed = withoutEmbed + 1 %}{% endif %}
+    {% set totalPositive = totalPositive + (f.feedbackUp ?: 0) %}
+    {% set totalNegative = totalNegative + (f.feedbackDown ?: 0) %}
+{% endfor %}
+
+{# Modern Header with Gradient #}
+<div style="background:linear-gradient(135deg, var(--navy) 0%, #2d5a9e 100%);border-radius:16px;padding:2rem;margin-bottom:1.5rem;color:#fff;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-20px;top:-20px;width:200px;height:200px;background:radial-gradient(circle, rgba(255,183,0,0.15) 0%, transparent 70%);border-radius:50%"></div>
+    <div style="position:absolute;right:60px;bottom:-30px;width:100px;height:100px;background:radial-gradient(circle, rgba(0,180,216,0.2) 0%, transparent 70%);border-radius:50%"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;position:relative;z-index:1">
+        <div>
+            <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.3rem;display:flex;align-items:center;gap:0.75rem">
+                <span style="background:rgba(255,255,255,0.2);width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center">
+                    <i class="fa fa-robot"></i>
+                </span>
+                FAQ Chatbot
+            </h2>
+            <p style="opacity:0.8;font-size:0.9rem">{{ totalFaqs }} questions configurées dans votre assistant IA</p>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+            <a href="javascript:openChatbotModal()" class="btn" style="background:linear-gradient(135deg,var(--cyan),#00b4d8);color:var(--navy);padding:0.6rem 1.25rem;border-radius:10px;font-weight:700;display:flex;align-items:center;gap:0.5rem;transition:all 0.3s;text-decoration:none;box-shadow:0 4px 15px rgba(0,180,216,0.3);cursor:pointer">
+                <i class="fa fa-chart-line"></i> Analytics
+            </a>
+            <a href="{{ path('admin_faq_sync_embeddings') }}" class="btn" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:0.6rem 1.25rem;border-radius:10px;font-weight:600;display:flex;align-items:center;gap:0.5rem;transition:all 0.3s;text-decoration:none">
+                <i class="fa fa-sync"></i> Synchroniser IA
+            </a>
+            <a href="{{ path('admin_faq_new') }}" class="btn" style="background:var(--gold);color:var(--navy);padding:0.6rem 1.25rem;border-radius:10px;font-weight:700;display:flex;align-items:center;gap:0.5rem;transition:all 0.3s;text-decoration:none;box-shadow:0 4px 15px rgba(255,183,0,0.3)">
+                <i class="fa fa-plus"></i> Nouvelle FAQ
+            </a>
+        </div>
+    </div>
+</div>
+
+{# Modern Stats Cards Grid #}
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin-bottom:2rem">
+
+    {# Card 1: Total FAQ #}
+    <div style="background:#fff;border-radius:16px;padding:1.5rem;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.04);transition:all 0.3s;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--navy),var(--cyan))"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(27,58,107,0.1);display:flex;align-items:center;justify-content:center">
+                <i class="fa fa-question-circle" style="font-size:1.4rem;color:var(--navy)"></i>
+            </div>
+            <span style="background:rgba(27,58,107,0.1);color:var(--navy);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700">{{ totalFaqs }}</span>
+        </div>
+        <div style="font-size:2.25rem;font-weight:900;color:var(--text);letter-spacing:-0.03em;line-height:1;margin-bottom:0.5rem">{{ totalFaqs }}</div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--muted);margin-bottom:1rem">Questions totales</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--navy)"></span>
+            <span style="color:var(--text)">Base de connaissances</span>
+        </div>
+    </div>
+
+    {# Card 2: With AI #}
+    <div style="background:#fff;border-radius:16px;padding:1.5rem;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.04);transition:all 0.3s;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#10b981,#059669)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(16,185,129,0.1);display:flex;align-items:center;justify-content:center">
+                <i class="fa fa-brain" style="font-size:1.4rem;color:#10b981"></i>
+            </div>
+            {% if withEmbed > 0 %}
+            <span style="background:rgba(16,185,129,0.1);color:#10b981;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700">{{ ((withEmbed / totalFaqs) * 100)|round }}%</span>
+            {% endif %}
+        </div>
+        <div style="font-size:2.25rem;font-weight:900;color:var(--text);letter-spacing:-0.03em;line-height:1;margin-bottom:0.5rem">{{ withEmbed }}</div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--muted);margin-bottom:1rem">Indexées IA</div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+            <div style="flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:{{ totalFaqs > 0 ? (withEmbed / totalFaqs * 100)|round : 0 }}%;background:linear-gradient(90deg,#10b981,#059669);border-radius:3px"></div>
+            </div>
+        </div>
+    </div>
+
+    {# Card 3: Pending #}
+    <div style="background:#fff;border-radius:16px;padding:1.5rem;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.04);transition:all 0.3s;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),#d4a017)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(255,183,0,0.12);display:flex;align-items:center;justify-content:center">
+                <i class="fa fa-clock" style="font-size:1.4rem;color:var(--gold)"></i>
+            </div>
+            {% if withoutEmbed > 0 %}
+            <span style="background:rgba(245,158,11,0.1);color:#d97706;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700">{{ withoutEmbed }}</span>
+            {% endif %}
+        </div>
+        <div style="font-size:2.25rem;font-weight:900;color:var(--text);letter-spacing:-0.03em;line-height:1;margin-bottom:0.5rem">{{ withoutEmbed }}</div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--muted);margin-bottom:1rem">En attente</div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+            <div style="flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:{{ totalFaqs > 0 ? (withoutEmbed / totalFaqs * 100)|round : 0 }}%;background:linear-gradient(90deg,var(--gold),#d4a017);border-radius:3px"></div>
+            </div>
+        </div>
+    </div>
+
+    {# Card 4: Positive Feedback #}
+    <div style="background:#fff;border-radius:16px;padding:1.5rem;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.04);transition:all 0.3s;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--cyan),#0099b8)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+            <div style="width:52px;height:52px;border-radius:14px;background:rgba(0,180,216,0.1);display:flex;align-items:center;justify-content:center">
+                <i class="fa fa-thumbs-up" style="font-size:1.4rem;color:var(--cyan)"></i>
+            </div>
+            <span style="background:rgba(0,180,216,0.1);color:var(--cyan);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700">{{ totalPositive + totalNegative > 0 ? ((totalPositive / (totalPositive + totalNegative)) * 100)|round : 0 }}%</span>
+        </div>
+        <div style="font-size:2.25rem;font-weight:900;color:var(--text);letter-spacing:-0.03em;line-height:1;margin-bottom:0.5rem">{{ totalPositive }}</div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--muted);margin-bottom:1rem">Feedback positif</div>
+        <div style="display:flex;gap:0.75rem;font-size:0.8rem">
+            <span style="display:flex;align-items:center;gap:0.3rem;color:#10b981"><i class="fa fa-thumbs-up"></i> {{ totalPositive }}</span>
+            <span style="display:flex;align-items:center;gap:0.3rem;color:#ef4444"><i class="fa fa-thumbs-down"></i> {{ totalNegative }}</span>
+        </div>
+    </div>
+
+</div>
+
+{# Toolbar #}
+<div class="admin-toolbar">
+    <form method="GET" action="{{ path('admin_faq') }}" id="filterForm">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher une question..." data-auto-submit>
+            </div>
+            {% if q %}
+            <a href="{{ path('admin_faq') }}" class="btn btn-outline btn-sm"><i class="fa fa-times"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{# FAQ Cards List #}
+<div class="acard-wrap">
+    <div class="bookings-list">
+        {% for f in faqs %}
+        <div class="booking-card" style="transition:all 0.3s">
+            <div class="booking-card__av" style="background:{{ f.embedding ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #f59e0b, #d97706)' }};font-size:1.25rem">
+                {% if f.embedding %}
+                    <i class="fa fa-brain"></i>
+                {% else %}
+                    <i class="fa fa-clock"></i>
+                {% endif %}
+            </div>
+            <div class="booking-card__info" style="flex:2">
+                <div class="booking-card__name" style="font-size:1rem;color:var(--navy)">{{ f.question }}</div>
+                <div class="booking-card__meta">
+                    <span><i class="fa fa-comment-dots fa-xs"></i> {{ f.answer|striptags|slice(0, 100) }}...</span>
+                </div>
+                {% if f.keywords %}
+                <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.75rem">
+                    {% for kw in f.keywords|split(',')|slice(0, 4) %}
+                    <span style="background:rgba(27,58,107,0.06);border:1px solid rgba(27,58,107,0.1);padding:0.2rem 0.6rem;border-radius:6px;font-size:0.7rem;color:var(--navy);font-weight:500">{{ kw|trim }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;padding:0 1rem;border-left:1px solid var(--border);margin-left:0.5rem">
+                <div style="display:flex;align-items:center;gap:0.4rem;color:#10b981;font-weight:700;font-size:1.1rem">
+                    <i class="fa fa-thumbs-up" style="font-size:0.9rem"></i> {{ f.feedbackUp ?: 0 }}
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;color:#ef4444;font-weight:700;font-size:1.1rem">
+                    <i class="fa fa-thumbs-down" style="font-size:0.9rem"></i> {{ f.feedbackDown ?: 0 }}
+                </div>
+            </div>
+            <span class="status status--{{ f.embedding ? 'confirmed' : 'pending' }}" style="padding:0.5rem 1rem;font-size:0.8rem">
+                {% if f.embedding %}
+                    <i class="fa fa-brain"></i> Indexé IA
+                {% else %}
+                    <i class="fa fa-clock"></i> En attente
+                {% endif %}
+            </span>
+            <div class="booking-card__actions">
+                <a href="{{ path('admin_faq_edit', {id: f.id}) }}" class="btn btn-navy btn-sm" title="Modifier"><i class="fa fa-edit"></i></a>
+                <form action="{{ path('admin_faq_delete', {id: f.id}) }}" method="POST" onsubmit="return confirm('Supprimer cette FAQ ?')" style="display:inline">
+                    <button type="submit" class="btn btn-red btn-sm" title="Supprimer"><i class="fa fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty" style="padding:4rem;text-align:center;background:#fff;border-radius:16px;border:1px solid var(--border)">
+            <div style="width:80px;height:80px;margin:0 auto 1.5rem;background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:20px;display:flex;align-items:center;justify-content:center">
+                <i class="fa fa-robot" style="font-size:2rem;color:#fff"></i>
+            </div>
+            <h3 style="font-size:1.25rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Aucune FAQ trouvée</h3>
+            <p style="color:var(--muted);margin-bottom:1.5rem">Commencez par ajouter votre première question</p>
+            <a href="{{ path('admin_faq_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Créer une FAQ</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if faqs.totalItemCount > faqs.itemNumberPerPage %}
+<div class="admin-pagination">
+    <div class="admin-pagination__info">
+        {{ (faqs.currentPageNumber - 1) * faqs.itemNumberPerPage + 1 }} - {{ min(faqs.currentPageNumber * faqs.itemNumberPerPage, faqs.totalItemCount) }} sur {{ faqs.totalItemCount }}
+    </div>
+    <div class="admin-pagination__pages">
+        {% if faqs.currentPageNumber > 1 %}
+        <a href="{{ path('admin_faq', {page: faqs.currentPageNumber - 1, q: q}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page in faqs.paginationData.pagesInRange %}
+            {% if page == faqs.currentPageNumber %}
+                <span class="admin-pagination__current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path('admin_faq', {page: page, q: q}) }}" class="admin-pagination__btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if faqs.currentPageNumber < faqs.pageCount %}
+        <a href="{{ path('admin_faq', {page: faqs.currentPageNumber + 1, q: q}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.booking-card:hover {
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const chatbotData = {
+    volumeHour: { labels: {{ chatbotAnalytics.volumeByHour|default([])|map(h => h.hour)|json_encode|raw }}, values: {{ chatbotAnalytics.volumeByHour|default([])|map(h => h.count)|json_encode|raw }} },
+    volumeDay: { labels: {{ chatbotAnalytics.volumeByDay|default([])|map(d => d.day)|json_encode|raw }}, values: {{ chatbotAnalytics.volumeByDay|default([])|map(d => d.count)|json_encode|raw }} }
+};
+
+function openChatbotModal() {
+    document.getElementById('chatbotModal').style.display = 'flex';
+    setTimeout(function() {
+        var hourCtx = document.getElementById('chatbotModalHourChart');
+        var dayCtx = document.getElementById('chatbotModalDayChart');
+        if (hourCtx && typeof Chart !== 'undefined') {
+            new Chart(hourCtx, { type: 'line', data: { labels: chatbotData.volumeHour.labels, datasets: [{ label: 'Conversations', data: chatbotData.volumeHour.values, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.1)', borderWidth: 2, tension: 0.4, fill: true }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+        }
+        if (dayCtx && typeof Chart !== 'undefined') {
+            new Chart(dayCtx, { type: 'bar', data: { labels: chatbotData.volumeDay.labels, datasets: [{ label: 'Conversations', data: chatbotData.volumeDay.values, backgroundColor: '#8b5cf6', borderRadius: 6 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+        }
+    }, 100);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+            let timeout;
+            el.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => filterForm.submit(), 600);
+            });
+        });
+    }
+});
+</script>
+
+<div id="chatbotModal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.8);backdrop-filter:blur(4px);align-items:center;justify-content:center" onclick="if(event.target === this) this.style.display='none'">
+    <div style="background:#fff;border-radius:20px;width:95%;max-width:1100px;max-height:92vh;overflow:hidden;position:relative;box-shadow:0 25px 80px rgba(0,0,0,0.4)">
+        <div style="background:linear-gradient(135deg,var(--navy),#2d5a9e);padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;align-items:center;gap:1rem">
+                <div style="width:48px;height:48px;background:var(--gold);border-radius:12px;display:flex;align-items:center;justify-content:center">
+                    <i class="fa fa-robot" style="color:var(--navy);font-size:1.25rem"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0;color:#fff;font-size:1.25rem;font-weight:700">Chatbot FAQ Analytics</h3>
+                    <p style="margin:0;color:rgba(255,255,255,0.7);font-size:.85rem">Performances et statistiques</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('chatbotModal').style.display='none'" style="background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:.75rem;cursor:pointer;color:#fff;font-size:1rem"><i class="fa fa-times"></i></button>
+        </div>
+        <div style="padding:1.5rem;overflow-y:auto;max-height:calc(92vh - 90px)">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+                <div style="background:linear-gradient(135deg,var(--navy),#2d5a9e);padding:1.25rem;border-radius:12px;text-align:center">
+                    <div style="font-size:2rem;font-weight:900;color:#fff">{{ chatbotAnalytics.totalConversations|default(0) }}</div>
+                    <div style="font-size:.8rem;color:rgba(255,255,255,0.8)">Conversations</div>
+                </div>
+                <div style="background:linear-gradient(135deg,var(--gold),#d4a017);padding:1.25rem;border-radius:12px;text-align:center">
+                    <div style="font-size:2rem;font-weight:900;color:var(--navy)">{{ chatbotAnalytics.avgRating|default(0) }} <span style="font-size:1rem">★</span></div>
+                    <div style="font-size:.8rem;color:var(--navy)">Note moyenne</div>
+                </div>
+                <div style="background:linear-gradient(135deg,var(--cyan),#0099b8);padding:1.25rem;border-radius:12px;text-align:center">
+                    <div style="font-size:2rem;font-weight:900;color:#fff">{{ chatbotAnalytics.feedback.positive|default(0) }}%</div>
+                    <div style="font-size:.8rem;color:#fff">Feedback positif</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#ef4444,#dc2626);padding:1.25rem;border-radius:12px;text-align:center">
+                    <div style="font-size:2rem;font-weight:900;color:#fff">{{ chatbotAnalytics.issues.unclear|default(0) + chatbotAnalytics.issues.reformulation|default(0) }}</div>
+                    <div style="font-size:.8rem;color:#fff">Problemes</div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+                <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+                    <h4 style="margin:0 0 1rem;color:var(--navy);font-size:.95rem;font-weight:700"><i class="fa fa-bullseye" style="color:var(--gold);margin-right:.5rem"></i>Top Intentions</h4>
+                    {% for intent in chatbotAnalytics.topIntents|default([]) %}
+                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem">
+                        <div style="flex:1;background:#f1f5f9;border-radius:6px;height:10px"><div style="background:linear-gradient(90deg,var(--navy),var(--cyan));height:100%;width:{{ intent.percentage }}%"></div></div>
+                        <span style="font-size:.8rem;color:var(--text);min-width:50%">{{ intent.intent }}</span>
+                        <span style="font-size:.75rem;color:var(--muted);font-weight:600">{{ intent.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+                    <h4 style="margin:0 0 1rem;color:var(--navy);font-size:.95rem;font-weight:700"><i class="fa fa-tags" style="color:var(--gold);margin-right:.5rem"></i>Mots-cles</h4>
+                    <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+                        {% for kw in chatbotAnalytics.topKeywords|default([]) %}
+                        <span style="background:linear-gradient(135deg,var(--navy),#2d5a9e);padding:.5rem 1rem;border-radius:20px;font-size:.85rem;color:#fff;font-weight:600">{{ kw.keyword }} <span style="opacity:.7">({{ kw.count }})</span></span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+                <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+                    <h4 style="margin:0 0 1rem;color:var(--navy);font-size:.95rem;font-weight:700"><i class="fa fa-clock" style="color:var(--gold);margin-right:.5rem"></i>Volume par heure</h4>
+                    <canvas id="chatbotModalHourChart" height="180"></canvas>
+                </div>
+                <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+                    <h4 style="margin:0 0 1rem;color:var(--navy);font-size:.95rem;font-weight:700"><i class="fa fa-calendar-week" style="color:var(--gold);margin-right:.5rem"></i>Volume par jour</h4>
+                    <canvas id="chatbotModalDayChart" height="180"></canvas>
+                </div>
+            </div>
+            <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+                <h4 style="margin:0 0 1rem;color:var(--navy);font-size:.95rem;font-weight:700"><i class="fa fa-exclamation-triangle" style="color:var(--gold);margin-right:.5rem"></i>Problemes detectes</h4>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+                    <div style="text-align:center;padding:1.25rem;background:linear-gradient(135deg,var(--navy),#2d5a9e);border-radius:12px">
+                        <div style="font-size:2rem;font-weight:900;color:#fff">{{ chatbotAnalytics.issues.unclear|default(0) }}</div>
+                        <div style="font-size:.8rem;color:rgba(255,255,255,0.8);font-weight:600">Question pas claire</div>
+                    </div>
+                    <div style="text-align:center;padding:1.25rem;background:linear-gradient(135deg,var(--gold),#d4a017);border-radius:12px">
+                        <div style="font-size:2rem;font-weight:900;color:var(--navy)">{{ chatbotAnalytics.issues.reformulation|default(0) }}</div>
+                        <div style="font-size:.8rem;color:var(--navy);font-weight:600">Reformulation</div>
+                    </div>
+                    <div style="text-align:center;padding:1.25rem;background:linear-gradient(135deg,var(--cyan),#0099b8);border-radius:12px">
+                        <div style="font-size:2rem;font-weight:900;color:#fff">{{ chatbotAnalytics.issues.abandon|default(0) }}</div>
+                        <div style="font-size:.8rem;color:#fff;font-weight:600">Abandon</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+<div class="booking-card" data-type="{{ item.type }}" data-id="{{ item.id }}" data-entity="{{ item.entity }}" data-entity-id="{{ item.entityId }}" data-deletable="{{ item.entity starts with 'favorite_' ? 'true' : 'false' }}">
+    <div class="booking-card__av" style="background:linear-gradient(135deg,var(--navy),var(--cyan))">
+        {% if item.type starts with 'hebergement' %}<i class="fa fa-hotel"></i>
+        {% elseif item.type starts with 'activity' %}<i class="fa fa-hiking"></i>
+        {% elseif item.type starts with 'circuit' %}<i class="fa fa-route"></i>
+        {% elseif item.type starts with 'favorite' %}<i class="fa fa-heart"></i>
+        {% elseif item.type starts with 'review' %}<i class="fa fa-star"></i>
+        {% elseif item.type starts with 'transport' %}<i class="fa fa-plane"></i>
+        {% elseif item.type starts with 'forum' %}<i class="fa fa-comments"></i>
+        {% else %}<i class="fa fa-circle"></i>{% endif %}
+    </div>
+    <div class="booking-card__info">
+        <div class="booking-card__name"><a href="{{ item.link }}" style="color:inherit;text-decoration:none">{{ item.title }}</a></div>
+        <div class="booking-card__meta">
+            <span><i class="fa fa-clock"></i> {{ item.date|date('H:i') }}</span>
+            {% if item.status is defined and item.status %}
+                {% if item.status == 'confirmed' or item.status == 'confirmee' %}
+                    <span style="color:var(--success)"><i class="fa fa-check-circle"></i> Confirmée</span>
+                {% elseif item.status == 'pending' or item.status == 'en_attente' %}
+                    <span style="color:var(--warning)"><i class="fa fa-clock"></i> En attente</span>
+                {% elseif item.status == 'cancelled' or item.status == 'annulee' %}
+                    <span style="color:var(--red)"><i class="fa fa-times-circle"></i> Annulée</span>
+                {% elseif item.status == 'published' %}
+                    <span style="color:var(--success)"><i class="fa fa-check"></i> Publié</span>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% if item.amount is defined and item.amount %}
+        <div style="font-size:1rem;font-weight:700;color:var(--navy);white-space:nowrap">
+            {{ item.amount|number_format(3) }} <small>TND</small>
+        </div>
+    {% endif %}
+    <div style="display:flex;gap:.5rem;align-items:center">
+        <a href="{{ item.link }}" class="btn btn-navy btn-sm" title="Ouvrir"><i class="fa fa-eye"></i></a>
+        {% if item.entity starts with 'favorite_' %}
+        <button class="btn btn-red btn-sm" title="Supprimer" onclick="deleteSingleItem('{{ item.entity }}', {{ item.entityId }}, this)">
+            <i class="fa fa-trash"></i>
+        </button>
+        {% endif %}
+    </div>
+</div>

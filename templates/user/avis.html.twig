@@ -1,0 +1,114 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Mes Avis — Fly&Go{% endblock %}
+{% block body %}
+<div style="max-width:1280px;margin:0 auto;padding:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900">Mes Avis</h1>
+            <p style="color:var(--muted)">Tous vos avis publiés par module.</p>
+        </div>
+        <div style="display:flex;gap:.75rem">
+            <a href="{{ path('user_profile') }}" class="btn btn-outline"><i class="fa fa-user"></i> Mon profil</a>
+            <a href="{{ path('user_dashboard') }}" class="btn btn-outline">Mon espace</a>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        <div class="acard-wrap">
+            <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-hotel"></i> Hébergements</span></div>
+            <div class="bookings-list">
+                {% for a in hebergements %}
+                <div class="booking-card">
+                    <div class="booking-card__av">★</div>
+                    <div class="booking-card__info">
+                        <div class="booking-card__name">{{ a.hebergement.nom }}</div>
+                        <div class="booking-card__meta">
+                            <span><i class="fa fa-star"></i> {{ a.note }}/5</span>
+                            <span><i class="fa fa-calendar"></i> {{ a.createdAt|date('d/m/Y') }}</span>
+                            {% if a.sentimentLabel %}<span style="padding:2px 8px;border-radius:10px;font-size:0.7rem;margin-left:0.5rem;{% if a.sentimentLabel in ['excellent','good','positive'] %}background:#dcfce7;color:#16a34a{% elseif a.sentimentLabel in ['negative','bad'] %}background:#fee2e2;color:#dc2626{% else %}background:#fef3c7;color:#d97706{% endif %}">{% if a.sentimentLabel == 'excellent' %}excellent{% elseif a.sentimentLabel == 'good' %}bon{% elseif a.sentimentLabel == 'positive' %}positif{% elseif a.sentimentLabel == 'neutral' %}neutre{% elseif a.sentimentLabel == 'negative' %}négatif{% elseif a.sentimentLabel == 'bad' %}mauvais{% endif %}</span>{% endif %}
+                        </div>
+                        <div style="font-size:.82rem;color:var(--muted);margin-top:.5rem">{{ a.commentaire }}</div>
+                    </div>
+                    <form action="{{ path('user_hebergement_avis_delete', {id: a.id}) }}" method="POST">
+                        <button class="btn btn-red btn-sm" onclick="return confirm('Supprimer cet avis ?')"><i class="fa fa-trash"></i></button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis hébergement.</p></div>
+                {% endfor %}
+            </div>
+            {% if hebergements.totalItemCount > hebergements.itemNumberPerPage %}
+            <div style="padding:1rem;text-align:center">
+                {% for page in 1..hebergements.pageCount %}
+                    <a href="{{ path('user_avis', {page: page}) }}" class="btn {{ page == hebergements.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="acard-wrap">
+            <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-hiking"></i> Activités</span></div>
+                <div class="bookings-list">
+                {% for a in activities %}
+                <div class="booking-card">
+                    <div class="booking-card__av">★</div>
+                    <div class="booking-card__info">
+                        <div class="booking-card__name">{{ a.activity.title }}</div>
+                        <div class="booking-card__meta">
+                            <span><i class="fa fa-star"></i> {{ a.rating }}/5</span>
+                            <span><i class="fa fa-calendar"></i> {{ a.createdAt|date('d/m/Y') }}</span>
+                            {% if a.sentimentLabel %}<span style="padding:2px 8px;border-radius:10px;font-size:0.7rem;margin-left:0.5rem;{% if a.sentimentLabel in ['excellent','good','positive'] %}background:#dcfce7;color:#16a34a{% elseif a.sentimentLabel in ['negative','bad'] %}background:#fee2e2;color:#dc2626{% else %}background:#fef3c7;color:#d97706{% endif %}">{% if a.sentimentLabel == 'excellent' %}excellent{% elseif a.sentimentLabel == 'good' %}bon{% elseif a.sentimentLabel == 'positive' %}positif{% elseif a.sentimentLabel == 'neutral' %}neutre{% elseif a.sentimentLabel == 'negative' %}négatif{% elseif a.sentimentLabel == 'bad' %}mauvais{% endif %}</span>{% endif %}
+                        </div>
+                        <div style="font-size:.82rem;color:var(--muted);margin-top:.5rem">{{ a.comment }}</div>
+                    </div>
+                    <form action="{{ path('user_activity_avis_delete', {id: a.id}) }}" method="POST">
+                        <button class="btn btn-red btn-sm" onclick="return confirm('Supprimer cet avis ?')"><i class="fa fa-trash"></i></button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis activité.</p></div>
+                {% endfor %}
+            </div>
+            {% if activities.totalItemCount > activities.itemNumberPerPage %}
+            <div style="padding:1rem;text-align:center">
+                {% for page in 1..activities.pageCount %}
+                    <a href="{{ path('user_avis', {page: page}) }}" class="btn {{ page == activities.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="acard-wrap" style="margin-top:1.5rem">
+        <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-route"></i> Circuits</span></div>
+        <div class="bookings-list">
+            {% for a in circuits %}
+            <div class="booking-card">
+                <div class="booking-card__av">★</div>
+                <div class="booking-card__info">
+                    <div class="booking-card__name">{{ a.circuit.titre }}</div>
+                    <div class="booking-card__meta">
+                        <span><i class="fa fa-star"></i> {{ a.rating }}/5</span>
+                        <span><i class="fa fa-calendar"></i> {{ a.createdAt|date('d/m/Y') }}</span>
+                        {% if a.sentimentLabel %}<span style="padding:2px 8px;border-radius:10px;font-size:0.7rem;margin-left:0.5rem;{% if a.sentimentLabel in ['excellent','good','positive'] %}background:#dcfce7;color:#16a34a{% elseif a.sentimentLabel in ['negative','bad'] %}background:#fee2e2;color:#dc2626{% else %}background:#fef3c7;color:#d97706{% endif %}">{% if a.sentimentLabel == 'excellent' %}excellent{% elseif a.sentimentLabel == 'good' %}bon{% elseif a.sentimentLabel == 'positive' %}positif{% elseif a.sentimentLabel == 'neutral' %}neutre{% elseif a.sentimentLabel == 'negative' %}négatif{% elseif a.sentimentLabel == 'bad' %}mauvais{% endif %}</span>{% endif %}
+                    </div>
+                    <div style="font-size:.82rem;color:var(--muted);margin-top:.5rem">{{ a.comment }}</div>
+                </div>
+                <form action="{{ path('user_circuit_avis_delete', {id: a.id}) }}" method="POST">
+                    <button class="btn btn-red btn-sm" onclick="return confirm('Supprimer cet avis ?')"><i class="fa fa-trash"></i></button>
+                </form>
+            </div>
+            {% else %}
+            <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis circuit.</p></div>
+            {% endfor %}
+        </div>
+        {% if circuits.totalItemCount > circuits.itemNumberPerPage %}
+        <div style="padding:1rem;text-align:center">
+            {% for page in 1..circuits.pageCount %}
+                <a href="{{ path('user_avis', {page: page}) }}" class="btn {{ page == circuits.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

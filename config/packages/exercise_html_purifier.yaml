@@ -1,0 +1,19 @@
+exercise_html_purifier:
+    html_profiles:
+        activity:
+            config:
+                HTML:
+                    Allowed: 'p,br,strong,em,b,i,u,a[href],ul,ol,li,h1,h2,h3,h4,h5,h6,img[src|alt|title],span'
+                CSS:
+                    AllowedProperties: 'color,font-size,font-weight,text-align'
+                URI:
+                    AllowedSchemes: 'http,https,mailto'
+        circuit:
+            config:
+                HTML:
+                    Allowed: 'p,br,strong,em,b,i,u,a[href],ul,ol,li,h1,h2,h3,h4,h5,h6,img[src|alt|title],span,table,tr,td,th,tbody,thead'
+                CSS:
+                    AllowedProperties: 'color,font-size,font-weight,text-align,border-collapse'
+                URI:
+                    AllowedSchemes: 'http,https,mailto'
+    default_cache_serializer_path: '%kernel.cache_dir%/htmlpurifier'

@@ -1,0 +1,119 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Bookings activités — Admin{% endblock %}
+{% block breadcrumb %}Bookings activités{% endblock %}
+{% block admin_body %}
+{% set q = app.request.query.get('q', '') %}
+{% set status = app.request.query.get('status', '') %}
+<div style="margin-bottom:1.5rem">
+    <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Réservations activités</h2>
+    <p style="color:var(--muted);font-size:.85rem">{{ bookings.totalItemCount }} bookings</p>
+</div>
+
+<div class="admin-toolbar">
+    <form method="GET" action="{{ path('admin_bookings') }}" id="filterForm">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="Client, activité..." data-auto-submit>
+            </div>
+            <div class="admin-toolbar__select">
+                <select name="status" data-auto-submit>
+                    <option value="">Tous statuts</option>
+                    <option value="PENDING" {{ status == 'PENDING' ? 'selected' : '' }}>En attente</option>
+                    <option value="CONFIRMED" {{ status == 'CONFIRMED' ? 'selected' : '' }}>Confirmés</option>
+                    <option value="CANCELLED" {{ status == 'CANCELLED' ? 'selected' : '' }}>Annulés</option>
+                </select>
+            </div>
+            <select name="tri" class="admin-toolbar__sort" data-auto-submit>
+                <option value="recent" {{ tri|default('recent') == 'recent' ? 'selected' : '' }}>Plus récents</option>
+                <option value="oldest" {{ tri|default('recent') == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+            </select>
+            {% if q or status %}
+            <a href="{{ path('admin_bookings') }}" class="btn btn-outline btn-sm"><i class="fa fa-times"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="acard-wrap">
+    <div class="bookings-list">
+        {% for b in bookings %}
+        <div class="booking-card">
+            <div class="booking-card__av">{{ b.customerName|slice(0,1)|upper }}</div>
+            <div class="booking-card__info">
+                <div class="booking-card__name">{{ b.customerName }}</div>
+                <div class="booking-card__meta">
+                    <span><i class="fa fa-hiking fa-xs"></i> {{ b.activity.title }}</span>
+                    <span><i class="fa fa-calendar fa-xs"></i> {{ b.bookingDate|date('d/m/Y') }}</span>
+                    <span><i class="fa fa-users fa-xs"></i> {{ b.persons }} pers.</span>
+                    <span><i class="fa fa-envelope fa-xs"></i> {{ b.email }}</span>
+                </div>
+            </div>
+            <div class="booking-card__price">
+                <strong>{{ b.totalPrice|number_format(3, ',', ' ') }}</strong><span>TND</span>
+            </div>
+            <span class="status status--{{ b.status == 'CONFIRMED' ? 'confirmed' : (b.status == 'PENDING' ? 'pending' : 'cancelled') }}">
+                {{ b.status == 'CONFIRMED' ? 'Confirmé' : (b.status == 'PENDING' ? 'En attente' : 'Annulé') }}
+            </span>
+            <div class="booking-card__actions">
+                {% if b.status == 'PENDING' %}
+                <button onclick="changeBooking({{ b.id }}, 'CONFIRMED')" class="btn btn-green btn-sm"><i class="fa fa-check"></i></button>
+                <button onclick="changeBooking({{ b.id }}, 'CANCELLED')" class="btn btn-red btn-sm"><i class="fa fa-times"></i></button>
+                {% endif %}
+                <form action="{{ path('admin_booking_delete', {id: b.id}) }}" method="POST" onsubmit="return confirm('Supprimer ?')">
+                    <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty" style="padding:3rem"><i class="fa fa-shopping-cart"></i><h3>Aucun booking</h3></div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if bookings.totalItemCount > bookings.itemNumberPerPage %}
+<div class="admin-pagination">
+    <div class="admin-pagination__info">
+        {{ (bookings.currentPageNumber - 1) * bookings.itemNumberPerPage + 1 }} - {{ min(bookings.currentPageNumber * bookings.itemNumberPerPage, bookings.totalItemCount) }} sur {{ bookings.totalItemCount }}
+    </div>
+    <div class="admin-pagination__pages">
+        {% if bookings.currentPageNumber > 1 %}
+        <a href="{{ path('admin_bookings', {page: bookings.currentPageNumber - 1, q: q, status: status, tri: tri|default('recent')}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page in bookings.paginationData.pagesInRange %}
+            {% if page == bookings.currentPageNumber %}
+                <span class="admin-pagination__current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path('admin_bookings', {page: page, q: q, status: status, tri: tri|default('recent')}) }}" class="admin-pagination__btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if bookings.currentPageNumber < bookings.pageCount %}
+        <a href="{{ path('admin_bookings', {page: bookings.currentPageNumber + 1, q: q, status: status, tri: tri|default('recent')}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block javascripts %}
+<script>
+function changeBooking(id, status) {
+    if(!confirm('Changer le statut ?')) return;
+    $.post('{{ path("admin_booking_statut", {"id": "__ID__"}) }}'.replace('__ID__', id), {status})
+     .done(()=>{ showToast('✅ Statut mis à jour !'); setTimeout(()=>location.reload(),900); })
+     .fail(()=>showToast('Erreur','error'));
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+            let timeout;
+            el.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => filterForm.submit(), 600);
+            });
+            el.addEventListener('change', () => filterForm.submit());
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,660 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}{{ faq ? 'Modifier' : 'Créer' }} une FAQ — Fly&Go Admin{% endblock %}
+{% block breadcrumb %}{{ faq ? 'Modifier FAQ' : 'Nouvelle FAQ' }}{% endblock %}
+
+{% block admin_body %}
+<style>
+.faq-creator { background: var(--bg); min-height: 100vh; padding: 1.5rem; }
+.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.breadcrumb-nav { display: flex; align-items: center; gap: 0.5rem; }
+.back-link {
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--r-sm);
+    color: var(--muted); text-decoration: none; transition: all var(--t);
+}
+.back-link:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+.current { font-weight: 500; color: var(--text); }
+.top-actions { display: flex; gap: 0.5rem; }
+.btn-icon {
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--r-sm);
+    color: var(--muted); cursor: pointer; transition: all var(--t);
+}
+.btn-icon:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+.content-grid { display: grid; grid-template-columns: 1fr 420px; gap: 1.5rem; align-items: start; }
+@media (max-width: 1200px) { .content-grid { grid-template-columns: 1fr; } }
+.main-panel { display: flex; flex-direction: column; gap: 1rem; }
+.section-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--r);
+    box-shadow: var(--s1); padding: 1.5rem;
+}
+.section-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.section-icon {
+    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    background: rgba(27,58,107,0.1); color: var(--navy); border-radius: var(--r-sm);
+    font-size: 1.1rem; flex-shrink: 0;
+}
+.section-info { flex: 1; }
+.section-info h2 { font-size: 1rem; font-weight: 600; color: var(--text); margin: 0 0 0.25rem 0; }
+.section-info p { font-size: 0.8rem; color: var(--muted); margin: 0; line-height: 1.4; }
+.section-badge { font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 20px; flex-shrink: 0; }
+.section-badge.required { background: rgba(239,68,68,0.15); color: #ef4444; }
+.section-badge.optional { background: var(--bg); color: var(--muted); }
+.input-wrapper { position: relative; }
+.flex-grow { flex: 1; }
+.faq-suggestions {
+    position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm);
+    box-shadow: var(--s2); z-index: 100; max-height: 200px; overflow-y: auto;
+    display: none;
+}
+.faq-suggestions.active { display: block; }
+.faq-suggestion {
+    padding: 0.65rem 0.875rem; cursor: pointer; border-bottom: 1px solid var(--border);
+    transition: background var(--t);
+}
+.faq-suggestion:last-child { border-bottom: none; }
+.faq-suggestion:hover { background: var(--bg); }
+.faq-suggestion__q { font-size: 0.8rem; font-weight: 500; color: var(--text); margin-bottom: 0.15rem; }
+.faq-suggestion__a { font-size: 0.7rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.input-autosize {
+    width: 100%; padding: 0.875rem 1rem; border: 1.5px solid var(--border); border-radius: var(--r-sm);
+    font-size: 0.9rem; font-family: var(--font); color: var(--text); background: var(--bg);
+    transition: all var(--t); resize: none; line-height: 1.5; position: relative;
+    z-index: 1;
+}
+.input-autosize:focus { outline: none; border-color: var(--navy); background: #fff; }
+.input-autosize:focus + .faq-suggestions { border-top: none; }
+.input-autosize::placeholder { color: var(--muted); }
+.input-meta { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: var(--muted); }
+.quick-phrases, .answer-templates, .keyword-suggestions { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border); }
+.quick-phrases .label, .answer-templates .label, .keyword-suggestions .suggest-label { font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.5rem; }
+.phrases-list, .templates-list, .suggest-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.phrase-chip {
+    padding: 0.35rem 0.75rem; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 20px; font-size: 0.75rem; color: var(--text); cursor: pointer;
+    transition: all var(--t); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.phrase-chip:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+.template-btn {
+    display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 0.75rem;
+    color: var(--text); cursor: pointer; transition: all var(--t);
+}
+.template-btn:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+.keywords-manager { display: flex; flex-direction: column; gap: 0.75rem; }
+.keyword-input-row { display: flex; gap: 0.5rem; }
+.keyword-input {
+    flex: 1; padding: 0.75rem 1rem; border: 1.5px solid var(--border); border-radius: var(--r-sm);
+    font-size: 0.875rem; font-family: var(--font); color: var(--text); background: var(--bg); transition: all var(--t);
+}
+.keyword-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,58,107,0.08); }
+.btn-add-keyword {
+    padding: 0 1rem; background: var(--navy); color: #fff; border: none; border-radius: var(--r-sm);
+    font-size: 1rem; cursor: pointer; transition: all var(--t);
+}
+.btn-add-keyword:hover { background: var(--navy-d); }
+.tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 32px; }
+.keyword-chip {
+    display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.6rem 0.35rem 0.75rem;
+    background: rgba(27,58,107,0.1); color: var(--navy); border-radius: 20px; font-size: 0.8rem;
+    font-weight: 600; animation: chipIn 0.2s ease;
+}
+@keyframes chipIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.remove-tag { background: none; border: none; color: var(--navy); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0; opacity: 0.7; }
+.remove-tag:hover { opacity: 1; }
+.sug-chip { padding: 0.3rem 0.6rem; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 15px; font-size: 0.7rem; cursor: pointer; transition: all var(--t); }
+.sug-chip:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+.settings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.setting-item { display: flex; flex-direction: column; gap: 0.4rem; }
+.setting-item label { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
+.select-input { padding: 0.6rem 0.75rem; border: 1.5px solid var(--border); border-radius: var(--r-sm); font-size: 0.85rem; color: var(--text); background: var(--bg); cursor: pointer; }
+.select-input:focus { outline: none; border-color: var(--navy); }
+.form-actions { display: flex; justify-content: flex-end; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.btn-secondary {
+    display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--r-sm); color: var(--text);
+    font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: all var(--t);
+}
+.btn-secondary:hover { background: var(--bg); border-color: var(--muted); }
+.btn-primary {
+    display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--navy);
+    border: none; border-radius: var(--r-sm); color: #fff; font-size: 0.875rem; font-weight: 600;
+    cursor: pointer; transition: all var(--t);
+}
+.btn-primary:hover { background: var(--navy-d); }
+.preview-panel { position: sticky; top: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+.preview-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem; }
+.bot-info { display: flex; align-items: center; gap: 0.75rem; }
+.bot-avatar { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--navy); color: #fff; border-radius: 50%; font-size: 1rem; }
+.bot-name { display: block; font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.bot-status { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #10b981; }
+.status-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.preview-badge { font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; background: rgba(27,58,107,0.1); color: var(--navy); border-radius: 15px; }
+.chat-container { background: var(--bg2); border-radius: var(--r); padding: 1rem; min-height: 280px; }
+.chat-messages { display: flex; flex-direction: column; gap: 1rem; }
+.message { display: flex; gap: 0.6rem; max-width: 90%; }
+.message.bot-message { align-self: flex-start; }
+.message.user-message { align-self: flex-end; flex-direction: row-reverse; }
+.message-avatar { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.75rem; flex-shrink: 0; }
+.bot-message .message-avatar { background: var(--navy); color: #fff; }
+.user-message .message-avatar { background: #10b981; color: #fff; }
+.message-content { background: var(--card); border-radius: 16px; padding: 0.75rem 1rem; box-shadow: var(--s1); }
+.user-message .message-content { background: var(--navy); color: #fff; }
+.message-text { font-size: 0.85rem; line-height: 1.5; }
+.message-text p { margin: 0; }
+.message-time { display: block; font-size: 0.65rem; color: var(--muted); margin-top: 0.35rem; }
+.user-message .message-time { color: rgba(255,255,255,0.7); text-align: right; }
+.message-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+.action-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: none; border: 1px solid var(--border); border-radius: 50%; color: var(--muted); cursor: pointer; font-size: 0.7rem; transition: all var(--t); }
+.action-btn:hover { background: var(--bg); color: var(--navy); }
+.typing-indicator { display: flex; gap: 4px; padding: 0.75rem 1rem; background: var(--card); border-radius: 16px; width: fit-content; }
+.typing-indicator span { width: 8px; height: 8px; background: var(--muted); border-radius: 50%; animation: typing 1.4s infinite; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+.preview-footer { display: flex; align-items: center; justify-content: center; gap: 0.4rem; font-size: 0.7rem; color: var(--muted); padding: 0.6rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--r); border-top-left-radius: 0; border-top-right-radius: 0; }
+.preview-footer i { color: #10b981; animation: pulse 2s infinite; }
+.tips-panel, .stats-panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--s1); }
+.tips-header, .stats-header { display: flex; align-items: center; gap: 0.5rem; padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 0.85rem; color: var(--text); }
+.tips-header i, .stats-header i { color: var(--gold); }
+.tips-list { margin: 0; padding: 0.75rem 1rem; list-style: none; }
+.tips-list li { font-size: 0.8rem; color: var(--text); padding: 0.4rem 0; padding-left: 1.25rem; position: relative; }
+.tips-list li::before { content: '✓'; position: absolute; left: 0; color: #10b981; font-weight: bold; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); padding: 1rem; gap: 0.5rem; }
+.stat-item { text-align: center; }
+.stat-value { display: block; font-size: 1.25rem; font-weight: 700; color: var(--text); }
+.stat-label { font-size: 0.7rem; color: var(--muted); }
+@media (max-width: 768px) { .faq-creator { padding: 1rem; } .settings-grid { grid-template-columns: 1fr; } .section-header { flex-wrap: wrap; } }
+
+.spell-modal {
+    position: fixed; z-index: 10000; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15,23,42,0.6); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+}
+.spell-modal-content {
+    background: #fff; border-radius: 16px; width: 90%; max-width: 520px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35); overflow: hidden;
+}
+.spell-modal-header {
+    display: flex; align-items: center; gap: 1rem; padding: 1.5rem 1.5rem 1rem;
+    background: linear-gradient(135deg, #fef9c3, #fef3c7); border-bottom: 1px solid #fde68a;
+}
+.spell-modal-icon {
+    width: 48px; height: 48px; background: #f59e0b; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.25rem;
+}
+.spell-modal-title h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--navy); }
+.spell-modal-title p { margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--muted); }
+.spell-modal-body { padding: 1.25rem; max-height: 280px; overflow-y: auto; background: var(--bg); }
+.spell-change {
+    background: var(--card); border-radius: 10px; padding: 0.875rem; margin-bottom: 0.75rem;
+    border: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.5rem;
+}
+.spell-change:last-child { margin-bottom: 0; }
+.spell-change-label { font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.spell-change-row { display: flex; align-items: center; gap: 0.75rem; }
+.spell-wrong { flex: 1; padding: 0.5rem 0.75rem; background: #fee2e2; border-radius: 6px; font-size: 0.85rem; color: #b91c1c; text-decoration: line-through; }
+.spell-arrow { color: var(--muted); font-size: 0.9rem; }
+.spell-correct { flex: 1; padding: 0.5rem 0.75rem; background: #dcfce7; border-radius: 6px; font-size: 0.85rem; color: #166534; font-weight: 500; }
+.spell-modal-footer { display: flex; gap: 0.75rem; padding: 1rem 1.5rem; background: var(--card); border-top: 1px solid var(--border); }
+.btn-cancel { flex: 1; padding: 0.65rem; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+.btn-cancel:hover { background: var(--border); }
+.btn-apply { flex: 1; padding: 0.65rem; background: var(--navy); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+.btn-apply:hover { background: var(--navy-d); }
+</style>
+
+<div class="faq-creator">
+    <div class="top-bar">
+        <div class="breadcrumb-nav">
+            <a href="{{ path('admin_faq') }}" class="back-link"><i class="fa fa-arrow-left"></i></a>
+            <span class="current">{{ faq ? 'Modifier' : 'Nouvelle' }} FAQ</span>
+        </div>
+        <div class="top-actions">
+            <button type="button" class="btn-icon" title="Aperçu"><i class="fa fa-eye"></i></button>
+            <button type="button" class="btn-icon" title="Historique"><i class="fa fa-history"></i></button>
+        </div>
+    </div>
+
+    <div id="spellModal" class="spell-modal" style="display:none">
+        <div class="spell-modal-content">
+            <div class="spell-modal-header">
+                <div class="spell-modal-icon"><i class="fa fa-pen-to-square"></i></div>
+                <div class="spell-modal-title">
+                    <h3>Vérification orthographique</h3>
+                    <p>Corrections suggérées pour votre FAQ</p>
+                </div>
+            </div>
+            <div class="spell-modal-body" id="spellModalBody"></div>
+            <div class="spell-modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeSpellModal()">Ignorer</button>
+                <button type="button" class="btn-apply" id="btnApplySpell" onclick="applySpellCorrection()">Appliquer les corrections</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <div class="main-panel">
+            <form action="{{ faq ? path('admin_faq_edit', {id: faq.id}) : path('admin_faq_new') }}" method="POST" id="faqForm" class="faq-form">
+                
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fa fa-question-circle"></i></div>
+                        <div class="section-info flex-grow">
+                            <h2>Question</h2>
+                            <p>La question que l'utilisateur posera au chatbot</p>
+                        </div>
+                        <div class="section-badge required">Requis</div>
+                    </div>
+                    <div class="input-wrapper" style="position: relative;">
+                        <textarea name="question" id="question" rows="2" required minlength="5" maxlength="255" placeholder="Ex: Comment annuler ma réservation ?" class="input-autosize">{{ faq ? faq.question : '' }}</textarea>
+                        <div class="faq-suggestions" id="faqSuggestions"></div>
+                        <div class="input-meta"><span class="char-count"><span id="qCount">0</span>/255 caractères</span></div>
+                    </div>
+                    <div class="quick-phrases">
+                        <span class="label">Phrases suggérées :</span>
+                        <div class="phrases-list">
+                            <button type="button" class="phrase-chip" data-text="Comment modifier ma réservation ?">Comment modifier...</button>
+                            <button type="button" class="phrase-chip" data-text="Quel est le délai de remboursement ?">Délai de remboursement</button>
+                            <button type="button" class="phrase-chip" data-text="Puis-je changer les dates ?">Changer les dates</button>
+                            <button type="button" class="phrase-chip" data-text="Où trouver mon billet ?">Où trouver mon billet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fa fa-comment-dots"></i></div>
+                        <div class="section-info">
+                            <h2>Réponse</h2>
+                            <p>La réponse que le chatbot affichera</p>
+                        </div>
+                        <div class="section-badge required">Requis</div>
+                    </div>
+                    <div class="input-wrapper">
+                        <textarea name="answer" id="answer" rows="6" required placeholder="Saisissez la réponse détaillée (2 à 4 phrases recommandées)..." class="input-autosize">{{ faq ? faq.answer : '' }}</textarea>
+                        <div class="input-meta">
+                            <span class="word-count"><span id="aCount">0</span> mots</span>
+                            <span class="read-time">~<span id="rt">0</span> sec de lecture</span>
+                        </div>
+                    </div>
+                    <div class="answer-templates">
+                        <span class="label">Modèles :</span>
+                        <div class="templates-list">
+                            <button type="button" class="template-btn" data-template="confirmation"><i class="fa fa-check-circle"></i> Confirmation</button>
+                            <button type="button" class="template-btn" data-template="refund"><i class="fa fa-money-bill-wave"></i> Remboursement</button>
+                            <button type="button" class="template-btn" data-template="contact"><i class="fa fa-envelope"></i> Contact</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fa fa-tags"></i></div>
+                        <div class="section-info">
+                            <h2>Mots-clés</h2>
+                            <p>Tags pour améliorer la recherche</p>
+                        </div>
+                        <div class="section-badge optional">Optionnel</div>
+                    </div>
+                    <div class="keywords-manager">
+                        <div class="keyword-input-row">
+                            <input type="text" id="keywordInput" placeholder="Tapez un mot-clé et appuyez sur Entrée..." class="keyword-input">
+                            <button type="button" id="addKeywordBtn" class="btn-add-keyword"><i class="fa fa-plus"></i></button>
+                        </div>
+                        <input type="hidden" name="keywords" id="keywords" value="{{ faq ? faq.keywords : '' }}">
+                        <div id="tagsContainer" class="tags-container">
+                            {% if faq and faq.keywords %}
+                                {% for kw in faq.keywords|split(',') %}
+                                    <span class="keyword-chip">{{ kw|trim }}<button type="button" class="remove-tag" data-key="{{ kw|trim }}">&times;</button></span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="keyword-suggestions">
+                            <span class="suggest-label">Suggestions :</span>
+                            <div class="suggest-tags">
+                                <button type="button" class="sug-chip" data-key="annulation">annulation</button>
+                                <button type="button" class="sug-chip" data-key="réservation">réservation</button>
+                                <button type="button" class="sug-chip" data-key="remboursement">remboursement</button>
+                                <button type="button" class="sug-chip" data-key="modifier">modifier</button>
+                                <button type="button" class="sug-chip" data-key="billet">billet</button>
+                                <button type="button" class="sug-chip" data-key="vol">vol</button>
+                                <button type="button" class="sug-chip" data-key="hôtel">hôtel</button>
+                                <button type="button" class="sug-chip" data-key="contact">contact</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card settings-card">
+                    <div class="section-header">
+                        <div class="section-icon"><i class="fa fa-cog"></i></div>
+                        <div class="section-info">
+                            <h2>Paramètres</h2>
+                            <p>Options avancées de la FAQ</p>
+                        </div>
+                    </div>
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label>Catégorie</label>
+                            <select name="category" class="select-input">
+                                <option value="general" {{ faq and faq.category == 'general' ? 'selected' : '' }}>Générale</option>
+                                <option value="booking" {{ faq and faq.category == 'booking' ? 'selected' : '' }}>Réservation</option>
+                                <option value="payment" {{ faq and faq.category == 'payment' ? 'selected' : '' }}>Paiement</option>
+                                <option value="technical" {{ faq and faq.category == 'technical' ? 'selected' : '' }}>Technique</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Statut</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="active" {{ (not faq) or faq.active ? 'checked' : '' }}>
+                                <span class="toggle-slider"></span>
+                                <span class="toggle-label">Active</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ path('admin_faq') }}" class="btn-secondary"><i class="fa fa-times"></i> Annuler</a>
+                    <button type="submit" class="btn-primary"><i class="fa fa-check"></i> {{ faq ? 'Mettre à jour' : 'Créer la FAQ' }}</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="preview-panel">
+            <div class="preview-header">
+                <div class="bot-info">
+                    <div class="bot-avatar"><i class="fa fa-robot"></i></div>
+                    <div class="bot-details">
+                        <span class="bot-name">Fly&Go Assistant</span>
+                        <span class="bot-status"><span class="status-dot"></span> En ligne</span>
+                    </div>
+                </div>
+                <div class="preview-badge">Aperçu</div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        <div class="message-avatar"><i class="fa fa-headset"></i></div>
+                        <div class="message-content">
+                            <div class="message-text"><p>Bonjour ! Je suis votre assistant Fly&Go. Posez-moi votre question et je ferai de mon mieux pour vous aider.</p></div>
+                            <span class="message-time">Maintenant</span>
+                        </div>
+                    </div>
+                    <div class="message user-message" id="userMessage" style="display: none;">
+                        <div class="message-content">
+                            <div class="message-text" id="previewQuestion"><p>{{ faq ? faq.question : 'Comment annuler ma réservation ?' }}</p></div>
+                            <span class="message-time">Maintenant</span>
+                        </div>
+                        <div class="message-avatar"><i class="fa fa-user"></i></div>
+                    </div>
+                    <div class="message bot-message" id="botResponse" style="display: none;">
+                        <div class="message-avatar"><i class="fa fa-headset"></i></div>
+                        <div class="message-content">
+                            <div class="message-text" id="previewAnswer"><p>{{ faq ? faq.answer : 'Pour annuler votre réservation, vous pouvez le faire depuis votre espace membre dans la section "Mes réservations". Le montant sera remboursé sous 5 à 10 jours ouvrés.' }}</p></div>
+                            <div class="message-actions">
+                                <button type="button" class="action-btn" title="Copier"><i class="fa fa-copy"></i></button>
+                                <button type="button" class="action-btn" title="Partager"><i class="fa fa-share"></i></button>
+                            </div>
+                            <span class="message-time">Maintenant</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="typing-indicator" id="typingIndicator" style="display: none;"><span></span><span></span><span></span></div>
+            </div>
+
+            <div class="preview-footer"><i class="fa fa-sync-alt"></i><span>Aperçu en temps réel</span></div>
+
+            <div class="tips-panel">
+                <div class="tips-header"><i class="fa fa-lightbulb"></i><span>Conseils</span></div>
+                <ul class="tips-list">
+                    <li>Utilisez des questions courtes et claires</li>
+                    <li>Répondez en 2-4 phrases maximum</li>
+                    <li>Ajoutez des mots-clés pertinents</li>
+                    <li>Testez avant de publier</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const qInput = document.getElementById('question');
+    const aInput = document.getElementById('answer');
+    const kInput = document.getElementById('keywords');
+    const kwInput = document.getElementById('keywordInput');
+    const addKwBtn = document.getElementById('addKeywordBtn');
+    const tagsContainer = document.getElementById('tagsContainer');
+    const pQ = document.getElementById('previewQuestion');
+    const pA = document.getElementById('previewAnswer');
+    const userMsg = document.getElementById('userMessage');
+    const botResp = document.getElementById('botResponse');
+    const qCount = document.getElementById('qCount');
+    const aCount = document.getElementById('aCount');
+    const rtCount = document.getElementById('rt');
+    const typingInd = document.getElementById('typingIndicator');
+
+    function getKeywords() { return kInput.value ? kInput.value.split(',').map(k => k.trim()).filter(k => k) : []; }
+
+    function renderTags() {
+        const keys = getKeywords();
+        tagsContainer.innerHTML = keys.map(k => '<span class="keyword-chip">' + k + '<button type="button" class="remove-tag" data-key="' + k + '">&times;</button></span>').join('');
+        document.querySelectorAll('.remove-tag').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const key = this.getAttribute('data-key');
+                kInput.value = getKeywords().filter(k => k !== key).join(', ');
+                renderTags();
+            });
+        });
+    }
+    renderTags();
+
+    addKwBtn.addEventListener('click', function() {
+        const kw = kwInput.value.trim();
+        if (kw && !getKeywords().includes(kw)) {
+            kInput.value = getKeywords().concat(kw).join(', ');
+            renderTags();
+            kwInput.value = '';
+        }
+    });
+
+    kwInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); addKwBtn.click(); } });
+
+    document.querySelectorAll('.sug-chip').forEach(tag => {
+        tag.addEventListener('click', function() {
+            const key = this.getAttribute('data-key');
+            if (!getKeywords().includes(key)) {
+                kInput.value = getKeywords().concat(key).join(', ');
+                renderTags();
+            }
+        });
+    });
+
+    function updatePreview() {
+        qCount.textContent = qInput.value.length;
+        pQ.querySelector('p').textContent = qInput.value || 'Comment annuler ma réservation ?';
+        const words = aInput.value.trim().split(/\s+/).filter(w => w).length;
+        aCount.textContent = words;
+        rtCount.textContent = Math.max(1, Math.ceil(words / 200 * 60));
+        pA.querySelector('p').textContent = aInput.value || 'Pour annuler votre réservation, vous pouvez le faire depuis votre espace membre dans la section "Mes réservations". Le montant sera remboursé sous 5 à 10 jours ouvrés.';
+        
+        if (aInput.value.trim()) {
+            userMsg.style.display = 'flex';
+            typingInd.style.display = 'flex';
+            setTimeout(() => { typingInd.style.display = 'none'; botResp.style.display = 'flex'; }, 800);
+        } else {
+            userMsg.style.display = 'none';
+            botResp.style.display = 'none';
+        }
+    }
+
+    qInput.addEventListener('input', function() {
+        qCount.textContent = this.value.length;
+        pQ.querySelector('p').textContent = this.value || 'Bonjour ! Je suis votre assistant Fly&Go.';
+    });
+
+    aInput.addEventListener('input', updatePreview);
+    updatePreview();
+
+    document.querySelectorAll('.phrase-chip').forEach(btn => {
+        btn.addEventListener('click', function() {
+            qInput.value = this.getAttribute('data-text');
+            qCount.textContent = qInput.value.length;
+            pQ.querySelector('p').textContent = qInput.value;
+        });
+    });
+
+    const templates = {
+        confirmation: 'Votre demande a bien été enregistrée. Nous vous confirmerons la prise en charge sous 24h par email.',
+        refund: 'Votre demande de remboursement a été acceptée. Le montant sera crédité sur votre compte sous 5 à 10 jours ouvrés.',
+        contact: 'Pour toute question supplémentaire, vous pouvez nous contacter par email à support@flyandgo.tn ou au +216 31 000 000.'
+    };
+
+    document.querySelectorAll('.template-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tpl = this.getAttribute('data-template');
+            if (templates[tpl]) { aInput.value = templates[tpl]; updatePreview(); }
+        });
+    });
+
+    document.querySelectorAll('.input-autosize').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+
+    // Autocomplete
+    const faqSuggestions = document.getElementById('faqSuggestions');
+    let acTimeout;
+    qInput.addEventListener('input', function() {
+        clearTimeout(acTimeout);
+        const v = this.value.trim();
+        if (v.length < 2) { faqSuggestions.classList.remove('active'); return; }
+        acTimeout = setTimeout(function() {
+            fetch('{{ path("admin_faq_autocomplete") }}?q=' + encodeURIComponent(v) + '{{ faq ? "&exclude=" ~ faq.id : "" }}')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.length) { faqSuggestions.classList.remove('active'); return; }
+                faqSuggestions.innerHTML = data.map(function(f) {
+                    return '<div class="faq-suggestion" data-q="' + f.question.replace(/"/g, '&quot;') + '" data-a="' + f.answer.replace(/"/g, '&quot;') + '">' +
+                        '<div class="faq-suggestion__q">' + f.question + '</div>' +
+                        '<div class="faq-suggestion__a">' + (f.answer.length > 60 ? f.answer.substring(0, 60) + '...' : f.answer) + '</div>' +
+                    '</div>';
+                }).join('');
+                faqSuggestions.querySelectorAll('.faq-suggestion').forEach(function(el) {
+                    el.addEventListener('click', function() {
+                        qInput.value = this.getAttribute('data-q');
+                        aInput.value = this.getAttribute('data-a');
+                        qCount.textContent = qInput.value.length;
+                        aCount.textContent = aInput.value.split(/\s+/).filter(function(w) { return w; }).length;
+                        pQ.querySelector('p').textContent = qInput.value;
+                        pA.querySelector('p').textContent = aInput.value;
+                        faqSuggestions.classList.remove('active');
+                    });
+                });
+                faqSuggestions.classList.add('active');
+            });
+        }, 250);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!faqSuggestions.contains(e.target) && e.target !== qInput) {
+            faqSuggestions.classList.remove('active');
+        }
+    });
+
+    // Form submit with spell check
+    document.getElementById('faqForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const question = qInput.value.trim();
+        const answer = aInput.value.trim();
+        const keywords = kwInput.value.trim();
+        
+        if (!question || !answer) {
+            alert('La question et la réponse sont obligatoires.');
+            return;
+        }
+        
+        // Call spell check API
+        fetch('{{ path("admin_faq_spellcheck") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, answer, keywords })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.hasChanges) {
+                showSpellModal(data.changes);
+            } else {
+                e.target.submit();
+            }
+        })
+        .catch(function() {
+            e.target.submit();
+        });
+    });
+
+    let pendingCorrection = null;
+
+    function showSpellModal(changes) {
+        const modal = document.getElementById('spellModal');
+        const body = document.getElementById('spellModalBody');
+        
+        body.innerHTML = '';
+        
+        changes.forEach(function(change) {
+            if (change.field === 'question' || change.field === 'answer' || change.field === 'keywords') {
+                var html = '<div class="spell-change">' +
+                    '<div class="spell-change-label">' + change.field + '</div>' +
+                    '<div class="spell-change-row">' +
+                        '<div class="spell-wrong">' + change.original + '</div>' +
+                        '<div class="spell-arrow">→</div>' +
+                        '<div class="spell-correct">' + change.corrected + '</div>' +
+                    '</div>' +
+                '</div>';
+                body.innerHTML += html;
+            }
+        });
+        
+        pendingCorrection = changes;
+        modal.style.display = 'flex';
+    }
+
+    function closeSpellModal() {
+        document.getElementById('spellModal').style.display = 'none';
+    }
+
+    function applySpellCorrection() {
+        if (pendingCorrection) {
+            pendingCorrection.forEach(function(change) {
+                if (change.field === 'question') {
+                    qInput.value = change.corrected;
+                    qCount.textContent = change.corrected.length;
+                    pQ.querySelector('p').textContent = change.corrected;
+                } else if (change.field === 'answer') {
+                    aInput.value = change.corrected;
+                    var words = change.corrected.trim().split(/\s+/).filter(function(w) { return w; });
+                    aCount.textContent = words.length;
+                    rtCount.textContent = Math.max(1, Math.ceil(words.length / 200 * 60));
+                    pA.querySelector('p').textContent = change.corrected;
+                } else if (change.field === 'keywords') {
+                    kwInput.value = change.corrected;
+                }
+            });
+        }
+        closeSpellModal();
+        document.getElementById('faqForm').submit();
+    }
+
+    window.closeSpellModal = closeSpellModal;
+    window.applySpellCorrection = applySpellCorrection;
+});
+</script>
+{% endblock %}

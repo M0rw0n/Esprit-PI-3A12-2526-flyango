@@ -1,0 +1,8 @@
+knp_paginator:
+    page_range: 5
+    default_options:
+        page_name: page
+        distinct: true
+    template:
+        pagination: '@KnpPaginator/Pagination/twitter_bootstrap_pagination.html.twig'
+        sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'

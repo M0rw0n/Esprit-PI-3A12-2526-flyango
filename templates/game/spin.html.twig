@@ -1,0 +1,98 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Roue Lucky — Fly&Go{% endblock %}
+{% block body %}
+
+<div style="max-width:800px;margin:0 auto;padding:2rem;text-align:center">
+    <a href="{{ path('games_index') }}" style="color:var(--navy);text-decoration:none;font-size:.9rem">
+        <i class="fa fa-arrow-left"></i> Retour aux jeux
+    </a>
+    
+    <h1 style="font-size:2rem;font-weight:900;color:var(--navy);margin:1rem 0">
+        <i class="fa fa-circle-notch"></i> Roue Lucky
+    </h1>
+    <p style="color:var(--muted);margin-bottom:2rem">Tournez la roue pour gagner des réductions!</p>
+    
+    <div style="position:relative;display:inline-block;margin:2rem 0">
+        <div id="wheel" style="width:350px;height:350px;border-radius:50%;background:conic-gradient(
+            #EF4444 0deg 45deg,
+            #F59E0B 45deg 90deg,
+            #10B981 90deg 135deg,
+            #06B6D4 135deg 180deg,
+            #8B5CF6 180deg 225deg,
+            #EC4899 225deg 270deg,
+            #F59E0B 270deg 315deg,
+            #06B6D4 315deg 360deg
+        );box-shadow:0 10px 40px rgba(0,0,0,0.2);transition:transform 3s ease-out">
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center">
+                <span id="prizeText" style="font-size:1.5rem;font-weight:900;color:var(--navy)">🎰</span>
+            </div>
+        </div>
+        
+        <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-top:30px solid var(--navy)"></div>
+    </div>
+    
+    <button id="spinBtn" onclick="spinWheel()" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;border:none;padding:1rem 3rem;border-radius:50px;font-size:1.25rem;font-weight:700;cursor:pointer">
+        <i class="fa fa-play"></i> Tourner!
+    </button>
+    
+    <div id="resultMsg" style="margin-top:2rem;font-size:1.25rem;font-weight:700;display:none"></div>
+    
+    <div style="margin-top:3rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap">
+        <span style="background:#EF4444;color:#fff;padding:.5rem 1rem;border-radius:8px">-10%</span>
+        <span style="background:#F59E0B;color:#fff;padding:.5rem 1rem;border-radius:8px">-5%</span>
+        <span style="background:#10B981;color:#fff;padding:.5rem 1rem;border-radius:8px">Free night</span>
+        <span style="background:#06B6D4;color:#fff;padding:.5rem 1rem;border-radius:8px">50 TND</span>
+        <span style="background:#8B5CF6;color:#fff;padding:.5rem 1rem;border-radius:8px">Upgrade</span>
+        <span style="background:#EC4899;color:#fff;padding:.5rem 1rem;border-radius:8px">-15%</span>
+        <span style="background:#94A3B8;color:#fff;padding:.5rem 1rem;border-radius:8px">Retry</span>
+    </div>
+</div>
+
+<script>
+const prizes = [-10, -5, 'free', 50, 'upgrade', -15, 'retry', 'mystery'];
+const colors = ['#EF4444', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6', '#EC4899', '#F59E0B', '#06B6D4'];
+let isSpinning = false;
+
+function spinWheel() {
+    if (isSpinning) return;
+    isSpinning = true;
+    
+    const btn = document.getElementById('spinBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Tournant...';
+    
+    const wheel = document.getElementById('wheel');
+    const randomDegree = Math.floor(Math.random() * 360) + 720;
+    const prizeIndex = Math.floor((randomDegree % 360) / 45);
+    
+    wheel.style.transform = 'rotate(' + randomDegree + 'deg)';
+    
+    setTimeout(() => {
+        isSpinning = false;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-play"></i> Tourner!';
+        
+        const resultMsg = document.getElementById('resultMsg');
+        resultMsg.style.display = 'block';
+        
+        const prize = prizes[prizeIndex];
+        
+        if (prize === 'retry') {
+            resultMsg.innerHTML = '<span style="color:var(--muted)">Dommage! Réessayez.</span>';
+        } else if (prize === 'free') {
+            resultMsg.innerHTML = '<span style="color:#10B981;font-size:1.5rem">🎉 Nuit gratuite!</span>';
+        } else if (prize === 50) {
+            resultMsg.innerHTML = '<span style="color:#F59E0B;font-size:1.5rem">🎉 50 TND crédit!</span>';
+        } else if (prize === 'upgrade') {
+            resultMsg.innerHTML = '<span style="color:#8B5CF6;font-size:1.5rem">🎉 Upgrade gratuit!</span>';
+        } else if (prize < 0) {
+            resultMsg.innerHTML = '<span style="color:#10B981;font-size:1.5rem">🎉 ' + prize + '% de réduction!</span>';
+        } else {
+            resultMsg.innerHTML = '<span style="color:var(--gold)">🎉 ' + prize + ' TND!</span>';
+        }
+        
+    }, 3000);
+}
+</script>
+
+{% endblock %}

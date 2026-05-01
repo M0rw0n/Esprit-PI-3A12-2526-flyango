@@ -1,0 +1,500 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ page_title }} — Fly&Go Admin{% endblock %}
+{% block admin_body %}
+
+<style>
+:root {
+    --promo-primary: #6366f1;
+    --promo-primary-dark: #4f46e5;
+    --promo-success: #10b981;
+    --promo-warning: #f59e0b;
+    --promo-danger: #ef4444;
+    --promo-purple: #8b5cf6;
+    --promo-cyan: #06b6d4;
+}
+
+.promo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.promo-header__title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.promo-header__title i {
+    background: linear-gradient(135deg, var(--promo-primary) 0%, var(--promo-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.promo-new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--promo-primary) 0%, var(--promo-purple) 100%);
+    color: #fff !important;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.promo-new-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+
+.promo-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.promo-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.promo-stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--promo-primary), var(--promo-purple));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.promo-stat:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.promo-stat:hover::before {
+    opacity: 1;
+}
+
+.promo-stat__value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--promo-primary) 0%, var(--promo-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.promo-stat__label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.promo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.promo-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.promo-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    border-color: var(--promo-primary);
+}
+
+.promo-card__header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.promo-card__code-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.promo-card__code {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+}
+
+.promo-card__badge {
+    padding: 0.4rem 1rem;
+    border-radius: 25px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.promo-card__badge--active {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #059669;
+}
+
+.promo-card__badge--inactive {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #dc2626;
+}
+
+.promo-card__body {
+    padding: 1.5rem;
+}
+
+.promo-card__discount {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.promo-card__discount--percentage {
+    background: linear-gradient(135deg, var(--promo-purple) 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.promo-card__discount--fixed {
+    background: linear-gradient(135deg, var(--promo-warning) 0%, #fbbf24 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.promo-card__label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.promo-card__info {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+}
+
+.promo-card__info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    font-size: 0.9rem;
+}
+
+.promo-card__info-row:not(:last-child) {
+    border-bottom: 1px dashed var(--border);
+}
+
+.promo-card__info-label {
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.promo-card__info-label i {
+    width: 16px;
+    text-align: center;
+}
+
+.promo-card__info-value {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.promo-card__usage {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.promo-card__usage-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.promo-card__usage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--promo-primary), var(--promo-purple));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.promo-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+}
+
+.promo-action-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    text-decoration: none;
+}
+
+.promo-action-btn--edit {
+    background: var(--promo-primary);
+    color: #fff;
+}
+
+.promo-action-btn--edit:hover {
+    background: var(--promo-primary-dark);
+}
+
+.promo-action-btn--toggle {
+    background: #e2e8f0;
+    color: var(--text);
+}
+
+.promo-action-btn--toggle:hover {
+    background: #cbd5e1;
+}
+
+.promo-action-btn--delete {
+    background: #fee2e2;
+    color: var(--promo-danger);
+}
+
+.promo-action-btn--delete:hover {
+    background: var(--promo-danger);
+    color: #fff;
+}
+
+.promo-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: 20px;
+}
+
+.promo-empty__icon {
+    font-size: 5rem;
+    background: linear-gradient(135deg, var(--promo-primary) 0%, var(--promo-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.promo-empty__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.promo-empty__text {
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+}
+
+.promo-alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+}
+
+.promo-alert--success {
+    background: #d1fae5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.admin__alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.admin__alert--success {
+    background: #d1fae5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+</style>
+
+<div class="admin__main" style="padding: 2rem;">
+    <div class="promo-header">
+        <h1 class="promo-header__title">
+            <i class="fa fa-tags"></i> {{ page_title }}
+        </h1>
+        <a href="{{ path('app_admin_promo_new') }}" class="promo-new-btn">
+            <i class="fa fa-plus-circle"></i> Nouveau code promo
+        </a>
+    </div>
+    
+    <div class="admin__content">
+        {% for msg in app.flashes('success') %}
+        <div class="admin__alert admin__alert--success">
+            <i class="fa fa-check-circle"></i> {{ msg }}
+        </div>
+        {% endfor %}
+        
+        {% set activeCount = 0 %}
+        {% set totalUses = 0 %}
+        {% for p in promos %}
+            {% if p.active %}{% set activeCount = activeCount + 1 %}{% endif %}
+            {% set totalUses = totalUses + (p.used_count ?: 0) %}
+        {% endfor %}
+        
+        <div class="promo-stats">
+            <div class="promo-stat">
+                <div class="promo-stat__value">{{ promos|length }}</div>
+                <div class="promo-stat__label">Total Codes</div>
+            </div>
+            <div class="promo-stat">
+                <div class="promo-stat__value" style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text;">{{ activeCount }}</div>
+                <div class="promo-stat__label">Actifs</div>
+            </div>
+            <div class="promo-stat">
+                <div class="promo-stat__value" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text;">{{ promos|length - activeCount }}</div>
+                <div class="promo-stat__label">Inactifs</div>
+            </div>
+            <div class="promo-stat">
+                <div class="promo-stat__value" style="background: linear-gradient(135deg, #8b5cf6, #a855f7); -webkit-background-clip: text;">{{ totalUses }}</div>
+                <div class="promo-stat__label">Utilisations</div>
+            </div>
+        </div>
+        
+        {% if promos|length > 0 %}
+        <div class="promo-grid">
+            {% for promo in promos %}
+            <div class="promo-card">
+                <div class="promo-card__header">
+                    <div class="promo-card__code-wrapper">
+                        <span class="promo-card__code">{{ promo.code }}</span>
+                    </div>
+                    <span class="promo-card__badge {{ promo.active ? 'promo-card__badge--active' : 'promo-card__badge--inactive' }}">
+                        {{ promo.active ? 'Actif' : 'Inactif' }}
+                    </span>
+                </div>
+                <div class="promo-card__body">
+                    <div class="promo-card__label">Réduction</div>
+                    <div class="promo-card__discount {{ promo.type == 'percentage' ? 'promo-card__discount--percentage' : 'promo-card__discount--fixed' }}">
+                        {% if promo.type == 'percentage' %}{{ promo.value }}%
+                        {% else %}{{ promo.value }} TND{% endif %}
+                    </div>
+                    
+                    <div class="promo-card__info">
+                        <div class="promo-card__info-row">
+                            <span class="promo-card__info-label"><i class="fa fa-calendar"></i> Validité</span>
+                            <span class="promo-card__info-value">
+                                {% if promo.valid_from or promo.valid_until %}
+                                    {% if promo.valid_from %}{{ promo.valid_from|date('d/m/Y') }}{% else %}—{% endif %} - 
+                                    {% if promo.valid_until %}{{ promo.valid_until|date('d/m/Y') }}{% else %}Illimité{% endif %}
+                                {% else %}Illimitée{% endif %}
+                            </span>
+                        </div>
+                        <div class="promo-card__info-row">
+                            <span class="promo-card__info-label"><i class="fa fa-users"></i> Utilisation</span>
+                            <div class="promo-card__usage">
+                                <span class="promo-card__info-value"><strong>{{ promo.used_count ?: 0 }}</strong>{% if promo.max_uses %} / {{ promo.max_uses }}{% endif %}</span>
+                            </div>
+                        </div>
+                        {% if promo.min_nuits %}
+                        <div class="promo-card__info-row">
+                            <span class="promo-card__info-label"><i class="fa fa-moon"></i> Min nuits</span>
+                            <span class="promo-card__info-value">{{ promo.min_nuits }}</span>
+                        </div>
+                        {% endif %}
+                        {% if promo.min_amount %}
+                        <div class="promo-card__info-row">
+                            <span class="promo-card__info-label"><i class="fa fa-money-bill"></i> Min montant</span>
+                            <span class="promo-card__info-value">{{ promo.min_amount }} TND</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="promo-card__actions">
+                    <a href="{{ path('app_admin_promo_edit', {id: promo.id}) }}" class="promo-action-btn promo-action-btn--edit" title="Modifier">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                    <a href="{{ path('app_admin_promo_toggle', {id: promo.id}) }}" class="promo-action-btn promo-action-btn--toggle" title="{{ promo.active ? 'Désactiver' : 'Activer' }}">
+                        <i class="fa fa-{{ promo.active ? 'toggle-on' : 'toggle-off' }}"></i>
+                    </a>
+                    <a href="{{ path('app_admin_promo_delete', {id: promo.id}) }}" class="promo-action-btn promo-action-btn--delete" title="Supprimer" onclick="return confirm('Supprimer ce code promo?')">
+                        <i class="fa fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="promo-empty">
+            <div class="promo-empty__icon"><i class="fa fa-tags"></i></div>
+            <div class="promo-empty__title">Aucun code promo</div>
+            <p class="promo-empty__text">Créez votre premier code promo pour offrir des réductions à vos clients.</p>
+            <a href="{{ path('app_admin_promo_new') }}" class="promo-new-btn">
+                <i class="fa fa-plus-circle"></i> Créer un code promo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock admin_body %}
