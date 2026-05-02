@@ -123,3 +123,4 @@ frontend templates
 custom styling
 routing config
 controller cleanup
+pdf service
