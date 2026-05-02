@@ -1,0 +1,382 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}{{ promo ? 'Modifier' : 'Nouveau' }} Code Promo — Admin{% endblock %}
+{% block admin_body %}
+
+<style>
+:root {
+    --promo-primary: #6366f1;
+    --promo-primary-dark: #4f46e5;
+    --promo-purple: #8b5cf6;
+    --promo-success: #10b981;
+    --promo-warning: #f59e0b;
+}
+
+.form-container {
+    max-width: 750px;
+    margin: 0 auto;
+}
+
+.form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.form-card__header {
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, var(--promo-primary) 0%, var(--promo-purple) 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.form-card__icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.form-card__title {
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.form-card__subtitle {
+    opacity: 0.85;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.form-card__body {
+    padding: 2.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.75rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-label i {
+    color: var(--promo-primary);
+    width: 18px;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    font-size: 1rem;
+    background: var(--bg);
+    transition: all 0.3s ease;
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--promo-primary);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    background: var(--card);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.4rem;
+}
+
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: var(--bg);
+    border-radius: 14px;
+    border: 2px solid var(--border);
+}
+
+.form-checkbox input {
+    width: 1.5rem;
+    height: 1.5rem;
+    accent-color: var(--promo-primary);
+    cursor: pointer;
+}
+
+.form-checkbox label {
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.type-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.type-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.type-option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.type-option label {
+    display: block;
+    padding: 1.5rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.type-option label:hover {
+    border-color: var(--promo-primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.type-option input:checked + label {
+    border-color: var(--promo-primary);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+}
+
+.type-option__icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--promo-primary);
+}
+
+.type-option__title {
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.type-option__desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.form-submit {
+    width: 100%;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, var(--promo-primary) 0%, var(--promo-purple) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.form-submit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+}
+
+.form-submit:active {
+    transform: translateY(-1px);
+}
+
+.admin__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+}
+
+.admin__back:hover {
+    color: var(--promo-primary);
+}
+</style>
+
+<div class="admin__main" style="padding: 2rem;">
+    <div class="form-container">
+        <a href="{{ path('app_admin_promos') }}" class="admin__back">
+            <i class="fa fa-arrow-left"></i> Retour aux codes promo
+        </a>
+        
+        <div class="form-card">
+            <div class="form-card__header">
+                <div class="form-card__icon">
+                    <i class="fa fa-tag"></i>
+                </div>
+                <div>
+                    <div class="form-card__title">{{ promo ? 'Modifier' : 'Nouveau' }} Code Promo</div>
+                    <div class="form-card__subtitle">{{ promo ? 'Mettez à jour les informations' : 'Créez un nouveau code promo' }}</div>
+                </div>
+            </div>
+            <div class="form-card__body">
+                <form method="POST">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fa fa-barcode"></i> Code promo
+                        </label>
+                        <input type="text" name="code" class="form-input" placeholder="Ex: BIENVENUE" value="{{ promo.code|default('')|upper }}" required style="text-transform:uppercase;letter-spacing:3px;font-weight:700;font-size:1.25rem;text-align:center">
+                        <div class="form-hint">Ce code sera entré par les clients lors de la réservation</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fa fa-percent"></i> Type de réduction
+                        </label>
+                        <div class="type-selector">
+                            <div class="type-option">
+                                <input type="radio" name="type" value="percentage" id="type_percent" {{ promo.type|default('percentage') == 'percentage' ? 'checked' : '' }} onchange="updateValueField()">
+                                <label for="type_percent">
+                                    <div class="type-option__icon"><i class="fa fa-percent"></i></div>
+                                    <div class="type-option__title">Pourcentage</div>
+                                    <div class="type-option__desc">Ex: 10%</div>
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" name="type" value="fixed" id="type_fixed" {{ promo.type|default('') == 'fixed' ? 'checked' : '' }} onchange="updateValueField()">
+                                <label for="type_fixed">
+                                    <div class="type-option__icon"><i class="fa fa-money-bill-wave"></i></div>
+                                    <div class="type-option__title">Fixe</div>
+                                    <div class="type-option__desc">Ex: 50 TND</div>
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" name="type" value="free_night" id="type_free" {{ promo.type|default('') == 'free_night' ? 'checked' : '' }} onchange="updateValueField()">
+                                <label for="type_free">
+                                    <div class="type-option__icon"><i class="fa fa-gift"></i></div>
+                                    <div class="type-option__title">Nuit offer</div>
+                                    <div class="type-option__desc">Ex: 1 nuit</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fa fa-database"></i> Valeur de la réduction
+                        </label>
+                        <input type="number" name="value" id="valueField" class="form-input" value="{{ promo.value|default(10) }}" min="0" step="0.01" required>
+                        <div class="form-hint" id="valueHint">Pourcentage de réduction (ex: 10 pour 10%)</div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa fa-calendar-plus"></i> Valide à partir du
+                            </label>
+                            <input type="datetime-local" name="valid_from" class="form-input" value="{{ promo.valid_from ? promo.valid_from|date('Y-m-d\\TH:i') : '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa fa-calendar-check"></i> Valide jusqu'au
+                            </label>
+                            <input type="datetime-local" name="valid_until" class="form-input" value="{{ promo.valid_until ? promo.valid_until|date('Y-m-d\\TH:i') : '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa fa-users"></i> Utilisations max (total)
+                            </label>
+                            <input type="number" name="max_uses" class="form-input" value="{{ promo.max_uses|default('') }}" min="1" placeholder="Illimité">
+                            <div class="form-hint">Nombre total de fois que ce code peut être utilisé</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa fa-user"></i> Par utilisateur
+                            </label>
+                            <input type="number" name="max_uses_per_user" class="form-input" value="{{ promo.max_uses_per_user|default('') }}" min="1" placeholder="Illimité">
+                            <div class="form-hint">Nombre max de fois qu'un client peut utiliser ce code</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa fa-moon"></i> Nuits minimum
+                            </label>
+                            <input type="number" name="min_nuits" class="form-input" value="{{ promo.min_nuits|default('') }}" min="0" placeholder="0">
+                            <div class="form-hint">Nombre minimum de nuits pour validité</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fa fa-money-bill-wave"></i> Montant minimum (TND)
+                            </label>
+                            <input type="number" name="min_amount" class="form-input" value="{{ promo.min_amount|default('') }}" min="0" placeholder="0">
+                            <div class="form-hint">Montant minimum de réservation</div>
+                        </div>
+                    </div>
+                    
+                    {% if promo %}
+                    <div class="form-checkbox">
+                        <input type="checkbox" name="active" id="active" {{ promo.active ? 'checked' : '' }}>
+                        <label for="active">Code promo actif</label>
+                    </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="form-submit">
+                        <i class="fa fa-save"></i> {{ promo ? 'Mettre à jour' : 'Créer' }} le code promo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateValueField() {
+    const type = document.querySelector('input[name="type"]:checked').value;
+    const hint = document.getElementById('valueHint');
+    if (type === 'percentage') {
+        hint.textContent = 'Pourcentage de réduction (ex: 10 pour 10%)';
+    } else if (type === 'fixed') {
+        hint.textContent = 'Montant fixe en TND (ex: 50 pour 50 TND)';
+    } else if (type === 'free_night') {
+        hint.textContent = 'Nombre de nuits gratuites (ex: 1 pour 1 nuit gratuite)';
+    }
+}
+
+updateValueField();
+</script>
+
+{% endblock admin_body %}

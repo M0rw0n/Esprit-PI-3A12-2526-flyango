@@ -1,0 +1,7 @@
+sonata_block:
+    blocks:
+        sonata.admin.block.admin_stats: ~
+        sonata.admin.block.search_result: ~
+        sonata.block.service.text: ~
+        sonata.block.service.action: ~
+        sonata.block.service.ajax: ~

@@ -1,0 +1,757 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ hebergement.nom }} — Fly&Go{% endblock %}
+{% block body %}
+
+<div style="max-width:1380px;margin:0 auto;padding:2rem">
+    {# Breadcrumb #}
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem">
+        <a href="{{ path('home') }}" style="color:var(--muted)">Accueil</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <a href="{{ path('hebergement_index') }}" style="color:var(--muted)">Hébergements</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <strong style="color:var(--text)">{{ hebergement.nom }}</strong>
+    </div>
+
+    {# Title #}
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900;color:var(--text);margin-bottom:.35rem;letter-spacing:-.02em">{{ hebergement.nom }}</h1>
+            <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+                <span style="font-size:.875rem;color:var(--muted)"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ hebergement.ville }}{% if hebergement.adresse %}, {{ hebergement.adresse }}{% endif %}</span>
+                {% if hebergement.localisation %}<span style="font-size:.75rem;background:var(--bg);padding:.2rem .5rem;border-radius:4px;color:#666"><i class="fa fa-location-arrow"></i> {{ hebergement.localisation }}</span>{% endif %}
+                <span class="tag tag--navy"><i class="fa fa-tag"></i> {{ hebergement.type }}</span>
+                {% if hebergement.avis|length > 0 %}
+                <span style="display:flex;align-items:center;gap:.3rem;font-size:.875rem">
+                    {% set moyenne = hebergement.getMoyenneNotes() %}
+                    {% for i in 1..5 %}
+                    <i class="fa fa-star" style="color:{{ i <= moyenne ? '#F59E0B' : 'var(--border)' }};font-size:.85rem"></i>
+                    {% endfor %}
+                    <strong>{{ moyenne }}</strong>
+                    <span style="color:var(--muted)">({{ hebergement.avis|length }} avis)</span>
+                </span>
+                {% endif %}
+                <span class="status status--{{ hebergement.disponible ? 'confirmed' : 'cancelled' }}">{{ hebergement.disponible ? 'Disponible' : 'Complet' }}</span>
+                {% set remaining = hebergement.capaciteRestante() %}
+                {% if remaining <= 3 and remaining > 0 %}
+                <span class="status status--warning" style="background:var(--orange);color:#fff;margin-left:.5rem;animation:pulse 2s infinite">
+                    <i class="fa fa-fire"></i> Plus que {{ remaining }} place{{ remaining > 1 ? 's' : '' }} !
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="price price--lg">
+            <span class="price__val">{{ hebergement.prixParNuit|number_format(3, ',', ' ') }}</span>
+            <span class="price__cur" style="font-size:.9rem">TND</span>
+            <span class="price__per">/nuit</span>
+        </div>
+    </div>
+
+    <div class="detail-layout">
+        <div>
+            {# Image #}
+            <div class="detail-gallery" style="margin-bottom:2rem">
+                <div style="position:relative;cursor:pointer" onclick="openLightbox(0)">
+                    <img src="{{ hebergement.image ? asset(hebergement.image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&q=85' }}" alt="{{ hebergement.nom }}" id="mainImage"
+                         onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&q=85'" style="width:100%;height:400px;object-fit:cover;border-radius:12px">
+                    <div style="position:absolute;bottom:1rem;right:1rem;background:rgba(0,0,0,0.7);color:#fff;padding:.4rem .8rem;border-radius:20px;font-size:.8rem">
+                        <i class="fa fa-expand"></i> Agrandir
+                    </div>
+                </div>
+                {% if hebergement.galeriePhotos|length > 0 %}
+                <div style="display:flex;gap:.5rem;margin-top:.5rem;overflow-x:auto;padding-bottom:.5rem">
+                    {% for photo in hebergement.galeriePhotos %}
+                    <img src="{{ asset(photo) }}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent" class="thumb-photo" onclick="setMainImage('{{ asset(photo) }}')"
+                         onmouseover="this.style.borderColor='var(--navy)'" onmouseout="this.style.borderColor='transparent'">
+                    {% endfor %}
+                </div>
+                <div style="font-size:.75rem;color:var(--muted);margin-top:.25rem"><i class="fa fa-images"></i> {{ hebergement.galeriePhotos|length + 1 }} photo(s) - Cliquez pour voir</div>
+                {% endif %}
+                
+                {# 360° Photos #}
+                {% if hebergement.photos360|length > 0 %}
+                <div style="margin-top:1.5rem">
+                    <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem;color:var(--navy)"><i class="fa fa-vr-cardboard"></i> Visites virtueles 360°</h3>
+                    <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+                        {% for photo360 in hebergement.photos360 %}
+                        <button type="button" class="btn btn--outline" onclick="open360Viewer('{{ asset(photo360) }}')" style="padding:.6rem 1rem">
+                            <i class="fa fa-vr-cardboard"></i> Vue {{ loop.index }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            {# 360 Viewer Modal #}
+            <div id="pannellumModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;align-items:center;justify-content:center">
+                <button type="button" onclick="close360Viewer()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;z-index:10">
+                    <i class="fa fa-times"></i>
+                </button>
+                <div id="pannellumViewer" style="width:90%;height:90%;max-width:1200px"></div>
+            </div>
+
+            {# Map #}
+            {% if hebergement.latitude and hebergement.longitude %}
+            <div style="margin-bottom:2rem">
+                <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem;color:var(--navy)"><i class="fa fa-map"></i> Localisation</h3>
+                <div id="map" style="width:100%;height:300px;border-radius:12px;z-index:1"></div>
+            </div>
+            {% endif %}
+
+            {# Tabs #}
+            <div class="detail-tabs">
+                <button class="detail-tab on" data-tab="desc" onclick="switchTab('desc')">Description</button>
+                {% if travelAdvice|length > 0 %}
+                <button class="detail-tab" data-tab="conseils" onclick="switchTab('conseils')"><i class="fa fa-lightbulb"></i> Conseils</button>
+                {% endif %}
+                <button class="detail-tab" data-tab="avis" onclick="switchTab('avis')">Avis ({{ hebergement.avis|length }})</button>
+                <button class="detail-tab" data-tab="donner-avis" onclick="switchTab('donner-avis')">Laisser un avis</button>
+            </div>
+
+            <div id="pane-desc" class="tab-pane on">
+                <p style="font-size:.95rem;line-height:1.85;color:var(--text)">{{ hebergement.description ?: 'Aucune description disponible pour cet hébergement.' }}</p>
+
+                {# Travel Advice Tab #}
+                {% if travelAdvice|length > 0 %}
+                <div id="pane-conseils" class="tab-pane">
+                    <div style="padding:1.5rem;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:16px;margin-top:1rem">
+                        <h3 style="font-size:1.1rem;font-weight:800;margin-bottom:1rem;color:#92400e"><i class="fa fa-suitcase"></i> Préparez votre séjour</h3>
+                        <ul style="list-style:none;padding:0;margin:0">
+                            {% for advice in travelAdvice %}
+                            <li style="padding:.75rem 0;border-bottom:1px solid rgba(146,64,14,0.2);display:flex;align-items:flex-start;gap:.75rem">
+                                <i class="fa fa-check-circle" style="color:#92400e;margin-top:.35rem"></i>
+                                <span style="color:#78350f;font-size:.95rem">{{ advice }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                {% if hebergement.capacite %}
+                <div style="margin-top:1.5rem;display:flex;gap:1rem;flex-wrap:wrap">
+                    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem 1.5rem;text-align:center">
+                        <i class="fa fa-users" style="font-size:1.5rem;color:var(--navy);margin-bottom:.5rem"></i>
+                        <div style="font-size:.75rem;color:var(--muted)">Capacité</div>
+                        <div style="font-size:1.1rem;font-weight:800">{{ hebergement.capacite }} pers.</div>
+                    </div>
+                    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem 1.5rem;text-align:center">
+                        <i class="fa fa-tag" style="font-size:1.5rem;color:var(--gold-d);margin-bottom:.5rem"></i>
+                        <div style="font-size:.75rem;color:var(--muted)">Type</div>
+                        <div style="font-size:1.1rem;font-weight:800">{{ hebergement.type }}</div>
+                    </div>
+                    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem 1.5rem;text-align:center">
+                        <i class="fa fa-map-marker-alt" style="font-size:1.5rem;color:var(--cyan-d);margin-bottom:.5rem"></i>
+                        <div style="font-size:.75rem;color:var(--muted)">Ville</div>
+                        <div style="font-size:1.1rem;font-weight:800">{{ hebergement.ville }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div style="margin-top:1.5rem;padding:1rem;background:linear-gradient(135deg,var(--navy),#0ea5e9);border-radius:12px;color:#fff">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+                        <div>
+                            <div style="font-size:.75rem;opacity:.8">Popularité</div>
+                            <div style="font-size:1.5rem;font-weight:900"><i class="fa fa-fire"></i> {{ hebergement.vues|default(0) }} vues</div>
+                        </div>
+                        <div style="text-align:center">
+                            <div style="font-size:.75rem;opacity:.8">Réservations</div>
+                            <div style="font-size:1.5rem;font-weight:900"><i class="fa fa-calendar-check"></i> {{ hebergement.reservations|length }}</div>
+                        </div>
+                        <div style="text-align:center">
+                            <div style="font-size:.75rem;opacity:.8">Avis</div>
+                            <div style="font-size:1.5rem;font-weight:900"><i class="fa fa-star"></i> {{ hebergement.avis|length }}</div>
+                        </div>
+                        <div style="text-align:center">
+                            <div style="font-size:.75rem;opacity:.8">Note</div>
+                            <div style="font-size:1.5rem;font-weight:900"><i class="fa fa-heart"></i> {{ hebergement.noteMoyenne|default(0)|number_format(1) }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top:1rem">
+                    <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:.5rem"><i class="fa fa-trophy"></i> Défis & Réwards</div>
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                        <span style="background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;padding:.4rem .75rem;border-radius:20px;font-size:.75rem;font-weight:600">
+                            <i class="fa fa-star"></i> Premier choix
+                        </span>
+                        <span style="background:linear-gradient(135deg,#10B981,#059669);color:#fff;padding:.4rem .75rem;border-radius:20px;font-size:.75rem;font-weight:600">
+                            <i class="fa fa-fire"></i> Tendance
+                        </span>
+                        {% if hebergement.vues|default(0) > 100 %}
+                        <span style="background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff;padding:.4rem .75rem;border-radius:20px;font-size:.75rem;font-weight:600">
+                            <i class="fa fa-crown"></i> VIP
+                        </span>
+                        {% endif %}
+                        {% if hebergement.avis|length > 5 %}
+                        <span style="background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;padding:.4rem .75rem;border-radius:20px;font-size:.75rem;font-weight:600">
+                            <i class="fa fa-award"></i> Populaire
+                        </span>
+                        {% endif %}
+                        {% if hebergement.noteMoyenne|default(0) >= 4.5 %}
+                        <span style="background:linear-gradient(135deg,#EC4899,#DB2777);color:#fff;padding:.4rem .75rem;border-radius:20px;font-size:.75rem;font-weight:600">
+                            <i class="fa fa-gem"></i> Excellence
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div id="pane-avis" class="tab-pane">
+                {% set positive = 0 %}{% set negative = 0 %}{% set neutral = 0 %}
+                {% for a in hebergement.avis %}
+                    {% if a.sentimentLabel %}{% if a.sentimentLabel in ['excellent','good','positive'] %}{% set positive = positive + 1 %}{% elseif a.sentimentLabel in ['negative','bad'] %}{% set negative = negative + 1 %}{% else %}{% set neutral = neutral + 1 %}{% endif %}{% endif %}
+                {% endfor %}
+                {% set userPoints = app.user ? (app.user.points|default(0) + hebergement.vues|default(0)) : hebergement.vues|default(0) %}
+                {% if hebergement.avis|length > 0 %}
+                <div class="sentiment-summary" style="background:linear-gradient(135deg,#f8f9fa,#fff);padding:1rem;border-radius:12px;margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;border:2px solid var(--navy)">
+                    <div style="font-weight:600;color:var(--navy)">🤖 Analyse IA</div>
+                    <div style="display:flex;gap:1rem"><span style="color:#22c55e;font-weight:bold">👍 {{ positive }}</span><span style="color:#eab308;font-weight:bold">➖ {{ neutral }}</span><span style="color:#ef4444;font-weight:bold">👎 {{ negative }}</span></div>
+                    {% if positive + negative + neutral > 0 %}<span style="background:var(--navy);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:bold">{{ ((positive / (positive + negative + neutral)) * 100)|round }}% satisfait</span>{% endif %}
+                </div>
+                
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding:.5rem;background:var(--bg);border-radius:8px">
+                    <div style="display:flex;align-items:center;gap:.5rem">
+                        <i class="fa fa-globe" style="color:var(--cyan)"></i>
+                        <select id="translateLang" style="border:1px solid var(--border);padding:.25rem .5rem;border-radius:6px;font-size:.85rem">
+                            <option value="FR">Français</option>
+                            <option value="EN">English</option>
+                            <option value="DE">Deutsch</option>
+                            <option value="ES">Español</option>
+                            <option value="IT">Italiano</option>
+                        </select>
+                    </div>
+                    <button type="button" onclick="translateReviews()" style="background:var(--cyan);color:#fff;border:none;padding:.35rem .75rem;border-radius:6px;cursor:pointer;font-size:.85rem">
+                        <i class="fa fa-globe"></i> Traduire
+                    </button>
+                </div>
+                {% endif %}
+                
+                {% for a in hebergement.avis %}
+                <div class="review-item">
+                    <div class="review-item__head">
+                        <span class="review-item__author">{{ a.auteur }}</span>
+                        <span class="review-item__date">{{ a.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                    <div class="review-item__stars">
+                        {% for i in 1..5 %}<i class="fa fa-{{ i <= a.note ? 'star' : 'star' }}" style="color:{{ i <= a.note ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}
+                        <span style="background:#ffeb3b;padding:2px 6px;border-radius:4px;font-size:0.7rem;margin-left:0.5rem">DEBUG: sentimentLabel={{ a.sentimentLabel }}</span>
+                        {% if a.sentimentLabel %}
+                        <span class="sentiment-badge sentiment-{{ a.sentimentLabel }}" style="margin-left:0.5rem;padding:2px 8px;border-radius:10px;font-size:0.7rem;{% if a.sentimentLabel in ['excellent','good','positive'] %}background:#dcfce7;color:#16a34a{% elseif a.sentimentLabel in ['negative','bad'] %}background:#fee2e2;color:#dc2626{% else %}background:#fef3c7;color:#d97706{% endif %}">
+                            {% if a.sentimentLabel == 'excellent' %}<i class="fa fa-smile"></i> excellent
+                            {% elseif a.sentimentLabel == 'good' %}<i class="fa fa-smile"></i> bon
+                            {% elseif a.sentimentLabel == 'positive' %}<i class="fa fa-smile-o"></i> positif
+                            {% elseif a.sentimentLabel == 'neutral' %}<i class="fa fa-meh-o"></i> neutre
+                            {% elseif a.sentimentLabel == 'negative' %}<i class="fa fa-frown-o"></i> négatif
+                            {% elseif a.sentimentLabel == 'bad' %}<i class="fa fa-frown"></i> mauvais
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="review-item__text" data-original="{{ a.commentaire|e('html_attr') }}">{{ a.commentaire }}</div>
+                </div>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis pour l'instant</p></div>
+                {% endfor %}
+            </div>
+
+            <div id="pane-donner-avis" class="tab-pane">
+                <form action="{{ path('hebergement_avis', {id: hebergement.id}) }}" method="POST">
+                    <div class="fg-group">
+                        <label class="fg-label">Votre nom</label>
+                        <input type="text" name="auteur" class="fg-input" required placeholder="Votre prénom" value="{{ app.user ? app.user.fullName : '' }}">
+                    </div>
+                    <div class="fg-group">
+                        <label class="fg-label">Note</label>
+                        <div id="starPickAvis" style="display:flex;gap:.35rem;font-size:1.5rem;cursor:pointer;margin-bottom:.75rem">
+                            {% for i in 1..5 %}<i class="fa fa-star" onclick="setRatingAvis({{ i }})" style="color:{{ i <= 5 ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}
+                        </div>
+                        <input type="hidden" name="note" id="noteInput" value="5">
+                    </div>
+                    <div class="fg-group">
+                        <label class="fg-label">Commentaire</label>
+                        <textarea name="commentaire" class="fg-input" rows="4" required placeholder="Partagez votre expérience..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-navy"><i class="fa fa-paper-plane"></i> Publier mon avis</button>
+                </form>
+            </div>
+        </div>
+
+        {# STICKY BOOKING FORM #}
+        <div class="detail-sticky">
+            <div class="detail-info">
+                <div class="detail-price">
+                    <span class="amount">{{ hebergement.prixParNuit|number_format(3, ',', ' ') }}</span>
+                    <span class="per">TND/nuit</span>
+                </div>
+                <input type="hidden" id="prixBase" value="{{ hebergement.prixParNuit }}">
+
+                {% if hebergement.disponible %}
+                <form action="{{ path('hebergement_reserver', {id: hebergement.id}) }}" method="POST" onsubmit="return validateHebergBooking()">
+                    <input type="hidden" name="montant_total" id="montantTotal" value="0">
+                    <input type="hidden" name="promo_code_id" id="promoCodeId" value="">
+                    <input type="hidden" name="promo_reduction" id="promoReduction" value="0">
+                    <div class="book-form">
+                        <h4><i class="fa fa-calendar-check"></i> Réserver cet hébergement</h4>
+                        <div class="fg-group">
+                            <label class="fg-label">Votre nom complet *</label>
+                            <input type="text" name="nom_client" id="nomClient" class="fg-input" required minlength="2" maxlength="100" pattern="[A-Za-zÀ-ÿ\s\-]+" placeholder="Prénom Nom" value="{{ app.user ? app.user.fullName : '' }}">
+                        </div>
+                        <div class="fg-group">
+                            <label class="fg-label">Email *</label>
+                            <input type="email" name="email_client" id="emailClient" class="fg-input" required placeholder="email@example.com" value="{{ app.user ? app.user.email : '' }}">
+                        </div>
+                        <div class="fg-group">
+                            <label class="fg-label">Téléphone</label>
+                            <input type="tel" name="telephone" id="telClient" class="fg-input" pattern="[+]?[0-9\s]{8,15}" placeholder="+216 XX XXX XXX" value="{{ app.user ? app.user.telephone : '' }}">
+                        </div>
+                        <div class="form-row">
+                            <div>
+                                <label class="fg-label"><i class="fa fa-calendar-check"></i> Arrivée *</label>
+                                <input type="date" name="date_debut" id="dateDebut" class="fg-input" required onchange="checkDates()" min="{{ "now"|date('Y-m-d') }}">
+                                <div id="dateDebutError" style="color:var(--red);font-size:.75rem;display:none;margin-top:.25rem"></div>
+                            </div>
+                            <div>
+                                <label class="fg-label"><i class="fa fa-calendar-times"></i> Départ *</label>
+                                <input type="date" name="date_fin" id="dateFin" class="fg-input" required onchange="checkDates()">
+                                <div id="dateFinError" style="color:var(--red);font-size:.75rem;display:none;margin-top:.25rem"></div>
+                            </div>
+                        </div>
+                        <div id="calendarStatus" style="display:none;padding:.75rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem">
+                            <div style="display:flex;justify-content:space-between;align-items:center">
+                                <span><i class="fa fa-info-circle"></i> Disponibilités</span>
+                                <span id="availableInfo">—</span>
+                            </div>
+                        </div>
+                        <div class="fg-group">
+                            <label class="fg-label">Nombre de personnes *</label>
+                            <input type="number" name="nb_personnes" id="nbPersonnes" class="fg-input" value="1" min="1" max="{{ hebergement.capacite ?: 20 }}" required>
+                        </div>
+                        <div class="fg-group">
+                            <label class="fg-label">Nombre de chambres *</label>
+                            <input type="number" name="nb_chambres" id="nbChambres" class="fg-input" value="1" min="1" max="{{ hebergement.chambresDisponibles ?: hebergement.capacite ?: 1 }}" required>
+                            <small style="color:var(--muted);font-size:.75rem">{{ hebergement.chambresDisponibles ?: hebergement.capacite ?: 1 }} chambre(s) disponible(s)</small>
+                        </div>
+                        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem;font-size:.875rem">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;color:var(--muted)">
+                                <span>Durée</span><span id="nuitesResult">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;color:var(--muted)">
+                                <span>Sous-total</span><span id="sousTotal">—</span>
+                            </div>
+                            <div id="promoLine" style="display:none;justify-content:space-between;margin-bottom:.35rem;color:#10b981">
+                                <span>Code promo</span><span id="promoReduction">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;color:var(--navy);border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.25rem">
+                                <span>Total estimé</span><span id="montantCalc">—</span>
+                            </div>
+                        </div>
+                        <div class="fg-group" style="margin-bottom:1rem">
+                            <label class="fg-label" style="font-size:.8rem"><i class="fa fa-tag" style="color:var(--gold)"></i> Code promo</label>
+                            <div style="display:flex;gap:.5rem">
+                                <input type="text" id="promoCode" class="fg-input" placeholder="Ex: BIENVENUE" style="text-transform:uppercase">
+                                <button type="button" class="btn btn-outline" onclick="applyPromoHeb()">Appliquer</button>
+                            </div>
+                            <div id="promoMsg" style="font-size:.75rem;margin-top:.25rem"></div>
+                        </div>
+                        <button type="submit" class="btn btn-navy btn-lg" style="width:100%"><i class="fa fa-calendar-check"></i> Confirmer la réservation</button>
+                    </div>
+                </form>
+                {% else %}
+                <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:var(--r-sm);padding:1.25rem;text-align:center;color:var(--red)">
+                    <i class="fa fa-times-circle fa-2x" style="margin-bottom:.75rem"></i>
+                    <p style="font-weight:700">Hébergement non disponible</p>
+                    <p style="font-size:.85rem;opacity:.8">Cet hébergement est actuellement complet.</p>
+                </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const prixParNuit = {{ hebergement.prixParNuit|default(0) }};
+let currentPromoReduction = 0;
+let originalTotal = 0;
+let totalNuits = 0;
+let blockedDates = {{ hebergement.blockedDates ? hebergement.blockedDates|json_encode|raw : '[]' }};
+
+function checkDates() {
+    const debut = document.getElementById('dateDebut');
+    const fin = document.getElementById('dateFin');
+    const debutError = document.getElementById('dateDebutError');
+    const finError = document.getElementById('dateFinError');
+    const calStatus = document.getElementById('calendarStatus');
+    const availInfo = document.getElementById('availableInfo');
+    
+    if (!debut || !fin) return;
+    
+    debutError.style.display = 'none';
+    debut.classList.remove('date-error');
+    finError.style.display = 'none';
+    fin.classList.remove('date-error');
+    
+    if (debut.value && fin.value) {
+        const d1 = new Date(debut.value);
+        const d2 = new Date(fin.value);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        
+        if (d1 < today) {
+            debutError.textContent = 'Date déjà passée';
+            debutError.style.display = 'block';
+            debut.classList.add('date-error');
+            return;
+        }
+        
+        if (d2 <= d1) {
+            finError.textContent = 'Départ doit être après arrivée';
+            finError.style.display = 'block';
+            fin.classList.add('date-error');
+            return;
+        }
+        
+        const nights = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+        let dateIssues = [];
+        let availableNights = nights;
+        
+        for (let i = 0; i < nights; i++) {
+            const checkDate = new Date(d1);
+            checkDate.setDate(checkDate.getDate() + i);
+            const dateStr = checkDate.toISOString().split('T')[0];
+            
+            if (blockedDates.includes(dateStr)) {
+                dateIssues.push(dateStr);
+                availableNights--;
+            }
+        }
+        
+        calStatus.style.display = 'block';
+        
+        if (availableNights < nights) {
+            calStatus.style.background = '#fef2f2';
+            calStatus.style.border = '1px solid #fecaca';
+            availInfo.innerHTML = '<span style="color:var(--red)">' + (nights - availableNights) + ' date(s) pleine(s)</span>';
+        } else {
+            calStatus.style.background = '#f0fdf4';
+            calStatus.style.border = '1px solid #bbf7d0';
+            availInfo.innerHTML = '<span style="color:#10b981"><i class="fa fa-check-circle"></i> Disponible (' + nights + ' nuits)</span>';
+            fin.min = debut.value;
+            calcNuits();
+        }
+    }
+}
+
+function calcNuits() {
+    const debut = document.getElementById('dateDebut');
+    const fin = document.getElementById('dateFin');
+    const personnes = document.querySelector('input[name="nb_personnes"]');
+    const nuitesResult = document.getElementById('nuitesResult');
+    const montantCalc = document.getElementById('montantCalc');
+    const sousTotal = document.getElementById('sousTotal');
+
+    if (!debut || !fin || !debut.value || !fin.value) {
+        nuitesResult.textContent = '—';
+        sousTotal.textContent = '—';
+        montantCalc.textContent = '—';
+        return;
+    }
+
+    const d1 = new Date(debut.value);
+    const d2 = new Date(fin.value);
+    const diffTime = d2 - d1;
+    const nuits = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const nbPersonnes = parseInt(personnes ? personnes.value : 1) || 1;
+    const nbChambres = parseInt(document.getElementById('nbChambres')?.value || 1) || 1;
+
+    if (nuits > 0) {
+        totalNuits = nuits;
+        nuitesResult.textContent = nuits + ' nuit(s) × ' + nbChambres + ' ch. × ' + nbPersonnes + ' pers.';
+        originalTotal = nuits * prixParNuit * nbChambres;
+        sousTotal.textContent = originalTotal.toLocaleString('fr-FR') + ' TND';
+        applyPromoToDisplay();
+    } else {
+        nuitesResult.textContent = '—';
+        sousTotal.textContent = '—';
+        montantCalc.textContent = '—';
+    }
+}
+
+function applyPromoToDisplay() {
+    const finalTotal = Math.max(0, originalTotal - currentPromoReduction);
+    document.getElementById('montantCalc').textContent = finalTotal.toLocaleString('fr-FR') + ' TND';
+    document.getElementById('montantTotal').value = finalTotal;
+}
+
+async function applyPromoHeb() {
+    const code = document.getElementById('promoCode').value.trim().toUpperCase();
+    const msgEl = document.getElementById('promoMsg');
+    const promoLine = document.getElementById('promoLine');
+    const reductionEl = document.getElementById('promoReduction');
+
+    if (!code) {
+        msgEl.textContent = 'Veuillez entrer un code promo';
+        msgEl.style.color = 'var(--red)';
+        return;
+    }
+
+    if (originalTotal <= 0) {
+        msgEl.textContent = 'Calculez d\'abord le montant';
+        msgEl.style.color = 'var(--red)';
+        return;
+    }
+
+    try {
+        const response = await fetch('/ajax/apply-promo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ code, price: originalTotal, nights: totalNuits || 1 })
+        });
+        
+        if (!response.ok) {
+            const errData = await response.json();
+            msgEl.textContent = errData.message || 'Erreur serveur';
+            msgEl.style.color = 'var(--red)';
+            return;
+        }
+        
+        const data = await response.json();
+
+        if (data.success) {
+            currentPromoReduction = data.reduction || 0;
+            promoLine.style.display = 'flex';
+            reductionEl.textContent = '-' + (data.reduction || 0).toLocaleString('fr-FR') + ' TND';
+            msgEl.textContent = data.message || 'Code appliqué!';
+            msgEl.style.color = '#10b981';
+            document.getElementById('promoCodeId').value = data.promoId || '';
+            document.getElementById('promoReduction').value = data.reduction || 0;
+            applyPromoToDisplay();
+        } else {
+            currentPromoReduction = 0;
+            promoLine.style.display = 'none';
+            msgEl.textContent = data.message || 'Code invalide';
+            msgEl.style.color = 'var(--red)';
+            applyPromoToDisplay();
+        }
+    } catch (e) {
+        msgEl.textContent = 'Erreur lors de l\'application';
+        msgEl.style.color = 'var(--red)';
+    }
+}
+
+function validateHebergBooking() {
+    const nom = document.getElementById('nomClient').value.trim();
+    const email = document.getElementById('emailClient').value.trim();
+    const debut = document.getElementById('dateDebut').value;
+    const fin = document.getElementById('dateFin').value;
+    const personnes = parseInt(document.getElementById('nbPersonnes').value);
+
+    if (nom.length < 2) { alert('Nom invalide (min 2 caractères)'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Email invalide'); return false; }
+    if (!debut || !fin) { alert('Veuillez choisir les dates'); return false; }
+    if (new Date(fin) <= new Date(debut)) { alert('La date de départ doit être avant la date de retour'); return false; }
+    if (personnes < 1) { alert('Nombre de personnes invalide'); return false; }
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const nbPersonnesInput = document.querySelector('input[name="nb_personnes"]');
+    if (nbPersonnesInput) {
+        nbPersonnesInput.addEventListener('input', calcNuits);
+    }
+    
+    // Initialize map if coordinates exist
+    {% if hebergement.latitude and hebergement.longitude %}
+    const map = L.map('map').setView([{{ hebergement.latitude }}, {{ hebergement.longitude }}], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    L.marker([{{ hebergement.latitude }}, {{ hebergement.longitude }}])
+        .addTo(map)
+        .bindPopup('<strong>{{ hebergement.nom }}</strong><br>{{ hebergement.adresse }}');
+    {% endif %}
+});
+
+function setMainImage(src) {
+    document.getElementById('mainImage').src = src;
+}
+
+function openLightbox(index) {
+    const allPhotos = [{% if hebergement.image %}'{{ asset(hebergement.image) }}'{% endif %}{% for photo in hebergement.galeriePhotos %}{% if hebergement.image or loop.index0 > 0 %}, {% endif %}'{{ asset(photo) }}'{% endfor %}];
+    const lightbox = document.createElement('div');
+    lightbox.id = 'lightbox';
+    lightbox.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+    lightbox.onclick = function() { lightbox.remove(); };
+    const img = document.createElement('img');
+    img.src = allPhotos[index] || allPhotos[0];
+    img.style.maxWidth = '90%';
+    img.style.maxHeight = '90%';
+    img.style.objectFit = 'contain';
+    img.style.borderRadius = '8px';
+    lightbox.appendChild(img);
+    
+    if (allPhotos.length > 1) {
+        const nav = document.createElement('div');
+        nav.style.cssText = 'position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;gap:1rem';
+        
+        const prev = document.createElement('button');
+        prev.innerHTML = '<i class="fa fa-chevron-left"></i>';
+        prev.style.cssText = 'background:#fff;color:#333;border:none;padding:1rem;border-radius:50%;cursor:pointer;font-size:1.2rem';
+        prev.onclick = function(e) { e.stopPropagation(); index = (index - 1 + allPhotos.length) % allPhotos.length; img.src = allPhotos[index]; };
+        
+        const next = document.createElement('button');
+        next.innerHTML = '<i class="fa fa-chevron-right"></i>';
+        next.style.cssText = 'background:#fff;color:#333;border:none;padding:1rem;border-radius:50%;cursor:pointer;font-size:1.2rem';
+        next.onclick = function(e) { e.stopPropagation(); index = (index + 1) % allPhotos.length; img.src = allPhotos[index]; };
+        
+        const counter = document.createElement('span');
+        counter.style.cssText = 'color:#fff;padding:1rem;font-size:1rem';
+        
+        const updateCounter = () => { counter.textContent = (index + 1) + ' / ' + allPhotos.length; };
+        updateCounter();
+        
+        nav.appendChild(prev);
+        nav.appendChild(counter);
+        nav.appendChild(next);
+        lightbox.appendChild(nav);
+    }
+    
+    document.body.appendChild(lightbox);
+}
+
+async function translateReviews() {
+    const targetLang = document.getElementById('translateLang')?.value || 'EN';
+    const reviewTexts = document.querySelectorAll('.review-item__text');
+    const btn = document.querySelector('button[onclick="translateReviews()"]');
+    
+    if (!reviewTexts.length) return;
+    
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Traduction...';
+    btn.disabled = true;
+    
+    const langMap = { 'EN': 'en', 'FR': 'fr', 'DE': 'de', 'ES': 'es', 'IT': 'it', 'PT': 'pt' };
+    const targetCode = langMap[targetLang] || 'en';
+    
+    try {
+        reviewTexts.forEach((el) => {
+            const original = el.dataset.original || el.textContent.trim();
+            if (!original) return;
+            
+            const params = new URLSearchParams();
+            params.append('client', 'gtx');
+            params.append('sl', 'auto');
+            params.append('tl', targetCode);
+            params.append('dt', 't');
+            params.append('q', original);
+            
+            fetch('https://translate.googleapis.com/translate_a/single?' + params)
+            .then(res => res.json())
+            .then(data => {
+                if (data[0]) {
+                    let translated = '';
+                    data[0].forEach(item => {
+                        if (item[0]) translated += item[0];
+                    });
+                    el.innerHTML = '<em style="color:var(--muted);font-size:.85rem">' + translated + '</em>';
+                }
+            })
+            .catch(() => {});
+        });
+        
+        btn.innerHTML = '<i class="fa fa-check"></i> Traduit';
+        
+    } catch (e) {
+        btn.innerHTML = '<i class="fa fa-times"></i> Erreur';
+    } finally {
+        setTimeout(() => {
+            btn.disabled = false;
+        }, 1500);
+    }
+}
+</script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<script>
+let pannellumViewer = null;
+
+function open360Viewer(imageUrl) {
+    const modal = document.getElementById('pannellumModal');
+    const viewer = document.getElementById('pannellumViewer');
+    modal.style.display = 'flex';
+    
+    if (pannellumViewer) {
+        pannellumViewer.destroy();
+    }
+    
+    pannellumViewer = pannellum.viewer('pannellumViewer', {
+        type: 'equirectangular',
+        panorama: imageUrl,
+        autoLoad: true,
+        autoRotate: -2,
+        compass: false,
+        showZoomCtrl: true,
+        showFullscreenCtrl: true,
+        hfov: 100
+    });
+}
+
+function close360Viewer() {
+    const modal = document.getElementById('pannellumModal');
+    modal.style.display = 'none';
+    if (pannellumViewer) {
+        pannellumViewer.destroy();
+        pannellumViewer = null;
+    }
+}
+
+document.getElementById('pannellumModal')?.addEventListener('click', function(e) {
+    if (e.target === this) close360Viewer();
+});
+</script>
+
+{% block stylesheets %}
+<style>
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+.date-error {
+    border-color: var(--red) !important;
+    background: #fef2f2 !important;
+}
+#pannellumModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+#pannellumModal button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('on'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('on'));
+    const tabBtn = document.querySelector('.detail-tab[data-tab="' + tab + '"]');
+    if (tabBtn) tabBtn.classList.add('on');
+    const pane = document.getElementById('pane-' + tab);
+    if (pane) pane.classList.add('on');
+}
+{% if hebergement.latitude and hebergement.longitude %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endif %}
+</style>
+{% endblock %}
+{% endblock %}

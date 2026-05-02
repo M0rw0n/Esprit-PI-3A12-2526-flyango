@@ -1,0 +1,152 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Memory Tunisia — Fly&Go{% endblock %}
+{% block body %}
+
+<div style="max-width:800px;margin:0 auto;padding:2rem;text-align:center">
+    <a href="{{ path('games_index') }}" style="color:var(--navy);text-decoration:none;font-size:.9rem">
+        <i class="fa fa-arrow-left"></i> Retour aux jeux
+    </a>
+    
+    <h1 style="font-size:2rem;font-weight:900;color:var(--navy);margin:1rem 0">
+        <i class="fa fa-clone"></i> Memory Tunisia
+    </h1>
+    <p style="color:var(--muted);margin-bottom:1rem">Trouvez les paires de la Tunisie!</p>
+    
+    <div style="display:flex;justify-content:center;gap:1rem;margin-bottom:2rem;font-size:1rem">
+        <span style="background:var(--navy);color:#fff;padding:.5rem 1rem;border-radius:20px">
+            <i class="fa fa-clock-o"></i> Temps: <span id="timer">0:00</span>
+        </span>
+        <span style="background:var(--gold);color:#fff;padding:.5rem 1rem;border-radius:20px">
+            <i class="fa fa-star"></i> <span id="moves">0</span> coups
+        </span>
+        <span style="background:var(--cyan);color:#fff;padding:.5rem 1rem;border-radius:20px">
+            <i class="fa fa-child"></i> <span id="pairs">0</span>/8 paires
+        </span>
+    </div>
+    
+    <div id="gameGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;max-width:450px;margin:0 auto">
+        {% for i in 0..15 %}
+        <div class="card" data-index="{{ i }}" onclick="flipCard(this)" 
+             style="aspect-ratio:1;background:linear-gradient(135deg,var(--navy),#0ea5e9);border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;transition:transform .3s">
+            <i class="fa fa-question"></i>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div id="winMsg" style="display:none;margin-top:2rem">
+        <i class="fa fa-trophy" style="font-size:4rem;color:var(--gold)"></i>
+        <h2 style="font-size:1.5rem;color:var(--navy)">Félicitations!</h2>
+        <p style="font-size:1.25rem;color:var(--gold)">+30 points gagnés!</p>
+        <button onclick="restartGame()" class="btn btn-navy">Rejouer</button>
+    </div>
+</div>
+
+<script>
+const icons = ['fa-hotel', 'fa-bed', 'fa-swimming-pool', 'fa-utensils', 'fa-coffee', 'fa-spa', 'fa-car', 'fa-map'];
+let cards = [];
+let flipped = [];
+let matched = 0;
+let moves = 0;
+let timer = 0;
+let timerInterval = null;
+
+function initGame() {
+    const gameCards = [...icons, ...icons].sort(() => Math.random() - 0.5);
+    const cardEls = document.querySelectorAll('.card');
+    
+    cardEls.forEach((card, i) => {
+        card.dataset.icon = gameCards[i];
+        card.querySelector('i').className = 'fa fa-question';
+        card.style.transform = 'rotateY(0deg)';
+    });
+    
+    flipped = [];
+    matched = 0;
+    moves = 0;
+    timer = 0;
+    
+    document.getElementById('moves').textContent = '0';
+    document.getElementById('pairs').textContent = '0';
+    document.getElementById('timer').textContent = '0:00';
+    document.getElementById('winMsg').style.display = 'none';
+    
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timer++;
+        const mins = Math.floor(timer / 60);
+        const secs = timer % 60;
+        document.getElementById('timer').textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+    }, 1000);
+}
+
+function flipCard(card) {
+    if (flipped.length >= 2 || flipped.includes(card) || matched >= 8) return;
+    if (!timerInterval) initGame();
+    
+    card.querySelector('i').className = 'fa ' + card.dataset.icon;
+    card.style.background = 'linear-gradient(135deg,#10B981,#059669)';
+    flipped.push(card);
+    
+    if (flipped.length === 2) {
+        moves++;
+        document.getElementById('moves').textContent = moves;
+        
+        if (flipped[0].dataset.icon === flipped[1].dataset.icon) {
+            matched++;
+            document.getElementById('pairs').textContent = matched;
+            flipped[0].style.opacity = '0.5';
+            flipped[1].style.opacity = '0.5';
+            flipped = [];
+            
+            if (matched >= 8) {
+                clearInterval(timerInterval);
+                setTimeout(() => {
+                    document.getElementById('winMsg').style.display = 'block';
+                }, 500);
+            }
+        } else {
+            setTimeout(() => {
+                flipped[0].querySelector('i').className = 'fa fa-question';
+                flipped[1].querySelector('i').className = 'fa fa-question';
+                flipped[0].style.background = 'linear-gradient(135deg,var(--navy),#0ea5e9)';
+                flipped[1].style.background = 'linear-gradient(135deg,var(--navy),#0ea5e9)';
+                flipped = [];
+            }, 800);
+        }
+    }
+}
+
+function restartGame() {
+    const gameCards = [...icons, ...icons].sort(() => Math.random() - 0.5);
+    const cardEls = document.querySelectorAll('.card');
+    
+    cardEls.forEach((card, i) => {
+        card.dataset.icon = gameCards[i];
+        card.querySelector('i').className = 'fa fa-question';
+        card.style.background = 'linear-gradient(135deg,var(--navy),#0ea5e9)';
+        card.style.opacity = '1';
+    });
+    
+    flipped = [];
+    matched = 0;
+    moves = 0;
+    timer = 0;
+    
+    document.getElementById('moves').textContent = '0';
+    document.getElementById('pairs').textContent = '0';
+    document.getElementById('timer').textContent = '0:00';
+    document.getElementById('winMsg').style.display = 'none';
+    
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timer++;
+        const mins = Math.floor(timer / 60);
+        const secs = timer % 60;
+        document.getElementById('timer').textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+    }, 1000);
+}
+
+initGame();
+</script>
+
+{% endblock %}

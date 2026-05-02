@@ -1,0 +1,416 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ activity.title }} — Fly&Go{% endblock %}
+{% block body %}
+<div style="max-width:1380px;margin:0 auto;padding:2rem">
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem">
+        <a href="{{ path('home') }}" style="color:var(--muted)">Accueil</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <a href="{{ path('activity_index') }}" style="color:var(--muted)">Activités</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <strong style="color:var(--text)">{{ activity.title }}</strong>
+    </div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900;color:var(--text);margin-bottom:.5rem;letter-spacing:-.02em">{{ activity.title }}</h1>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+                {% if activity.lieu %}<span style="font-size:.875rem;color:var(--muted)"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ activity.lieu }}</span>{% endif %}
+                {% if activity.duration %}<span class="tag tag--navy"><i class="fa fa-clock"></i> {{ activity.duration }}</span>{% endif %}
+                <span class="tag"><i class="fa fa-users"></i> {{ activity.capacity }} places</span>
+                {% if activity.reviews|length > 0 %}<span style="color:var(--gold-d);font-size:.875rem"><i class="fa fa-star"></i> {{ activity.noteMoyenne|default(0) }} ({{ activity.reviews|length }} avis)</span>{% endif %}
+                {% if activity.date %}<span class="tag"><i class="fa fa-calendar"></i> {{ activity.date|date('d/m/Y') }}</span>{% endif %}
+            </div>
+        </div>
+        <div class="price price--lg">
+            <span class="price__val">{{ activity.price|number_format(3, ',', ' ') }}</span>
+            <span class="price__cur">TND</span>
+            <span class="price__per">/pers.</span>
+        </div>
+        <div style="display:flex;gap:.75rem">
+            <button class="btn btn-outline" onclick="openShareModal('activity', {{ activity.id }}, '{{ activity.title|e('js') }}')">
+                <i class="fa fa-share-alt"></i> Partager
+            </button>
+        </div>
+    </div>
+    <div class="detail-layout">
+        <div>
+            <div class="detail-gallery" style="margin-bottom:2rem">
+                {% if activity.image %}<img src="{{ asset(activity.image) }}" alt="{{ activity.title }}" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=900&q=85'">
+                {% else %}<img src="https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=900&q=85" alt="{{ activity.title }}">{% endif %}
+            </div>
+            <div class="detail-tabs">
+                <button class="detail-tab on" data-tab="desc" onclick="switchTab('desc')">Description</button>
+                <button class="detail-tab" data-tab="reviews" onclick="switchTab('reviews')">Avis ({{ activity.reviews|length }})</button>
+                <button class="detail-tab" data-tab="tripadvisor" onclick="switchTab('tripadvisor'); loadTripAdvisorReviews()">Avis TripAdvisor</button>
+                <button class="detail-tab" data-tab="recommendations" onclick="switchTab('recommendations'); loadAiRecommendations()">Recommandations</button>
+                <button class="detail-tab" data-tab="add-review" onclick="switchTab('add-review')">Laisser un avis</button>
+            </div>
+            <div id="pane-desc" class="tab-pane on">
+                <p style="font-size:.95rem;line-height:1.85;color:var(--text)">{{ activity.description ?: 'Aucune description disponible.' }}</p>
+            </div>
+            <div id="pane-reviews" class="tab-pane">
+                {% set positive = 0 %}{% set negative = 0 %}{% set neutral = 0 %}
+                {% for r in activity.reviews %}{% if r.sentimentLabel %}{% if r.sentimentLabel in ['excellent','good','positive'] %}{% set positive = positive + 1 %}{% elseif r.sentimentLabel in ['negative','bad'] %}{% set negative = negative + 1 %}{% else %}{% set neutral = neutral + 1 %}{% endif %}{% endif %}{% endfor %}
+                {% if activity.reviews|length > 0 %}
+                <div class="sentiment-summary" style="background:linear-gradient(135deg,#f8f9fa,#fff);padding:1rem;border-radius:12px;margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center">
+                    <div style="font-weight:600;color:var(--navy)">Analyse IA</div>
+                    <div style="display:flex;gap:1rem"><span style="color:#22c55e"><i class="fa fa-thumbs-up"></i> {{ positive }}</span><span style="color:#eab308"><i class="fa fa-minus"></i> {{ neutral }}</span><span style="color:#ef4444"><i class="fa fa-thumbs-down"></i> {{ negative }}</span></div>
+                    {% if positive + negative + neutral > 0 %}<span style="background:var(--navy);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.8rem">{{ ((positive / (positive + negative + neutral)) * 100)|round }}% satisfait</span>{% endif %}
+                </div>
+                {% endif %}
+                {% for r in activity.reviews %}
+                <div class="review-item">
+                    <div class="review-item__head"><span class="review-item__author">{{ r.author }}</span><span class="review-item__date">{{ r.createdAt|date('d/m/Y') }}</span></div>
+                    <div class="review-item__stars">{% for i in 1..5 %}<i class="fa fa-star" style="color:{{ i <= r.rating ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}
+                        {% if r.sentimentLabel %}<span class="sentiment-badge sentiment-{{ r.sentimentLabel }}" style="margin-left:0.5rem;padding:2px 8px;border-radius:10px;font-size:0.7rem;{% if r.sentimentLabel in ['excellent','good','positive'] %}background:#dcfce7;color:#16a34a{% elseif r.sentimentLabel in ['negative','bad'] %}background:#fee2e2;color:#dc2626{% else %}background:#fef3c7;color:#d97706{% endif %}">{% if r.sentimentLabel == 'excellent' %}<i class="fa fa-smile"></i> excellent{% elseif r.sentimentLabel == 'good' %}<i class="fa fa-smile"></i> bon{% elseif r.sentimentLabel == 'positive' %}<i class="fa fa-smile-o"></i> positif{% elseif r.sentimentLabel == 'neutral' %}<i class="fa fa-meh-o"></i> neutre{% elseif r.sentimentLabel == 'negative' %}<i class="fa fa-frown-o"></i> négatif{% elseif r.sentimentLabel == 'bad' %}<i class="fa fa-frown"></i> mauvais{% endif %}</span>{% endif %}
+                    </div>
+                    <div class="review-item__text">{{ r.comment }}</div>
+                </div>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis encore</p></div>
+                {% endfor %}
+            </div>
+            <div id="pane-tripadvisor" class="tab-pane">
+                <div id="tripadvisor-reviews">
+                    <div style="text-align:center;padding:2rem;color:var(--muted)"><i class="fa fa-spinner fa-spin"></i> Chargement des avis TripAdvisor...</div>
+                </div>
+            </div>
+            <div id="pane-recommendations" class="tab-pane">
+                <div id="ai-recommendations">
+                    <div style="text-align:center;padding:2rem;color:var(--muted)"><i class="fa fa-spinner fa-spin"></i> Génération des recommandations...</div>
+                </div>
+                <div style="margin-top:1rem">
+                    <button class="btn btn-outline" onclick="refreshAiRecommendations()"><i class="fa fa-refresh"></i> Actualiser</button>
+                </div>
+            </div>
+            <div id="pane-add-review" class="tab-pane">
+                <form action="{{ path('activity_review', {id: activity.id}) }}" method="POST">
+                    <div class="fg-group"><label class="fg-label">Votre nom</label><input type="text" name="author" class="fg-input" required placeholder="Votre prénom" value="{{ app.user ? app.user.fullName : '' }}"></div>
+                    <div class="fg-group">
+                        <label class="fg-label">Note</label>
+                        <div id="starPickAvis" style="display:flex;gap:.35rem;font-size:1.5rem;cursor:pointer;margin-bottom:.75rem">
+                            {% for i in 1..5 %}<i class="fa fa-star" onclick="setRatingAvis({{ i }})" style="color:#F59E0B"></i>{% endfor %}
+                        </div>
+                        <input type="hidden" name="rating" id="noteInput" value="5">
+                    </div>
+                    <div class="fg-group"><label class="fg-label">Commentaire</label><textarea name="comment" class="fg-input" rows="4" required placeholder="Partagez votre expérience..."></textarea></div>
+                    <button type="submit" class="btn btn-navy"><i class="fa fa-paper-plane"></i> Publier</button>
+                </form>
+            </div>
+        </div>
+        <div class="detail-sticky">
+            <div class="detail-info">
+                <div class="detail-price"><span class="amount">{{ activity.price|number_format(3, ',', ' ') }}</span><span class="per">TND/pers.</span></div>
+                <input type="hidden" id="prixActivity" value="{{ activity.price }}">
+                
+                {# External Booking Options #}
+                <div style="margin-bottom:1rem;padding:1rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px">
+                    <div style="font-size:.85rem;font-weight:600;color:#0369a1;margin-bottom:.5rem"><i class="fa fa-external-link-alt"></i> Réservation externe</div>
+                    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                        <button type="button" class="btn btn-sm" style="background:#000;color:#fff;padding:.4rem .75rem;border-radius:6px;font-size:.8rem" onclick="bookExternal('viator')">
+                            <i class="fab fa-viator"></i> Viator
+                        </button>
+                        <button type="button" class="btn btn-sm" style="background:#ff6b35;color:#fff;padding:.4rem .75rem;border-radius:6px;font-size:.8rem" onclick="bookExternal('getyourguide')">
+                            <i class="fa fa-map-marked-alt"></i> GetYourGuide
+                        </button>
+                    </div>
+                    <div id="externalBookingResult" style="margin-top:.75rem;font-size:.85rem"></div>
+                </div>
+                
+                <form action="{{ path('activity_book', {id: activity.id}) }}" method="POST" onsubmit="return validateActivityBooking()">
+                    <div class="book-form">
+                        <h4><i class="fa fa-hiking"></i> Réserver cette activité</h4>
+                        <div class="fg-group"><label class="fg-label">Nom complet *</label><input type="text" name="customer_name" id="customerName" class="fg-input" required minlength="2" maxlength="100" pattern="[A-Za-zÀ-ÿ\s\-]+" placeholder="Prénom Nom" value="{{ app.user ? app.user.fullName : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Email *</label><input type="email" name="email" id="customerEmail" class="fg-input" required placeholder="email@example.com" value="{{ app.user ? app.user.email : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Téléphone</label><input type="tel" name="phone" id="customerPhone" class="fg-input" pattern="[+]?[0-9\s]{8,15}" placeholder="+216 XX XXX XXX" value="{{ app.user ? app.user.telephone : '' }}"></div>
+                        <div class="fg-group"><label class="fg-label">Date souhaitée *</label><input type="date" name="booking_date" id="bookingDate" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required {% if activity.date %}value="{{ activity.date|date('Y-m-d') }}"{% endif %}></div>
+                        <div class="fg-group">
+                            <label class="fg-label">Nombre de personnes *</label>
+                            <input type="number" name="persons" id="persons" class="fg-input" value="1" min="1" max="{{ activity.capacity }}" required oninput="calcMontantBooking()">
+                        </div>
+                        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;color:var(--muted)">
+                                <span>Sous-total</span><span id="sousTotalBooking">—</span>
+                            </div>
+                            <div id="promoLineBooking" style="display:none;justify-content:space-between;margin-bottom:.35rem;color:#10b981">
+                                <span>Code promo</span><span id="promoReductionBooking">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;color:var(--navy);border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.25rem">
+                                <span>Total estimé</span><span id="montantBooking">{{ activity.price|number_format(3, ',', ' ') }} TND</span>
+                            </div>
+                        </div>
+                        <div class="fg-group" style="margin-bottom:1rem">
+                            <label class="fg-label" style="font-size:.8rem"><i class="fa fa-tag" style="color:var(--gold)"></i> Code promo</label>
+                            <div style="display:flex;gap:.5rem">
+                                <input type="text" id="promoCodeBooking" class="fg-input" placeholder="Ex: BIENVENUE" style="text-transform:uppercase">
+                                <button type="button" class="btn btn-outline" onclick="applyPromoBooking()">Appliquer</button>
+                            </div>
+                            <div id="promoMsgBooking" style="font-size:.75rem;margin-top:.25rem"></div>
+                        </div>
+                        <div class="fg-group" style="margin-bottom:1rem">
+                            <label class="fg-label"><i class="fa fa-credit-card"></i> Mode de paiement</label>
+                            <div style="display:flex;gap:.75rem;margin-top:.5rem">
+                                <label style="flex:1;cursor:pointer;display:flex;align-items:center;gap:.5rem;padding:.75rem;border:2px solid var(--border);border-radius:8px;transition:all .2s" id="stripeLabel">
+                                    <input type="radio" name="payment_method" value="stripe" checked style="display:none">
+                                    <i class="fab fa-stripe" style="font-size:1.5rem;color:#635bff"></i>
+                                    <span style="font-weight:600">Stripe</span>
+                                </label>
+                                <label style="flex:1;cursor:pointer;display:flex;align-items:center;gap:.5rem;padding:.75rem;border:2px solid var(--border);border-radius:8px;transition:all .2s" id="paypalLabel">
+                                    <input type="radio" name="payment_method" value="paypal" style="display:none">
+                                    <i class="fab fa-paypal" style="font-size:1.5rem;color:#003087"></i>
+                                    <span style="font-weight:600">PayPal</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-navy btn-lg" style="width:100%"><i class="fa fa-lock"></i> Réserver et payer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const prixActivity = {{ activity.price|default(0) }};
+const activityId = {{ activity.id }};
+const activityLieu = "{{ activity.lieu|default('') }}";
+const activityTitle = "{{ activity.title|default('') }}";
+let currentPromoReductionBooking = 0;
+let originalTotalBooking = 0;
+let tripAdvisorLoaded = false;
+let aiLoaded = false;
+
+function loadTripAdvisorReviews() {
+    if (tripAdvisorLoaded) return;
+    const container = document.getElementById('tripadvisor-reviews');
+    container.innerHTML = '<div style="text-align:center;padding:2rem"><i class="fa fa-spinner fa-spin"></i> Chargement...</div>';
+    
+    fetch('/api/activities/' + activityId + '/reviews')
+        .then(res => res.json())
+        .then(data => {
+            if (data.reviews && data.reviews.length > 0) {
+                let html = '<div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.5rem;padding:1rem;background:linear-gradient(135deg,#00aa6c,#008f4c);border-radius:12px;color:#fff">';
+                html += '<i class="fab fa-tripadvisor" style="font-size:2rem"></i>';
+                html += '<div><strong>Avis TripAdvisor</strong><div style="font-size:.85rem;opacity:.9">' + data.reviews.length + ' avis chargement</div></div>';
+                html += '</div>';
+                
+                data.reviews.forEach(review => {
+                    const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                    html += '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem">';
+                    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">';
+                    html += '<strong style="color:var(--text)">' + review.author + '</strong>';
+                    html += '<span style="color:#F59E0B">' + stars + '</span>';
+                    html += '</div>';
+                    html += '<div style="font-size:.85rem;color:var(--muted);margin-bottom:.5rem">' + review.date + '</div>';
+                    html += '<p style="color:var(--text);line-height:1.6">' + review.text + '</p>';
+                    html += '</div>';
+                });
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Aucun avis TripAdvisor disponible</div>';
+            }
+            tripAdvisorLoaded = true;
+        })
+        .catch(err => {
+            container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--red)">Erreur chargement avis</div>';
+        });
+}
+
+function loadAiRecommendations() {
+    if (aiLoaded) return;
+    const container = document.getElementById('ai-recommendations');
+    container.innerHTML = '<div style="text-align:center;padding:2rem"><i class="fa fa-spinner fa-spin"></i> Recherche...</div>';
+    
+    const location = activityLieu || 'Djerba';
+    
+    fetch('/api/activities/recommendations?location=' + encodeURIComponent(location))
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.recommendations && data.recommendations.length > 0) {
+                let html = '<div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.5rem;padding:1rem;background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:12px;color:#fff">';
+                html += '<i class="fa fa-lightbulb" style="font-size:1.5rem"></i>';
+                html += '<div><strong>Recommandations pour ' + location + '</strong><div style="font-size:.85rem;opacity:.9">Basées sur vos préférences</div></div>';
+                html += '</div>';
+                
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem">';
+                data.recommendations.forEach(rec => {
+                    const img = rec.image || 'https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=400&q=80';
+                    const desc = rec.description ? rec.description.substring(0, 80) + '...' : '';
+                    const url = '/activites/' + rec.id;
+                    html += '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s" onclick="window.location=\'' + url + '\'">';
+                    html += '<div style="height:120px;overflow:hidden"><img src="' + img + '" style="width:100%;height:100%;object-fit:cover" onerror="this.src=\'https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=400&q=80\'"></div>';
+                    html += '<div style="padding:1rem">';
+                    html += '<div style="font-size:.7rem;color:var(--cyan);font-weight:600;margin-bottom:.25rem">' + (rec.category || 'Activité') + '</div>';
+                    html += '<strong style="color:var(--text);display:block;margin-bottom:.5rem;font-size:.95rem">' + rec.title + '</strong>';
+                    if (data.ai_suggestions && rec === data.recommendations[0]) {
+                        html += '<div style="background:var(--bg);padding:.5rem;border-radius:8px;font-size:.75rem;color:var(--navy);margin-bottom:.75rem;border-left:3px solid var(--gold)">';
+                        html += '<i class="fa fa-magic"></i> ' + data.ai_suggestions.substring(0, 100) + '...';
+                        html += '</div>';
+                    }
+                    html += '<div style="color:var(--muted);font-size:.8rem;margin-bottom:.75rem">' + desc + '</div>';
+                    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+                    html += '<span style="color:var(--gold);font-weight:700">' + (rec.rating || 0) + ' <i class="fa fa-star"></i></span>';
+                    html += '<span style="color:var(--navy);font-weight:800;font-size:1.1rem">' + (rec.price || 0) + ' TND</span>';
+                    html += '</div></div></div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Aucune recommandation disponible</div>';
+            }
+            aiLoaded = true;
+        })
+        .catch(err => {
+            container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--red)">Erreur</div>';
+        });
+}
+
+function refreshAiRecommendations() {
+    aiLoaded = false;
+    loadAiRecommendations();
+}
+
+function calcMontantBooking() {
+    const persons = parseInt(document.getElementById('persons').value) || 1;
+    originalTotalBooking = prixActivity * persons;
+    document.getElementById('sousTotalBooking').textContent = originalTotalBooking.toLocaleString('fr-FR') + ' TND';
+    applyPromoBookingToDisplay();
+}
+
+function applyPromoBookingToDisplay() {
+    const finalTotal = Math.max(0, originalTotalBooking - currentPromoReductionBooking);
+    document.getElementById('montantBooking').textContent = finalTotal.toLocaleString('fr-FR') + ' TND';
+}
+
+async function applyPromoBooking() {
+    const code = document.getElementById('promoCodeBooking').value.trim().toUpperCase();
+    const msgEl = document.getElementById('promoMsgBooking');
+    const promoLine = document.getElementById('promoLineBooking');
+    const reductionEl = document.getElementById('promoReductionBooking');
+
+    if (!code) {
+        msgEl.textContent = 'Veuillez entrer un code promo';
+        msgEl.style.color = 'var(--red)';
+        return;
+    }
+
+    if (originalTotalBooking <= 0) {
+        calcMontantBooking();
+    }
+
+    try {
+        const response = await fetch('/ajax/apply-promo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ code, price: originalTotalBooking })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            currentPromoReductionBooking = data.reduction;
+            promoLine.style.display = 'flex';
+            reductionEl.textContent = '-' + data.reduction.toLocaleString('fr-FR') + ' TND';
+            msgEl.textContent = data.message;
+            msgEl.style.color = '#10b981';
+            applyPromoBookingToDisplay();
+        } else {
+            currentPromoReductionBooking = 0;
+            promoLine.style.display = 'none';
+            msgEl.textContent = data.message;
+            msgEl.style.color = 'var(--red)';
+            applyPromoBookingToDisplay();
+        }
+    } catch (e) {
+        msgEl.textContent = 'Erreur lors de l\'application';
+        msgEl.style.color = 'var(--red)';
+    }
+}
+
+function validateActivityBooking() {
+    const name = document.getElementById('customerName').value.trim();
+    const email = document.getElementById('customerEmail').value.trim();
+    const date = document.getElementById('bookingDate').value;
+    const persons = parseInt(document.getElementById('persons').value);
+    
+    if (name.length < 2) { alert('Veuillez entrer un nom valide (au moins 2 caractères).'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Veuillez entrer une adresse email valide.'); return false; }
+    if (!date) { alert('Veuillez choisir une date.'); return false; }
+    if (persons < 1) { alert('Le nombre de personnes doit être au moins 1.'); return false; }
+    return true;
+}
+
+function setRatingAvis(rating) {
+    document.getElementById('noteInput').value = rating;
+    const stars = document.querySelectorAll('#starPickAvis .fa-star');
+    stars.forEach((star, index) => {
+        star.style.color = index < rating ? '#F59E0B' : '#ccc';
+    });
+}
+
+async function bookExternal(provider) {
+    const resultEl = document.getElementById('externalBookingResult');
+    const date = document.getElementById('bookingDate')?.value || new Date().toISOString().split('T')[0];
+    const persons = parseInt(document.getElementById('persons')?.value) || 1;
+    
+    resultEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Réservation en cours...';
+    
+    const formData = new URLSearchParams();
+    formData.append('provider', provider);
+    formData.append('date', date);
+    formData.append('persons', persons);
+    
+    try {
+        const res = await fetch('/api/activities/' + activityId + '/book', { method: 'POST', body: formData });
+        const data = await res.json();
+        
+        if (data.success) {
+            resultEl.innerHTML = '<div style="color:#10b981;padding:.5rem;background:#d1fae5;border-radius:6px"><i class="fa fa-check-circle"></i> Réservation confirmée! Code: ' + data.booking_id + '</div>';
+        } else {
+            resultEl.innerHTML = '<div style="color:#dc2626;padding:.5rem;background:#fee2e2;border-radius:6px"><i class="fa fa-times-circle"></i> Erreur: ' + (data.error || 'Erreur inconnue') + '</div>';
+        }
+    } catch (err) {
+        resultEl.innerHTML = '<div style="color:#dc2626;padding:.5rem;background:#fee2e2;border-radius:6px"><i class="fa fa-times-circle"></i> Erreur de connexion</div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const personsInput = document.getElementById('persons');
+    if (personsInput) {
+        personsInput.addEventListener('input', calcMontantBooking);
+        calcMontantBooking();
+    }
+    
+    const stripeLabel = document.getElementById('stripeLabel');
+    const paypalLabel = document.getElementById('paypalLabel');
+    const stripeRadio = stripeLabel.querySelector('input');
+    const paypalRadio = paypalLabel.querySelector('input');
+    
+    function updatePaymentStyle() {
+        if (stripeRadio.checked) {
+            stripeLabel.style.borderColor = '#635bff';
+            stripeLabel.style.background = 'rgba(99,91,255,0.1)';
+            paypalLabel.style.borderColor = 'var(--border)';
+            paypalLabel.style.background = 'transparent';
+        } else {
+            paypalLabel.style.borderColor = '#003087';
+            paypalLabel.style.background = 'rgba(0,48,135,0.1)';
+            stripeLabel.style.borderColor = 'var(--border)';
+            stripeLabel.style.background = 'transparent';
+        }
+    }
+    
+    stripeLabel.addEventListener('click', function() {
+        stripeRadio.checked = true;
+        updatePaymentStyle();
+    });
+    
+    paypalLabel.addEventListener('click', function() {
+        paypalRadio.checked = true;
+        updatePaymentStyle();
+    });
+    
+    updatePaymentStyle();
+});
+</script>
+{% endblock %}

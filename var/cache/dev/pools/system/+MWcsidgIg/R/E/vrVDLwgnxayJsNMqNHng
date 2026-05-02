@@ -1,0 +1,3 @@
+<?php //easyadmin.routes.fqcn_to_route
+
+return [PHP_INT_MAX, []];

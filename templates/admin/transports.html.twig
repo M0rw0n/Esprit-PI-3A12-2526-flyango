@@ -1,0 +1,122 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Transports — Admin{% endblock %}
+{% block breadcrumb %}Transports{% endblock %}
+{% block admin_body %}
+{% set q = app.request.query.get('q', '') %}
+{% set type = app.request.query.get('type', '') %}
+{% set tri = app.request.query.get('tri', 'recent') %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+    <div>
+        <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Gestion des transports</h2>
+        <p style="color:var(--muted);font-size:.85rem">{{ transports.totalItemCount }} transports</p>
+    </div>
+    <a href="{{ path('admin_transport_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Nouveau transport</a>
+</div>
+
+<div class="admin-toolbar">
+    <form method="GET" action="{{ path('admin_transports') }}" id="filterForm">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un transport..." data-auto-submit>
+            </div>
+            <div class="admin-toolbar__select">
+                <select name="type" data-auto-submit>
+                    <option value="">Tous types</option>
+                    <option value="FLIGHT" {{ type == 'FLIGHT' ? 'selected' : '' }}>Vol</option>
+                    <option value="TRAIN" {{ type == 'TRAIN' ? 'selected' : '' }}>Train</option>
+                    <option value="BUS" {{ type == 'BUS' ? 'selected' : '' }}>Bus</option>
+                    <option value="CAR" {{ type == 'CAR' ? 'selected' : '' }}>Voiture</option>
+                </select>
+            </div>
+            <select name="tri" class="admin-toolbar__sort" data-auto-submit>
+                <option value="recent" {{ tri == 'recent' ? 'selected' : '' }}>Plus récents</option>
+                <option value="oldest" {{ tri == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                <option value="price_asc" {{ tri == 'price_asc' ? 'selected' : '' }}>Prix ↑</option>
+                <option value="price_desc" {{ tri == 'price_desc' ? 'selected' : '' }}>Prix ↓</option>
+                <option value="date_asc" {{ tri == 'date_asc' ? 'selected' : '' }}>Date départ ↑</option>
+                <option value="date_desc" {{ tri == 'date_desc' ? 'selected' : '' }}>Date départ ↓</option>
+            </select>
+            {% if q or type %}
+            <a href="{{ path('admin_transports') }}" class="btn btn-outline btn-sm"><i class="fa fa-times"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="admin-acts">
+    {% for t in transports %}
+    <div class="adm-act">
+        <div class="adm-act__img">
+            {% if t.imagePath %}<img src="{{ asset(t.imagePath) }}" alt="{{ t.companyName }}" onerror="this.src='https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=300&q=70'">
+            {% else %}<div style="height:130px;background:var(--bg2);display:flex;align-items:center;justify-content:center"><i class="fa {{ t.transportIcon }} fa-2x" style="color:var(--border)"></i></div>{% endif %}
+        </div>
+        <div class="adm-act__body">
+            <div class="adm-act__title">{{ t.companyName }} <span class="diff-badge diff-badge--{{ t.transportType|lower }}">{{ t.transportType }}</span></div>
+            <div class="adm-act__meta">
+                <span><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ t.departureCity }} → {{ t.arrivalCity }}</span>
+                <span><i class="fa fa-clock"></i> {{ t.departureDatetime|date('d/m H:i') }}</span>
+                {% if t.availableSeats %}<span><i class="fa fa-chair"></i> {{ t.availableSeats }} places</span>{% endif %}
+            </div>
+            <div class="adm-act__foot">
+                <div class="price price--sm">
+                    <span class="price__val">{{ t.price|number_format(3, ',', ' ') }}</span>
+                    <span class="price__cur">TND</span>
+                </div>
+                <div class="adm-act__actions">
+                    <a href="{{ path('admin_transport_edit', {id: t.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-edit"></i></a>
+                    <form action="{{ path('admin_transport_delete', {id: t.id}) }}" method="POST" onsubmit="return confirm('Supprimer ce transport ?')">
+                        <button type="submit" class="btn btn-red btn-sm"><i class="fa fa-trash"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty" style="grid-column:1/-1"><i class="fa fa-plane"></i><h3>Aucun transport</h3>
+        <a href="{{ path('admin_transport_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Créer</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if transports.totalItemCount > transports.itemNumberPerPage %}
+<div class="admin-pagination">
+    <div class="admin-pagination__info">
+        {{ (transports.currentPageNumber - 1) * transports.itemNumberPerPage + 1 }} - {{ min(transports.currentPageNumber * transports.itemNumberPerPage, transports.totalItemCount) }} sur {{ transports.totalItemCount }}
+    </div>
+    <div class="admin-pagination__pages">
+        {% if transports.currentPageNumber > 1 %}
+        <a href="{{ path('admin_transports', {page: transports.currentPageNumber - 1, q: q, type: type, tri: tri}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-left"></i></a>
+        {% endif %}
+        {% for page in transports.paginationData.pagesInRange %}
+            {% if page == transports.currentPageNumber %}
+                <span class="admin-pagination__current">{{ page }}</span>
+            {% else %}
+                <a href="{{ path('admin_transports', {page: page, q: q, type: type, tri: tri}) }}" class="admin-pagination__btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if transports.currentPageNumber < transports.pageCount %}
+        <a href="{{ path('admin_transports', {page: transports.currentPageNumber + 1, q: q, type: type, tri: tri}) }}" class="admin-pagination__btn"><i class="fa fa-chevron-right"></i></a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.querySelectorAll('[data-auto-submit]').forEach(el => {
+            let timeout;
+            el.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => filterForm.submit(), 600);
+            });
+            el.addEventListener('change', () => filterForm.submit());
+        });
+    }
+});
+</script>
+{% endblock %}

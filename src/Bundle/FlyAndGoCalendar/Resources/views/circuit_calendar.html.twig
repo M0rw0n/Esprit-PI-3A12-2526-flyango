@@ -1,0 +1,135 @@
+{# Circuit Calendar Component #}
+{% set calendarId = calendarId|default('circuit-calendar') %}
+{% set events = events|default([]) %}
+{% set options = options|default({}) %}
+
+<div class="circuit-calendar-wrapper" data-calendar-id="{{ calendarId }}" data-events="{{ events|json_encode|e('html_attr') }}" data-options="{{ options|json_encode|e('html_attr') }}">
+    <div id="{{ calendarId }}" class="circuit-calendar"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const wrapper = document.querySelector('[data-calendar-id="{{ calendarId }}"]');
+    const calendarEl = document.getElementById('{{ calendarId }}');
+    const eventsData = wrapper.dataset.events ? JSON.parse(wrapper.dataset.events) : [];
+    const optionsData = wrapper.dataset.options ? JSON.parse(wrapper.dataset.options) : {};
+    
+    const defaultOptions = {
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        initialView: 'dayGridMonth',
+        locale: 'fr',
+        navLinks: true,
+        editable: true,
+        dayMaxEvents: true,
+        weekends: true,
+        buttonText: {
+            today: "Aujourd'hui",
+            month: 'Mois',
+            week: 'Semaine',
+            day: 'Jour',
+            list: 'Liste'
+        },
+        eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            meridiem: 'short'
+        },
+        events: eventsData,
+        eventClick: function(info) {
+            if (info.event.url) {
+                window.location.href = info.event.url;
+            }
+        },
+        eventDidMount: function(info) {
+            info.el.title = info.event.title + '\n' + (info.event.extendedProps.description || '');
+        }
+    };
+    
+    const finalOptions = { ...defaultOptions, ...optionsData };
+    
+    const calendar = new FullCalendar.Calendar(calendarEl, finalOptions);
+    calendar.render();
+    
+    // Store calendar instance for later access
+    window.circuitsCalendar = calendar;
+});
+</script>
+
+<style>
+.circuit-calendar-wrapper {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.circuit-calendar {
+    font-family: var(--font, 'Outfit', sans-serif);
+}
+
+.circuit-calendar .fc {
+    --fc-border-color: var(--border, #DDE5EF);
+    --fc-button-bg-color: var(--navy, #1B3A6B);
+    --fc-button-border-color: var(--navy, #1B3A6B);
+    --fc-button-hover-bg-color: var(--cyan, #00B4D8);
+    --fc-button-hover-border-color: var(--cyan, #00B4D8);
+    --fc-button-active-bg-color: var(--gold, #FFB700);
+    --fc-button-active-border-color: var(--gold, #FFB700);
+    --fc-event-bg-color: var(--navy, #1B3A6B);
+    --fc-event-border-color: var(--navy, #1B3A6B);
+    --fc-today-bg-color: rgba(0, 180, 216, 0.1);
+}
+
+.circuit-calendar .fc-toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--navy, #1B3A6B);
+}
+
+.circuit-calendar .fc-button {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-transform: capitalize;
+}
+
+.circuit-calendar .fc-event {
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 0.85rem;
+}
+
+.circuit-calendar .fc-daygrid-event {
+    margin: 2px 4px;
+}
+
+.circuit-calendar .fc-daygrid-day-number {
+    padding: 8px;
+    font-weight: 600;
+    color: var(--text, #0F1E35);
+}
+
+.circuit-calendar .fc-col-header-cell {
+    padding: 12px 0;
+    background: var(--bg, #F0F4F8);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: var(--muted, #64748B);
+}
+
+.circuit-calendar .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    background: var(--gold, #FFB700);
+    color: #fff;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>

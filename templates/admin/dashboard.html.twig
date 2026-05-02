@@ -1,0 +1,1574 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Tableau de bord — Fly&Go Admin{% endblock %}
+{% block breadcrumb %}Tableau de bord{% endblock %}
+
+{% block admin_body %}
+<style>
+.dash-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dd) 100%);
+    border-radius: var(--r-lg);
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.dash-header::before {
+    content: '';
+    position: absolute;
+    right: -50px;
+    top: -50px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,183,0,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.dash-header h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.02em;
+}
+.dash-header p {
+    opacity: 0.75;
+    font-size: 0.95rem;
+}
+.dash-header__meta {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+}
+.dash-header__meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    opacity: 0.85;
+}
+.dash-header__meta-item i {
+    color: var(--gold);
+}
+.stat-highlight {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255,183,0,0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gold);
+}
+.kpi-card {
+    background: var(--card);
+    border-radius: var(--r);
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--s1);
+    transition: all var(--t);
+    position: relative;
+    overflow: hidden;
+}
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--s3);
+}
+.kpi-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+.kpi-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--r-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+.kpi-card__icon--navy { background: rgba(27,58,107,0.1); color: var(--navy); }
+.kpi-card__icon--gold { background: rgba(255,183,0,0.12); color: var(--gold-d); }
+.kpi-card__icon--cyan { background: rgba(0,180,216,0.1); color: var(--cyan-d); }
+.kpi-card__icon--green { background: rgba(16,185,129,0.1); color: var(--green); }
+.kpi-card__icon--red { background: rgba(239,68,68,0.1); color: var(--red); }
+.kpi-card__value {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+.kpi-card__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+}
+.kpi-card__trend {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.kpi-card__trend--up { color: var(--green); }
+.kpi-card__trend--down { color: var(--red); }
+.kpi-card__bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--bg);
+}
+.kpi-card__bar-fill {
+    height: 100%;
+    border-radius: 0 4px 4px 0;
+    transition: width 1s ease;
+}
+.admin-chart-card {
+    background: var(--card);
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+    box-shadow: var(--s1);
+    overflow: hidden;
+}
+.admin-chart-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+.admin-chart-card__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.admin-chart-card__title i { color: var(--navy); }
+.admin-chart-card__body { padding: 1.5rem; }
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background var(--t);
+}
+.activity-item:hover { background: var(--bg); }
+.activity-item:last-child { border-bottom: none; }
+.activity-item__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #fff;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+.activity-item__content { flex: 1; min-width: 0; }
+.activity-item__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.activity-item__meta {
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.activity-item__meta span { display: flex; align-items: center; gap: 0.3rem; }
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    text-decoration: none;
+    color: var(--text);
+    transition: all var(--t);
+    margin-bottom: 0.75rem;
+}
+.quick-action-btn:hover {
+    border-color: var(--navy);
+    background: #fff;
+    transform: translateX(4px);
+    box-shadow: var(--s2);
+}
+.quick-action-btn__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.quick-action-btn__text { flex: 1; }
+.quick-action-btn__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+.quick-action-btn__desc { font-size: 0.75rem; color: var(--muted); }
+.quick-action-btn__arrow { color: var(--border); }
+.alert-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0 0.4rem;
+}
+.alert-badge--warning { background: #fef3c7; color: #92400e; }
+.alert-badge--danger { background: #fee2e2; color: #991b1b; }
+.alert-badge--success { background: #d1fae5; color: #065f46; }
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.5rem;
+}
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+.section-divider span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+}
+</style>
+
+<div class="dash-header">
+    <h1>Bonjour, {{ app.user ? app.user.prenom : 'Admin' }} ✈</h1>
+    <p>Bienvenue sur le tableau de bord Fly&Go — Vue d'ensemble de votre agence</p>
+    <div class="dash-header__meta">
+        <div class="dash-header__meta-item">
+            <i class="fa fa-calendar-check"></i>
+            <span>{{ "now"|date("d/m/Y") }}</span>
+            <a href="{{ path('admin_calendar') }}" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,183,0,0.15);padding:.35rem .75rem;border-radius:20px;text-decoration:none;color:inherit;transition:all .2s" title="Accéder au calendrier complet" onmouseover="this.style.background='rgba(255,183,0,0.25)'" onmouseout="this.style.background='rgba(255,183,0,0.15)'"><i class="fa fa-calendar-alt"></i><span style="font-weight:600;font-size:.85rem">Ouvrir le Calendrier</span></a>
+        </div>
+        <div class="dash-header__meta-item">
+            <i class="fa fa-clock"></i>
+            <span>
+                {% set totalPending = pendingRes + pendingBook + pendingPosts %}
+                {% if totalPending > 0 %}
+                <span class="stat-highlight"><i class="fa fa-exclamation-circle"></i> {{ totalPending }} en attente</span>
+                {% else %}
+                <span class="stat-highlight" style="background:rgba(16,185,129,0.2);color:#10B981"><i class="fa fa-check-circle"></i> Tout est à jour</span>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="kpis" style="margin-bottom:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--navy"><i class="fa fa-hotel"></i></div>
+            <span class="alert-badge alert-badge--success">{{ totalHebergements }}</span>
+        </div>
+        <div class="kpi-card__value">{{ totalHebergements }}</div>
+        <div class="kpi-card__label">Hébergements</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-check-circle"></i> Catalogue actif</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--navy)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--gold"><i class="fa fa-calendar-check"></i></div>
+            {% if pendingRes + pendingBook > 0 %}
+            <span class="alert-badge alert-badge--warning">{{ pendingRes + pendingBook }}</span>
+            {% endif %}
+        </div>
+        <div class="kpi-card__value">{{ totalReservations }}</div>
+        <div class="kpi-card__label">Réservations</div>
+        <div class="kpi-card__trend {{ pendingRes + pendingBook > 0 ? 'kpi-card__trend--down' : 'kpi-card__trend--up' }}">
+            <i class="fa fa-{{ pendingRes + pendingBook > 0 ? 'clock' : 'check-circle' }}"></i> {{ pendingRes + pendingBook }} en attente
+        </div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:{{ totalReservations > 0 ? (100 - (pendingRes + pendingBook) / totalReservations * 100)|round : 100 }}%;background:var(--gold)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--green"><i class="fa fa-coins"></i></div>
+        </div>
+        <div class="kpi-card__value" style="font-size:1.6rem">{{ revenus|number_format(0, '', ' ') }}</div>
+        <div class="kpi-card__label">Revenus totaux (TND)</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-arrow-up"></i> Tous modules</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--cyan"><i class="fa fa-star"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ moyenneAvis > 0 ? moyenneAvis : 'N/A' }}</div>
+        <div class="kpi-card__label">Note moyenne</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-smile"></i> Satisfaction client</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:{{ moyenneAvis > 0 ? moyenneAvis * 20 : 0 }}%;background:var(--cyan)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--navy"><i class="fa fa-route"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalCircuits }}</div>
+        <div class="kpi-card__label">Circuits</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-globe"></i> Disponibles</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--navy)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--cyan"><i class="fa fa-hiking"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalActivities }}</div>
+        <div class="kpi-card__label">Activités</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-calendar"></i> Disponibles</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--cyan)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon" style="background:rgba(249,115,22,0.1);color:#f97316"><i class="fa fa-bus"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalTransports|default(0) }}</div>
+        <div class="kpi-card__label">Transports</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-route"></i> Disponibles</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:#f97316"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--green"><i class="fa fa-users"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalUsers }}</div>
+        <div class="kpi-card__label">Utilisateurs</div>
+        <div class="kpi-card__trend kpi-card__trend--up"><i class="fa fa-user-plus"></i> Inscrits</div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--red"><i class="fa fa-comments"></i></div>
+            {% if pendingPosts > 0 %}
+            <span class="alert-badge alert-badge--danger">{{ pendingPosts }}</span>
+            {% endif %}
+        </div>
+        <div class="kpi-card__value">{{ totalForumPosts }}</div>
+        <div class="kpi-card__label">Forum posts</div>
+        <div class="kpi-card__trend {{ pendingPosts > 0 ? 'kpi-card__trend--down' : 'kpi-card__trend--up' }}">
+            <i class="fa fa-{{ pendingPosts > 0 ? 'exclamation-circle' : 'check-circle' }}"></i> {{ pendingPosts }} en attente
+        </div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:{{ totalForumPosts > 0 ? (100 - pendingPosts / totalForumPosts * 100)|round : 100 }}%;background:var(--red)"></div></div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-card__header">
+            <div class="kpi-card__icon kpi-card__icon--cyan"><i class="fa fa-suitcase-rolling"></i></div>
+        </div>
+        <div class="kpi-card__value">{{ totalProfils }}</div>
+        <div class="kpi-card__label">Profils Voyageur</div>
+        <div class="kpi-card__trend kpi-card__trend--up">
+            <i class="fa fa-{{ moyenneBudget > 0 ? 'coins' : 'plane' }}"></i> 
+            Budget moyen: {{ moyenneBudget > 0 ? moyenneBudget|number_format(0, ',', ' ') ~ ' TND' : 'N/A' }}
+        </div>
+        <div class="kpi-card__bar"><div class="kpi-card__bar-fill" style="width:100%;background:var(--cyan)"></div></div>
+    </div>
+</div>
+
+<div class="section-divider"><span>Analytiques</span></div>
+
+<div class="admin-grid" style="margin-bottom:2rem">
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-chart-line"></i> Réservations mensuelles</span>
+        </div>
+        <div class="admin-chart-card__body">
+            <canvas id="chartRevenus" height="100"></canvas>
+        </div>
+    </div>
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-chart-bar"></i> Revenus par mois (TND)</span>
+        </div>
+        <div class="admin-chart-card__body">
+            <canvas id="chartRevenusTND" height="100"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="section-divider"><span>🗂️ Statistiques Circuits</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+        <i class="fa fa-route" style="font-size:1.5rem;color:var(--gold);margin-bottom:.5rem"></i>
+        <div style="font-size:1.75rem;font-weight:900;color:var(--navy)">{{ totalCircuits }}</div>
+        <div style="font-size:.8rem;color:var(--muted)">Total Circuits</div>
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+        <i class="fa fa-robot" style="font-size:1.5rem;color:var(--cyan);margin-bottom:.5rem"></i>
+        <div style="font-size:1.75rem;font-weight:900;color:var(--navy)">{{ aiCircuitsCount }}</div>
+        <div style="font-size:.8rem;color:var(--muted)">Circuits IA</div>
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+        <i class="fa fa-star" style="font-size:1.5rem;color:var(--gold);margin-bottom:.5rem"></i>
+        <div style="font-size:1.75rem;font-weight:900;color:var(--navy)">{{ moyenneAvis > 0 ? moyenneAvis : 'N/A' }}</div>
+        <div style="font-size:.8rem;color:var(--muted)">Note moyenne</div>
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+        <i class="fa fa-heart" style="font-size:1.5rem;color:#ef4444;margin-bottom:.5rem"></i>
+        <div style="font-size:1.75rem;font-weight:900;color:var(--navy)">{{ positiveReviews }}</div>
+        <div style="font-size:.8rem;color:var(--muted)">Avis positifs</div>
+    </div>
+</div>
+
+<div class="section-divider"><span>Catégories & Saisons</span></div>
+
+<div class="admin-grid" style="margin-bottom:2rem">
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-layer-group"></i> Circuits par catégorie</span>
+        </div>
+        <div class="admin-chart-card__body">
+            <canvas id="chartCategories" height="200"></canvas>
+        </div>
+    </div>
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-chart-pie"></i> Réservations par saison</span>
+        </div>
+        <div class="admin-chart-card__body">
+            <canvas id="chartSaisons" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="admin-grid" style="margin-bottom:2rem">
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-hiking"></i> Activités par catégorie</span>
+        </div>
+        <div class="admin-chart-card__body">
+            <canvas id="chartActCats" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+{# Stats détaillées par saison #}
+<div class="section-divider"><span>📅 Détails par saison</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for saison in saisonStats|default([]) %}
+    <div style="background:linear-gradient(135deg,{% if saison.saison == 'Hiver' %}#e0f2fe,#bae6fd{% elseif saison.saison == 'Printemps' %}#dcfce7,#bbf7d0{% elseif saison.saison == 'Été' %}#fef3c7,#fde68a{% else %}#fed7aa,#fdba74{% endif %});padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="font-size:1.5rem;margin-bottom:0.5rem">{{ saison.label }}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <div style="font-size:0.75rem;color:var(--muted)">Réservations</div>
+                <div style="font-size:1.5rem;font-weight:800;color:var(--text)">{{ saison.count }}</div>
+            </div>
+            <div style="text-align:right">
+                <div style="font-size:0.75rem;color:var(--muted)">Revenus</div>
+                <div style="font-size:1.25rem;font-weight:800;color:var(--navy)">{{ saison.revenu|number_format(0, '', ' ') }} TND</div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{# Stats détaillées par catégorie circuit #}
+{% if statsParCategorie|default([])|length > 0 %}
+<div class="section-divider"><span>🏷️ Circuits par catégorie</span></div>
+<div style="background:#fff;border-radius:12px;border:1px solid var(--border);margin-bottom:2rem">
+    <table style="width:100%;border-collapse:collapse">
+        <thead>
+            <tr style="border-bottom:1px solid var(--border);background:var(--bg)">
+                <th style="padding:1rem;text-align:left;font-size:0.8rem;color:var(--muted)">Catégorie</th>
+                <th style="padding:1rem;text-align:center;font-size:0.8rem;color:var(--muted)">Nombre</th>
+                <th style="padding:1rem;text-align:right;font-size:0.8rem;color:var(--muted)">Prix moyen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cat in statsParCategorie %}
+            <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:1rem;font-weight:600">{{ cat.categorie|default('Autre') }}</td>
+                <td style="padding:1rem;text-align:center"><span class="badge" style="background:var(--navy);color:#fff;padding:4px 12px;border-radius:20px">{{ cat.total }}</span></td>
+                <td style="padding:1rem;text-align:right;color:var(--gold);font-weight:700">{{ cat.avgPrix|number_format(0, '', ' ') }} TND</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<div class="admin-grid">
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-calendar-check"></i> Réservations récentes</span>
+            <a href="{{ path('admin_reservations') }}" class="btn btn-outline btn-sm">Voir tout <i class="fa fa-arrow-right" style="margin-left:0.35rem"></i></a>
+        </div>
+        <div style="max-height:400px;overflow-y:auto">
+            {% for r in recentReservations %}
+            <div class="activity-item">
+                <div class="activity-item__avatar" style="background:linear-gradient(135deg,var(--navy),var(--cyan))">{{ r.nomClient|slice(0,1)|upper }}</div>
+                <div class="activity-item__content">
+                    <div class="activity-item__title">{{ r.nomClient }}</div>
+                    <div class="activity-item__meta">
+                        <span><i class="fa fa-hotel"></i> {{ r.hebergement.nom }}</span>
+                        <span><i class="fa fa-calendar"></i> {{ r.dateDebut|date('d/m/Y') }}</span>
+                        <span><i class="fa fa-users"></i> {{ r.nombrePersonnes }} pers.</span>
+                    </div>
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                    <div style="font-weight:800;color:var(--navy);font-size:0.95rem">{{ r.montantTotal|number_format(0, '', ' ') }} TND</div>
+                    <span class="status status--{{ r.statut == 'CONFIRMEE' ? 'confirmed' : (r.statut == 'EN_ATTENTE' ? 'pending' : 'cancelled') }}" style="margin-top:0.35rem;display:inline-flex">
+                        {{ r.statut == 'CONFIRMEE' ? 'Confirmée' : (r.statut == 'EN_ATTENTE' ? 'En attente' : 'Annulée') }}
+                    </span>
+                </div>
+                {% if r.statut == 'EN_ATTENTE' %}
+                <div style="display:flex;gap:0.35rem;flex-shrink:0">
+                    <button onclick="changeStatutRes({{ r.id }}, 'CONFIRMEE')" class="btn btn-green btn-sm" title="Confirmer"><i class="fa fa-check"></i></button>
+                    <button onclick="changeStatutRes({{ r.id }}, 'ANNULEE')" class="btn btn-red btn-sm" title="Annuler"><i class="fa fa-times"></i></button>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="empty" style="padding:3rem"><i class="fa fa-calendar-check"></i><h3>Aucune réservation</h3></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="admin-chart-card">
+        <div class="admin-chart-card__header">
+            <span class="admin-chart-card__title"><i class="fa fa-bolt"></i> Actions rapides</span>
+        </div>
+        <div style="padding:1.25rem">
+            <a href="{{ path('admin_hebergement_new') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(27,58,107,0.1);color:var(--navy)"><i class="fa fa-plus"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Ajouter un hébergement</div>
+                    <div class="quick-action-btn__desc">Créer un nouvel hébergement</div>
+                </div>
+                <i class="fa fa-chevron-right quick-action-btn__arrow"></i>
+            </a>
+            <a href="{{ path('admin_circuit_new') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(0,180,216,0.1);color:var(--cyan-d)"><i class="fa fa-route"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Nouveau circuit</div>
+                    <div class="quick-action-btn__desc">Créer un circuit de voyage</div>
+                </div>
+                <i class="fa fa-chevron-right quick-action-btn__arrow"></i>
+            </a>
+            <a href="{{ path('admin_activity_new') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(255,183,0,0.12);color:var(--gold-d)"><i class="fa fa-hiking"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Nouvelle activité</div>
+                    <div class="quick-action-btn__desc">Ajouter une excursion</div>
+                </div>
+                <i class="fa fa-chevron-right quick-action-btn__arrow"></i>
+            </a>
+            <a href="{{ path('admin_reservations') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(16,185,129,0.1);color:var(--green)"><i class="fa fa-calendar-check"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Gérer les réservations</div>
+                    <div class="quick-action-btn__desc">{{ pendingRes }} réservations en attente</div>
+                </div>
+                {% if pendingRes > 0 %}
+                <span class="alert-badge alert-badge--warning">{{ pendingRes }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('admin_forum') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(239,68,68,0.1);color:var(--red)"><i class="fa fa-comments"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Modérer le forum</div>
+                    <div class="quick-action-btn__desc">{{ pendingPosts }} posts en attente</div>
+                </div>
+                {% if pendingPosts > 0 %}
+                <span class="alert-badge alert-badge--danger">{{ pendingPosts }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ path('admin_users') }}" class="quick-action-btn">
+                <div class="quick-action-btn__icon" style="background:rgba(139,92,246,0.1);color:#7C3AED"><i class="fa fa-users"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Gérer les utilisateurs</div>
+                    <div class="quick-action-btn__desc">{{ totalUsers }} utilisateurs inscrits</div>
+                </div>
+                <i class="fa fa-chevron-right quick-action-btn__arrow"></i>
+            </a>
+            <a href="{{ path('admin_export_pdf') }}" class="quick-action-btn" target="_blank">
+                <div class="quick-action-btn__icon" style="background:rgba(249,115,22,0.1);color:var(--orange)"><i class="fa fa-file-pdf"></i></div>
+                <div class="quick-action-btn__text">
+                    <div class="quick-action-btn__title">Exporter PDF statistiques</div>
+                    <div class="quick-action-btn__desc">Rapport complet</div>
+                </div>
+                <i class="fa fa-download quick-action-btn__arrow"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if topHeb %}
+<div class="section-divider"><span>Top Performers</span></div>
+<div class="admin-chart-card" style="margin-bottom:2rem">
+    <div class="admin-chart-card__header">
+        <span class="admin-chart-card__title"><i class="fa fa-trophy"></i> Top hébergements par revenus</span>
+    </div>
+    <div>
+        {% for item in topHeb %}
+        <div class="activity-item">
+            <div class="activity-item__avatar" style="background:linear-gradient(135deg,var(--gold),#FF9500)">{{ loop.index }}</div>
+            <div class="activity-item__content">
+                <div class="activity-item__title">{{ item.nom }}</div>
+                <div class="activity-item__meta">
+                    <span><i class="fa fa-map-marker-alt"></i> {{ item.ville }}</span>
+                    <span><i class="fa fa-calendar-check"></i> {{ item.nbRes }} réservations</span>
+                </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+                <div style="font-weight:800;color:var(--navy);font-size:1.1rem">{{ (item.revenus ?? 0)|number_format(0, '', ' ') }} TND</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if recentPosts %}
+<div class="admin-chart-card">
+    <div class="admin-chart-card__header">
+        <span class="admin-chart-card__title"><i class="fa fa-comments"></i> Derniers posts forum</span>
+        <a href="{{ path('admin_forum') }}" class="btn btn-outline btn-sm">Gérer <i class="fa fa-arrow-right" style="margin-left:0.35rem"></i></a>
+    </div>
+    <div style="max-height:350px;overflow-y:auto">
+        {% for p in recentPosts %}
+        <div class="activity-item">
+            <div class="activity-item__avatar" style="background:linear-gradient(135deg,#7C3AED,#4F46E5)">{{ p.author|slice(0,1)|upper }}</div>
+            <div class="activity-item__content">
+                <div class="activity-item__title">{{ p.title }}</div>
+                <div class="activity-item__meta">
+                    <span><i class="fa fa-user"></i> {{ p.author }}</span>
+                    <span><i class="fa fa-calendar"></i> {{ p.createdAt|date('d/m/Y') }}</span>
+                    <span><i class="fa fa-comment"></i> {{ p.comments|length }} commentaires</span>
+                </div>
+            </div>
+            <span class="status status--{{ p.status == 'APPROVED' ? 'confirmed' : (p.status == 'PENDING' ? 'pending' : 'cancelled') }}">
+                {{ p.status == 'APPROVED' ? 'Approuvé' : (p.status == 'PENDING' ? 'En attente' : 'Rejeté') }}
+            </span>
+            {% if p.status == 'PENDING' %}
+            <div style="display:flex;gap:0.35rem;flex-shrink:0">
+                <button onclick="moderatePost({{ p.id }}, 'APPROVED')" class="btn btn-green btn-sm" title="Approuver"><i class="fa fa-check"></i></button>
+                <button onclick="moderatePost({{ p.id }}, 'REJECTED')" class="btn btn-red btn-sm" title="Rejeter"><i class="fa fa-times"></i></button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# === NOUVEAUX WIDGETS API === #}
+
+{# Revenu multi-devises #}
+{% if revenusMultiDevises %}
+<div class="section-divider"><span>💰 Revenus en devises</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for currency, data in revenusMultiDevises %}
+    <div style="background:linear-gradient(135deg,#fff,#f8fafc);padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem">{{ currency }}</div>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--text)">{{ data.symbol }}{{ data.amount|number_format(3, ',', ' ') }}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">Equivalent TND</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# Météo des destinations #}
+{% if weatherData %}
+<div class="section-divider"><span>🌤️ Météo destinations</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for city, weather in weatherData %}
+    <div style="background:linear-gradient(135deg,{% if weather.temperature > 25 %}#fef3c7,#fffbeb{% elseif weather.temperature > 15 %}#e0f2fe,#f0f9ff{% else %}#e0e7ff,#f5f3ff{% endif %});padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+            <span style="font-weight:700;color:var(--text)">{{ city }}</span>
+            <img src="https://openweathermap.org/img/wn/{{ weather.icon }}.png" alt="" style="width:40px;height:40px">
+        </div>
+        <div style="font-size:1.75rem;font-weight:800;color:var(--navy)">{{ weather.temperature }}°C</div>
+        <div style="font-size:0.75rem;color:var(--muted);text-transform:capitalize">{{ weather.description }}</div>
+        <div style="display:flex;gap:0.75rem;margin-top:0.5rem;font-size:0.7rem;color:var(--muted)">
+            <span>💧 {{ weather.humidity }}%</span>
+            <span>💨 {{ weather.wind_speed }} km/h</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# Statistiques géographiques #}
+{% if geoStats %}
+<div class="section-divider"><span>🌍 Visiteurs par pays</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="font-weight:700;margin-bottom:1rem;color:var(--text)">Top pays</div>
+        {% for country in geoStats.countries[:5] %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+            <span style="display:flex;align-items:center;gap:0.5rem">
+                <span style="font-size:1.2rem">{{ {'TN':'🇹🇳','FR':'🇫🇷','DZ':'🇩🇿','MA':'🇲🇦','DE':'🇩🇪','GB':'🇬🇧','IT':'🇮🇹','ES':'🇪🇸','XX':'🌍'}[country.country_code] ?: '🌍' }}</span>
+                <span>{{ country.country }}</span>
+            </span>
+            <span style="font-weight:700;color:var(--navy)">{{ country.visitors }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="font-weight:700;margin-bottom:1rem;color:var(--text)">Villes actives</div>
+        {% for city in geoStats.cities[:5] %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+            <span>{{ city.city }}</span>
+            <span style="font-size:0.75rem;color:var(--muted)">{{ city.country }}</span>
+            <span style="font-weight:700;color:var(--cyan)">{{ city.visitors }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# Activités du jour #}
+{% if todayReservations > 0 %}
+<div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(5,150,105,0.05));padding:1rem;border-radius:12px;margin-bottom:2rem;border:1px solid rgba(16,185,129,0.2)">
+    <div style="display:flex;align-items:center;gap:1rem">
+        <div style="width:48px;height:48px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem">
+            <i class="fa fa-bolt"></i>
+        </div>
+        <div>
+            <div style="font-weight:700;color:var(--text)">{{ todayReservations }} réservations aujourd'hui</div>
+            <div style="font-size:0.8rem;color:var(--muted)">Nouvelle activité en temps réel</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# === ANALYTICS PRO SECTION === #}
+<div class="section-divider"><span>📊 Travel Analytics Pro</span></div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-bottom:2rem">
+    <div style="background:linear-gradient(135deg,var(--navy),#2d5a9e);padding:1.5rem;border-radius:16px;color:#fff">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:0.5rem">Taux de conversion</div>
+        <div style="font-size:2.5rem;font-weight:800">{{ conversionRate.rate|default(2.5) }}%</div>
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem;font-size:0.8rem">
+            <i class="fa fa-{{ conversionRate.trend == 'up' ? 'arrow-up' : (conversionRate.trend == 'down' ? 'arrow-down' : 'minus') }}"></i>
+            <span>{{ conversionRate.trend == 'up' ? '+' : (conversionRate.trend == 'down' ? '-' : '') }}vs mois dernier</span>
+        </div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--gold),#d4a017);padding:1.5rem;border-radius:16px;color:#fff">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:0.5rem">Revenus ce mois</div>
+        <div style="font-size:2.5rem;font-weight:800">{{ monthlyRevenue|default(0)|number_format(0, '', ' ') }}</div>
+        <div style="font-size:0.8rem;opacity:0.9;margin-top:0.5rem">TND</div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--cyan),#0099b8);padding:1.5rem;border-radius:16px;color:#fff">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:0.5rem">Vues totales</div>
+        <div style="font-size:2.5rem;font-weight:800">{{ totalViews|default(12500) }}</div>
+        <div style="font-size:0.8rem;opacity:0.9;margin-top:0.5rem">pages vues</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#10b981,#059669);padding:1.5rem;border-radius:16px;color:#fff">
+        <div style="font-size:0.8rem;opacity:0.8;margin-bottom:0.5rem">Croissance</div>
+        <div style="font-size:2.5rem;font-weight:800">+{{ growthRate|default(12) }}%</div>
+        <div style="font-size:0.8rem;opacity:0.9;margin-top:0.5rem">vs période précédente</div>
+    </div>
+</div>
+
+{# Circuits les plus vendus #}
+<div class="section-divider"><span>🏆 Circuits les plus vendus</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <table style="width:100%;font-size:0.85rem">
+            <thead>
+                <tr style="border-bottom:1px solid var(--border)">
+                    <th style="text-align:left;padding:0.5rem;color:var(--muted)">Circuit</th>
+                    <th style="text-align:center;padding:0.5rem;color:var(--muted)">Ventes</th>
+                    <th style="text-align:right;padding:0.5rem;color:var(--muted)">Revenu</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for circuit in topSellingCircuits|default([]) %}
+                <tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:0.5rem;font-weight:600">{{ circuit.name|default('Circuit #' ~ circuit.id) }}</td>
+                    <td style="text-align:center;padding:0.5rem">
+                        <span style="background:var(--cyan);color:#fff;padding:2px 8px;border-radius:10px;font-size:0.7rem">{{ circuit.count|default(0) }}</span>
+                    </td>
+                    <td style="text-align:right;padding:0.5rem;color:var(--gold);font-weight:700">{{ circuit.revenue|default(0)|number_format(0, '', ' ') }} TND</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" style="text-align:center;padding:1rem;color:var(--muted)">Aucune donnée</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)" id="topCircuitsChart">
+        <div style="height:200px;display:flex;align-items:flex-end;justify-content:space-around;gap:0.5rem;padding:1rem 0">
+            {% for circuit in topSellingCircuits|default([])|slice(0,5) %}
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0.25rem">
+                <div style="width:100%;background:linear-gradient(to top, var(--navy), var(--cyan));border-radius:4px 4px 0 0;height:{{ (circuit.revenue / max(topSellingCircuits[0].revenue|default(1), 1) * 150)|round }}px"></div>
+                <span style="font-size:0.6rem;color:var(--muted);text-align:center;max-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ circuit.name|default('Circuit')|slice(0,10) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# Circuits par difficulté #}
+<div class="section-divider"><span>⛰️ Circuits par difficulté</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem">
+    {% if circuitStatsByDifficulty|default([])|length > 0 %}
+        {% for diff in circuitStatsByDifficulty %}
+        <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:2rem;font-weight:900;color:var(--navy)">{{ diff.count }}</div>
+            <div style="font-size:0.85rem;font-weight:600;color:var(--text);margin-bottom:0.5rem">{{ diff.difficulte }}</div>
+            <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden">
+                <div style="height:100%;background:{{ diff.difficulte == 'Facile' ? '#22c55e' : (diff.difficulte == 'Difficile' ? '#ef4444' : '#f59e0b') }};width:{{ diff.percentage }}%"></div>
+            </div>
+            <div style="font-size:0.7rem;color:var(--muted);margin-top:0.25rem">{{ diff.percentage }}% du total</div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div style="grid-column:1/-1;background:#fff;padding:2rem;border-radius:12px;text-align:center;color:var(--muted)">
+        <i class="fa fa-mountain"></i><p>Aucune donnée</p>
+    </div>
+    {% endif %}
+</div>
+
+{# Circuits par durée #}
+<div class="section-divider"><span>📅 Circuits par durée</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+    {% if circuitStatsByDuration|default([])|length > 0 %}
+        {% for dur in circuitStatsByDuration %}
+        <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:1.5rem;font-weight:800;color:var(--navy)">{{ dur.count }}</div>
+            <div style="font-size:0.8rem;color:var(--muted)">{{ dur.duration }}</div>
+            <div style="font-size:0.9rem;font-weight:700;color:var(--gold)">{{ dur.avgPrice|number_format(0, '', ' ') }} TND avg</div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div style="grid-column:1/-1;background:#fff;padding:2rem;border-radius:12px;text-align:center;color:var(--muted)">
+        <i class="fa fa-clock"></i><p>Aucune donnée</p>
+    </div>
+    {% endif %}
+</div>
+
+{# Circuits par type (Custom vs Admin) #}
+<div class="section-divider"><span>🤖 Circuits IA vs Admin</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)" id="circuitTypeChart">
+        <canvas id="chartCircuitTypes"></canvas>
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;flex-direction:column;gap:1rem">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:var(--bg);border-radius:8px">
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <div style="width:36px;height:36px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff"><i class="fa fa-admin"></i></div>
+                    <div><div style="font-weight:600">Admin</div><div style="font-size:.75rem;color:var(--muted)">Créés manuellement</div></div>
+                </div>
+                <div style="font-size:1.25rem;font-weight:800;color:var(--navy)">{{ adminCircuitsCount|default(0) }}</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:var(--bg);border-radius:8px">
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <div style="width:36px;height:36px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff"><i class="fa fa-brain"></i></div>
+                    <div><div style="font-weight:600">IA Générés</div><div style="font-size:.75rem;color:var(--muted)">Par intelligence artificielle</div></div>
+                </div>
+                <div style="font-size:1.25rem;font-weight:800;color:var(--gold)">{{ aiCircuitsCount|default(0) }}</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:var(--bg);border-radius:8px">
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <div style="width:36px;height:36px;background:var(--cyan);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff"><i class="fa fa-user"></i></div>
+                    <div><div style="font-weight:600">Custom</div><div style="font-size:.75rem;color:var(--muted)">Demandés par clients</div></div>
+                </div>
+                <div style="font-size:1.25rem;font-weight:800;color:var(--cyan)">{{ customCircuitsCount|default(0) }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Top 10 circuits du mois #}
+<div class="section-divider"><span>🏆 Top 10 Circuits du Mois</span></div>
+<div style="background:#fff;border-radius:12px;border:1px solid var(--border);margin-bottom:2rem;overflow:hidden">
+    <table style="width:100%;font-size:.85rem">
+        <thead style="background:var(--bg)">
+            <tr>
+                <th style="padding:.75rem;text-align:center">#</th>
+                <th style="padding:.75rem;text-align:left">Circuit</th>
+                <th style="padding:.75rem;text-align:center">Ventes</th>
+                <th style="padding:.75rem;text-align:center">Revenu</th>
+                <th style="padding:.75rem;text-align:center">Note</th>
+                <th style="padding:.75rem;text-align:center">Tendance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i, c in topSellingCircuits|default([])|slice(0,10) %}
+            <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:.75rem;text-align:center;font-weight:800;color:{{ i < 3 ? 'var(--gold)' : 'var(--muted)' }}">{{ i+1 }}</td>
+                <td style="padding:.75rem;font-weight:600">{{ c.name|default('Circuit #'~c.id) }}</td>
+                <td style="padding:.75rem;text-align:center"><span style="background:var(--navy);color:#fff;padding:2px 10px;border-radius:10px">{{ c.count|default(0) }}</span></td>
+                <td style="padding:.75rem;text-align:center;color:var(--gold);font-weight:700">{{ c.revenue|default(0)|number_format(0,'','') }} TND</td>
+                <td style="padding:.75rem;text-align:center">{% if c.avgNote|default(false) %}<span style="color:var(--gold)">★ {{ c.avgNote|number_format(1) }}</span>{% else %}<span style="color:var(--muted)">-</span>{% endif %}</td>
+                <td style="padding:.75rem;text-align:center"><span style="color:{{ (c.trend|default(0)) > 0 ? 'var(--green)' : 'var(--red)' }}">{{ (c.trend|default(0)) > 0 ? '+' }}{{ c.trend|default(0) }}%</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--muted)">Aucune donnée</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# Destinations tendances #}
+<div class="section-divider"><span>🗺️ Top Destinations Tendances</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for dest in trendingDestinations|default([])|slice(0,6) %}
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:1rem">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">{{ loop.index }}</div>
+        <div style="flex:1">
+            <div style="font-weight:700;color:var(--text)">{{ dest.city }}</div>
+            <div style="font-size:.75rem;color:var(--muted)">{{ dest.count }} réservations</div>
+        </div>
+        <div style="background:var(--gold);color:#fff;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:700">{{ dest.percentage }}%</div>
+    </div>
+    {% else %}
+    <div style="grid-column:1/-1;background:#fff;padding:2rem;border-radius:12px;text-align:center;color:var(--muted)"><i class="fa fa-map"></i><p>Aucune destination</p></div>
+    {% endfor %}
+</div>
+
+{# Analyse saisonnalité #}
+<div class="section-divider"><span>❄️☀️ Saisonnalité des Réservations</span></div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem">
+    {% set saisons = [{'name': 'Hiver', 'months': [12,1,2], 'color': '#3b82f6', 'icon': 'fa-snowflake'}, {'name': 'Printemps', 'months': [3,4,5], 'color': '#22c55e', 'icon': 'fa-leaf'}, {'name': 'Été', 'months': [6,7,8], 'color': '#f59e0b', 'icon': 'fa-sun'}, {'name': 'Automne', 'months': [9,10,11], 'color': '#f97316', 'icon': 'fa-wind'}] %}
+    {% for saison in saisons %}
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+        <i class="fa {{ saison.icon }}" style="font-size:1.5rem;color:{{ saison.color }};margin-bottom:.5rem;display:block"></i>
+        <div style="font-weight:700;color:var(--text)">{{ saison.name }}</div>
+        <div style="font-size:1.5rem;font-weight:900;color:{{ saison.color }}">{{ saisonStats[saison.name]|default(0) }}</div>
+        <div style="font-size:.7rem;color:var(--muted)">réservations</div>
+    </div>
+    {% endfor %}
+</div>
+
+{# AI Analytics - Circuits forecast #}
+<div class="section-divider"><span>🔮 Prévision IA - Circuits les Plus Demandés</span></div>
+<div style="background:#fff;padding:1.5rem;border-radius:12px;border:1px solid var(--border);margin-bottom:2rem">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;padding:1rem;background:linear-gradient(135deg,var(--gold),#d4a017);border-radius:8px;color:#fff">
+        <i class="fa fa-robot" style="font-size:1.5rem"></i>
+        <div>
+            <div style="font-weight:700">Prédiction basée sur l'IA</div>
+            <div style="font-size:.8rem;opacity:.9">Analyse des tendances et comportement client</div>
+        </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+        <div style="padding:1rem;background:var(--bg);border-radius:8px;text-align:center">
+            <div style="font-size:.7rem;color:var(--muted)">Circuit prédit #1</div>
+            <div style="font-weight:700;color:var(--navy)">{{ revenueForecast[0].name|default('Djerba Explorer') }}</div>
+            <div style="font-size:.8rem;color:var(--green)">Prév: {{ revenueForecast[0].predicted|default(95) }}%</div>
+        </div>
+        <div style="padding:1rem;background:var(--bg);border-radius:8px;text-align:center">
+            <div style="font-size:.7rem;color:var(--muted)">Circuit prédit #2</div>
+            <div style="font-weight:700;color:var(--navy)">{{ revenueForecast[1].name|default('Tunis City') }}</div>
+            <div style="font-size:.8rem;color:var(--green)">Prév: {{ revenueForecast[1].predicted|default(87) }}%</div>
+        </div>
+        <div style="padding:1rem;background:var(--bg);border-radius:8px;text-align:center">
+            <div style="font-size:.7rem;color:var(--muted)">Taux réservation futur</div>
+            <div style="font-size:1.5rem;font-weight:800;color:var(--gold)">{{ forecastGrowth|default(12) }}%</div>
+            <div style="font-size:.8rem;color:var(--green)">vs période actuelle</div>
+        </div>
+    </div>
+</div>
+
+{# Analyse des avis - Sentiment #}
+<div class="section-divider"><span>💬 Analyse des Avis (IA Sentiment)</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+        <div style="width:60px;height:60px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem">
+            <i class="fa fa-smile" style="font-size:1.5rem;color:#22c55e"></i>
+        </div>
+        <div style="font-size:1.5rem;font-weight:900;color:#22c55e">{{ positiveReviews|default(0) }}</div>
+        <div style="font-size:.8rem;color:var(--muted)">Positifs</div>
+    </div>
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+        <div style="width:60px;height:60px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem">
+            <i class="fa fa-meh" style="font-size:1.5rem;color:#f59e0b"></i>
+        </div>
+        <div style="font-size:1.5rem;font-weight:900;color:#f59e0b">{{ neutralReviews|default(0) }}</div>
+        <div style="font-size:.8rem;color:var(--muted)">Neutres</div>
+    </div>
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border);text-align:center">
+        <div style="width:60px;height:60px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem">
+            <i class="fa fa-frown" style="font-size:1.5rem;color:#ef4444"></i>
+        </div>
+        <div style="font-size:1.5rem;font-weight:900;color:#ef4444">{{ negativeReviews|default(0) }}</div>
+        <div style="font-size:.8rem;color:var(--muted)">Négatifs</div>
+    </div>
+</div>
+
+{# Détection de problèmes #}
+<div class="section-divider"><span>⚠️ Détection de Problèmes</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem">
+            <div style="width:36px;height:36px;background:#fee2e2;border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="fa fa-exclamation-triangle" style="color:#ef4444"></i></div>
+            <div style="font-weight:600">Baisse anormale</div>
+        </div>
+        <div style="font-size:.85rem;color:var(--muted)">Circuits avec baisse de &gt;20%</div>
+        <div style="font-size:1.25rem;font-weight:800;color:var(--red)">{{ circuitsWithDrop|default(0) }}</div>
+    </div>
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem">
+            <div style="width:36px;height:36px;background:#fef3c7;border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="fa fa-calendar-times" style="color:#f59e0b"></i></div>
+            <div style="font-weight:600">Hausse annulations</div>
+        </div>
+        <div style="font-size:.85rem;color:var(--muted)">Taux d'annulation &gt;10%</div>
+        <div style="font-size:1.25rem;font-weight:800;color:var(--gold)">{{ highCancellationRate|default(0) }}</div>
+    </div>
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem">
+            <div style="width:36px;height:36px;background:#dcfce7;border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="fa fa-check-circle" style="color:#22c55e"></i></div>
+            <div style="font-weight:600">Circuits OK</div>
+        </div>
+        <div style="font-size:.85rem;color:var(--muted)">Performance normale</div>
+        <div style="font-size:1.25rem;font-weight:800;color:var(--green)">{{ healthyCircuits|default(0) }}</div>
+    </div>
+</div>
+
+{# Comparaison Mois N vs Mois N-1 #}
+<div class="section-divider"><span>📊 Comparaison Mois N vs N-1</span></div>
+<div style="background:#fff;padding:1.5rem;border-radius:12px;border:1px solid var(--border);margin-bottom:2rem">
+    <div style="display:flex;justify-content:space-between;gap:2rem">
+        <div style="flex:1;text-align:center;padding:1rem;background:var(--bg);border-radius:8px">
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">Mois N-1</div>
+            <div style="font-size:1.5rem;font-weight:800;color:var(--text)">{{ monthlyData.values[0]|default(0) }} résas</div>
+            <div style="font-size:.85rem;color:var(--muted)">{{ monthlyData.revenus[0]|default(0)|number_format(0,'','') }} TND</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:1rem;background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:8px;color:#fff">
+            <div style="font-size:.75rem;opacity:.8;margin-bottom:.5rem">Mois N</div>
+            <div style="font-size:1.5rem;font-weight:900">{{ monthlyData.values[5]|default(0) }} résas</div>
+            <div style="font-size:.85rem;opacity:.8">{{ monthlyData.revenus[5]|default(0)|number_format(0,'','') }} TND</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:1rem;background:var(--bg);border-radius:8px">
+            <div style="font-size:.75rem;color:var(--green);margin-bottom:.5rem">Évolution</div>
+            <div style="font-size:1.5rem;font-weight:800;color:{{ growthRate > 0 ? 'var(--green)' : 'var(--red)' }}">
+                {{ growthRate > 0 ? '+' }}{{ growthRate|default(0) }}%
+            </div>
+            <div style="font-size:.85rem;color:var(--muted)">vs mois dernier</div>
+        </div>
+    </div>
+</div>
+
+{# Circuits par gamme de prix #}
+<div class="section-divider"><span>💰 Circuits par gamme de prix</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.75rem">
+            <span style="font-weight:600">Économique</span>
+            <span style="color:var(--green);font-weight:700">&lt; 500 TND</span>
+        </div>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--green)">{{ cheapCircuitsCount|default(0) ?: 0 }}</div>
+        <div style="font-size:.75rem;color:var(--muted)">circuits</div>
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.75rem">
+            <span style="font-weight:600">Moyen</span>
+            <span style="color:var(--gold);font-weight:700">500-1500 TND</span>
+        </div>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--gold)">{{ midCircuitsCount|default(0) ?: 0 }}</div>
+        <div style="font-size:.75rem;color:var(--muted)">circuits</div>
+    </div>
+    <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.75rem">
+            <span style="font-weight:600">Premium</span>
+            <span style="color:var(--navy);font-weight:700">&gt; 1500 TND</span>
+        </div>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--navy)">{{ premiumCircuitsCount|default(0) ?: 0 }}</div>
+        <div style="font-size:.75rem;color:var(--muted)">circuits</div>
+    </div>
+</div>
+
+{# Destinations tendances #}
+<div class="section-divider"><span>🗺️ Destinations tendances</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem">
+    {% for dest in trendingDestinations|default([]) %}
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border);display:flex;align-items:center;gap:1rem">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--navy),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem">
+            <i class="fa fa-map-marker"></i>
+        </div>
+        <div style="flex:1">
+            <div style="font-weight:700;color:var(--text)">{{ dest.city }}</div>
+            <div style="font-size:0.75rem;color:var(--muted)">{{ dest.count }} réservations</div>
+        </div>
+        <div style="background:var(--gold);color:#fff;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:700">{{ dest.percentage }}%</div>
+    </div>
+    {% else %}
+    <div style="grid-column:1/-1;background:#fff;padding:2rem;border-radius:12px;text-align:center;color:var(--muted)">
+        <i class="fa fa-map" style="font-size:2rem;margin-bottom:1rem"></i>
+        <p>Aucune destination trendante</p>
+    </div>
+    {% endfor %}
+</div>
+
+{# Circuits par destination #}
+<div class="section-divider"><span>🗺️ Circuits par Destination</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <canvas id="chartDestinations" height="200"></canvas>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem">
+        {% for dest in circuitStatsByDestination|default([]) %}
+        <div style="background:#fff;padding:0.75rem;border-radius:8px;border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem">
+                <div style="font-weight:700;color:var(--text);font-size:0.85rem">{{ dest.destination }}</div>
+                <div style="background:var(--navy);color:#fff;padding:2px 6px;border-radius:8px;font-size:0.65rem;font-weight:700">{{ dest.count }}</div>
+            </div>
+            <div style="font-size:0.7rem;color:var(--muted)">
+                {{ dest.minPrice|default(0) }}-{{ dest.maxPrice|default(0) }} TND | Moy: {{ dest.avgPrice|default(0) }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{# Circuits les mieux notés #}
+<div class="section-divider"><span>⭐ Circuits les、Mieux Notés</span></div>
+<div style="background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:2rem">
+    <table style="width:100%;border-collapse:collapse">
+        <thead style="background:var(--navy);color:#fff">
+            <tr>
+                <th style="padding:.75rem;text-align:center">#</th>
+                <th style="padding:.75rem;text-align:left">Circuit</th>
+                <th style="padding:.75rem;text-align:center">Destination</th>
+                <th style="padding:.75rem;text-align:center">Prix</th>
+                <th style="padding:.75rem;text-align:center">Note</th>
+                <th style="padding:.75rem;text-align:center">Avis</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i, c in topRatedCircuits|default([])|slice(0,8) %}
+            <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:.75rem;text-align:center;font-weight:800;color:{{ i < 3 ? 'var(--gold)' : 'var(--muted)' }}">{{ i+1 }}</td>
+                <td style="padding:.75rem;font-weight:600">{{ c.name|default('Circuit #'~c.id) }}</td>
+                <td style="padding:.75rem;text-align:center">{{ c.destination|default('-') }}</td>
+                <td style="padding:.75rem;text-align:center;font-weight:700">{{ c.prix|default(0)|number_format(0,'','') }} TND</td>
+                <td style="padding:.75rem;text-align:center">
+                    <span style="color:var(--gold);font-weight:700">★ {{ c.avgNote|default(0) }}</span>
+                </td>
+                <td style="padding:.75rem;text-align:center;color:var(--muted)">{{ c.count|default(0) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="padding:2rem;text-align:center;color:var(--muted)">Aucune donnée</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# Analyse des prix #}
+<div class="section-divider"><span>💰 Analyse des Prix</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <canvas id="chartPriceAnalyse" height="180"></canvas>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem">
+        <div style="background:#fff;padding:1rem;border-radius:8px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:0.7rem;color:var(--muted)">Min</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--green)">{{ circuitPriceAnalysis.min|default(0) }}</div>
+        </div>
+        <div style="background:#fff;padding:1rem;border-radius:8px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:0.7rem;color:var(--muted)">Moy</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--navy)">{{ circuitPriceAnalysis.avg|default(0) }}</div>
+        </div>
+        <div style="background:#fff;padding:1rem;border-radius:8px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:0.7rem;color:var(--muted)">Médiane</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--gold)">{{ circuitPriceAnalysis.median|default(0) }}</div>
+        </div>
+        <div style="background:#fff;padding:1rem;border-radius:8px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:0.7rem;color:var(--muted)">Max</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--red)">{{ circuitPriceAnalysis.max|default(0) }}</div>
+        </div>
+        <div style="background:#fff;padding:1rem;border-radius:8px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:0.7rem;color:var(--muted)">Total</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--cyan)">{{ circuitPriceAnalysis.total|default(0) }}</div>
+        </div>
+    </div>
+</div>
+
+{# Circuits par capacité #}
+<div class="section-divider"><span>👥 Circuits par Capacité</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <canvas id="chartCapacity" height="180"></canvas>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem">
+        {% for cap in circuitStatsByCapacity|default([]) %}
+        <div style="background:#fff;padding:1rem;border-radius:8px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:1.75rem;font-weight:800;color:var(--navy)">{{ cap.count }}</div>
+            <div style="font-size:0.75rem;color:var(--muted)">{{ cap.label }}</div>
+        </div>
+        {% else %}
+        <p>Aucune donnée</p>
+        {% endfor %}
+    </div>
+</div>
+
+{# Circuits par saison #}
+<div class="section-divider"><span>🌸 Circuits par Saison</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem">
+    <div style="background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--border)">
+        <canvas id="chartSeason" height="180"></canvas>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem">
+        {% for season in circuitStatsBySeason|default([]) %}
+        <div style="background:#fff;padding:1rem;border-radius:8px;border:1px solid var(--border);text-align:center">
+            <div style="font-size:1.75rem;font-weight:800;color:var(--gold)">{{ season.count }}</div>
+            <div style="font-size:0.75rem;color:var(--muted)">{{ season.season }}</div>
+        </div>
+        {% else %}
+        <p>Aucune donnée</p>
+        {% endfor %}
+    </div>
+</div>
+
+{# Revenue Forecasting #}
+<div class="section-divider"><span>📈 Prévision revenus (6 mois)</span></div>
+<div style="background:#fff;padding:1.5rem;border-radius:12px;border:1px solid var(--border);margin-bottom:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+            <span style="font-weight:700;color:var(--text)">Prochaine période</span>
+            <span style="background:var(--green);color:#fff;padding:2px 8px;border-radius:8px;font-size:0.7rem;margin-left:0.5rem">+{{ forecastGrowth|default(8) }}% prévu</span>
+        </div>
+        <div style="display:flex;gap:1rem;font-size:0.75rem">
+            <span style="display:flex;align-items:center;gap:0.25rem"><span style="width:12px;height:12px;background:var(--navy);border-radius:2px"></span> Historique</span>
+            <span style="display:flex;align-items:center;gap:0.25rem"><span style="width:12px;height:12px;background:var(--gold);border-radius:2px"></span> Prévision</span>
+        </div>
+    </div>
+    <div style="height:150px;display:flex;align-items:flex-end;gap:0.5rem;padding:0 1rem">
+        {% for month in revenueForecast|default([]) %}
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:0.25rem">
+            <div style="width:100%;background:{{ month.historical ? 'var(--navy)' : 'var(--gold)' }};border-radius:4px 4px 0 0;height:{{ (month.predicted / max(revenueForecast[0].predicted|default(1), 1) * 120)|round }}px;opacity:{{ month.historical ? 1 : 0.7 }}"></div>
+            <span style="font-size:0.6rem;color:var(--muted)">{{ month.label }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+    </div>
+</div>
+
+<div id="correctionModal" style="display:none;position:fixed;z-index:10000;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;padding:2rem;border-radius:20px;width:90%;max-width:480px;box-shadow:0 25px 80px rgba(0,0,0,0.4)">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+            <div style="width:56px;height:56px;background:#fef3c7;border-radius:14px;display:flex;align-items:center;justify-content:center">
+                <i class="fa fa-exclamation-triangle" style="color:#d97706;font-size:1.5rem"></i>
+            </div>
+            <div>
+                <h3 style="margin:0;color:var(--navy);font-size:1.25rem;font-weight:700">Erreurs trouvées</h3>
+                <p style="margin:0;color:#64748b;font-size:.85rem">Voulez-vous corriger automatiquement?</p>
+            </div>
+        </div>
+        <div id="correctionContent" style="margin-bottom:1.5rem;max-height:220px;overflow-y:auto;background:#f8fafc;padding:1rem;border-radius:12px"></div>
+        <div style="display:flex;gap:.75rem">
+            <button onclick="document.getElementById('correctionModal').style.display='none'" style="flex:1;padding:.6rem;background:#f1f5f9;color:var(--navy);border:none;border-radius:8px;font-weight:600;cursor:pointer">Ignorer</button>
+            <button id="applyCorrectionBtn" style="flex:1;padding:.6rem;background:var(--navy);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">Appliquer</button>
+        </div>
+    </div>
+</div>
+<div id="pendingCorrection" style="display:none"></div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Charts data from backend
+const revenusData = {
+    labels: [{% for r in revenusParMois|default([]) %}'{{ ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"][r.mois - 1] }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for r in revenusParMois|default([]) %}{{ r.total|default(0) }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+const revenusTNDData = {
+    labels: {{ monthlyData.labels|default([])|json_encode|raw }},
+    values: {{ monthlyData.revenus|default([])|json_encode|raw }}
+};
+const villesData = {
+    labels: [{% for v in occParVille|default([]) %}'{{ v.ville }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for v in occParVille|default([]) %}{{ v.total|default(0) }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+const categoriesData = {
+    labels: {{ statsParCategorieLabels|default([])|json_encode|raw }},
+    values: {{ statsParCategorieData|default([])|json_encode|raw }}
+};
+const saisonsData = {
+    labels: [{% for s in saisonStats|default([]) %}'{{ s.saison }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for s in saisonStats|default([]) %}{{ s.count|default(0) }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+const hebTypesData = {
+    labels: {{ hebTypeLabels|default([])|json_encode|raw }},
+    values: {{ hebTypeValues|default([])|json_encode|raw }}
+};
+const actCatsData = {
+    labels: {{ actCatLabels|default([])|json_encode|raw }},
+    values: {{ actCatValues|default([])|json_encode|raw }}
+};
+const destinationsLabels = [{% for d in circuitStatsByDestination|default([]) %}'{{ d.destination }}'{{ not loop.last ? ',' }}{% endfor %}];
+const destinationsValues = [{% for d in circuitStatsByDestination|default([]) %}{{ d.count }}{{ not loop.last ? ',' }}{% endfor %}];
+const capacityLabels = [{% for c in circuitStatsByCapacity|default([]) %}'{{ c.label }}'{{ not loop.last ? ',' }}{% endfor %}];
+const capacityValues = [{% for c in circuitStatsByCapacity|default([]) %}{{ c.count }}{{ not loop.last ? ',' }}{% endfor %}];
+const seasonLabels = [{% for s in circuitStatsBySeason|default([]) %}'{{ s.season }}'{{ not loop.last ? ',' }}{% endfor %}];
+const seasonValues = [{% for s in circuitStatsBySeason|default([]) %}{{ s.count }}{{ not loop.last ? ',' }}{% endfor %}];
+const destinationsData = { labels: destinationsLabels, values: destinationsValues };
+const capacityData = { labels: capacityLabels, values: capacityValues };
+const seasonCircuitData = { labels: seasonLabels, values: seasonValues };
+const priceAnalyseData = {
+    min: {{ circuitPriceAnalysis.min|default(0) }},
+    max: {{ circuitPriceAnalysis.max|default(0) }},
+    avg: {{ circuitPriceAnalysis.avg|default(0) }},
+    median: {{ circuitPriceAnalysis.median|default(0) }}
+};
+const calendarNotes = JSON.parse(localStorage.getItem('calendarNotes') || '{}');
+
+function showToast(msg, type) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;right:20px;padding:1rem 1.5rem;border-radius:8px;color:#fff;font-weight:600;z-index:10000;animation:slideIn .3s;background:' + (type==='error'?'#EF4444':'#10B981');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Chart Réservations mensuelles
+    if (document.getElementById('chartRevenus')) {
+        new Chart(document.getElementById('chartRevenus'), {
+            type: 'bar',
+            data: {
+                labels: revenusData.labels,
+                datasets: [{
+                    label: 'Réservations',
+                    data: revenusData.values,
+                    backgroundColor: 'rgba(0, 180, 216, 0.8)',
+                    borderRadius: 6
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+    
+    // Chart Revenus TND
+    if (document.getElementById('chartRevenusTND')) {
+        new Chart(document.getElementById('chartRevenusTND'), {
+            type: 'line',
+            data: {
+                labels: revenusTNDData.labels,
+                datasets: [{
+                    label: 'Revenus (TND)',
+                    data: revenusTNDData.values,
+                    borderColor: '#1B3A6B',
+                    backgroundColor: 'rgba(27, 58, 107, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+    
+    // Chart Réservations par ville
+    if (document.getElementById('chartVilles') && villesData.labels.length > 0) {
+        new Chart(document.getElementById('chartVilles'), {
+            type: 'doughnut',
+            data: {
+                labels: villesData.labels,
+                datasets: [{ data: villesData.values, backgroundColor: ['#1B3A6B', '#00B4D8', '#FFB700', '#10B981', '#EF4444', '#F97316'], borderWidth: 0 }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+    
+// Chart Catégories circuits
+    new Chart(document.getElementById('chartCategories'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ statsParCategorieLabels|default([])|json_encode|raw }},
+            datasets: [{
+                data: {{ statsParCategorieData|default([])|json_encode|raw }},
+                backgroundColor: ['#1B3A6B', '#00B4D8', '#F59E0B', '#10B981', '#8B5CF6']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+    });
+
+    // Chart Type Circuit (Admin vs IA vs Custom)
+    const circuitTypeCtx = document.getElementById('chartCircuitTypes');
+    if (circuitTypeCtx) {
+        new Chart(circuitTypeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Admin', 'IA', 'Custom'],
+                datasets: [{
+                    data: [{{ adminCircuitsCount|default(0) }}, {{ aiCircuitsCount|default(0) }}, {{ customCircuitsCount|default(0) }}],
+                    backgroundColor: ['#1B3A6B', '#F59E0B', '#00B4D8']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+    
+    // Chart Saisons
+    if (document.getElementById('chartSaisons') && saisonsData.labels.length > 0) {
+        new Chart(document.getElementById('chartSaisons'), {
+            type: 'bar',
+            data: {
+                labels: saisonsData.labels,
+                datasets: [{
+                    label: 'Réservations',
+                    data: saisonsData.values,
+                    backgroundColor: ['#e0f2fe', '#dcfce7', '#fef3c7', '#fed7aa'],
+                    borderColor: ['#0ea5e9', '#22c55e', '#f59e0b', '#f97316'],
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+    
+    // Chart Types hébergement
+    if (document.getElementById('chartHebTypes') && hebTypesData.labels.length > 0) {
+        new Chart(document.getElementById('chartHebTypes'), {
+            type: 'doughnut',
+            data: {
+                labels: hebTypesData.labels,
+                datasets: [{ data: hebTypesData.values, backgroundColor: ['#1B3A6B', '#00B4D8', '#FFB700', '#10B981'], borderWidth: 0 }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+    
+    // Chart Activités par catégorie
+    if (document.getElementById('chartActCats') && actCatsData && actCatsData.labels && actCatsData.labels.length > 0) {
+        try {
+        new Chart(document.getElementById('chartActCats'), {
+            type: 'polarArea',
+            data: {
+                labels: actCatsData.labels,
+                datasets: [{ data: actCatsData.values, backgroundColor: ['rgba(27,58,107,0.8)', 'rgba(0,180,216,0.8)', 'rgba(255,183,0,0.8)', 'rgba(16,185,129,0.8)', 'rgba(239,68,68,0.8)'], borderWidth: 0 }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+        } catch(e) { console.error('Chart error:', e); }
+    }
+    
+    // Chart Circuits par destination
+    if (document.getElementById('chartDestinations') && destinationsData && destinationsData.labels && destinationsData.labels.length > 0) {
+        try {
+        new Chart(document.getElementById('chartDestinations'), {
+            type: 'doughnut',
+            data: {
+                labels: destinationsData.labels,
+                datasets: [{ 
+                    data: destinationsData.values, 
+                    backgroundColor: ['#1B3A6B', '#00B4D8', '#FFB700', '#10B981', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#6366F1'], 
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { position: 'right', labels: { boxWidth: 12, padding: 10, font: { size: 10 } } },
+                    title: { display: true, text: 'Distribution des circuits', font: { size: 12 } }
+                } 
+            }
+        });
+        } catch(e) { console.error('Destinations chart error:', e); }
+    }
+    
+    // Chart Circuits par capacité
+    if (document.getElementById('chartCapacity') && capacityData && capacityData.labels && capacityData.labels.length > 0) {
+        try {
+        new Chart(document.getElementById('chartCapacity'), {
+            type: 'bar',
+            data: {
+                labels: capacityData.labels,
+                datasets: [{
+                    label: 'Circuits',
+                    data: capacityData.values,
+                    backgroundColor: ['#00B4D8', '#1B3A6B', '#FFB700', '#10B981'],
+                    borderRadius: 6
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+        } catch(e) { console.error('Capacity chart error:', e); }
+    }
+    
+    // Chart Circuits par saison
+    if (document.getElementById('chartSeason') && seasonCircuitData && seasonCircuitData.labels && seasonCircuitData.labels.length > 0) {
+        try {
+        new Chart(document.getElementById('chartSeason'), {
+            type: 'pie',
+            data: {
+                labels: seasonCircuitData.labels,
+                datasets: [{ 
+                    data: seasonCircuitData.values, 
+                    backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { position: 'bottom' },
+                    title: { display: true, text: 'Circuits par saison' }
+                } 
+            }
+        });
+        } catch(e) { console.error('Season chart error:', e); }
+    }
+    
+    // Chart Analyse des prix
+    if (document.getElementById('chartPriceAnalyse') && priceAnalyseData && priceAnalyseData.min > 0) {
+        try {
+        new Chart(document.getElementById('chartPriceAnalyse'), {
+            type: 'bar',
+            data: {
+                labels: ['Min', 'Moyenne', 'Médiane', 'Max'],
+                datasets: [{
+                    label: 'Prix (TND)',
+                    data: [priceAnalyseData.min, priceAnalyseData.avg, priceAnalyseData.median, priceAnalyseData.max],
+                    backgroundColor: ['#10B981', '#1B3A6B', '#FFB700', '#EF4444'],
+                    borderRadius: 6
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+} catch(e) { console.error('Price chart error:', e); }
+    }
+});
+</script>
+{% endblock %}

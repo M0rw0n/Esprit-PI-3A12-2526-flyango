@@ -1,0 +1,78 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Transport favoris — Fly&Go{% endblock %}
+
+{% block body %}
+<div style="max-width:1280px;margin:0 auto;padding:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900"><i class="fa fa-heart" style="color:var(--red)"></i> Transport favoris</h1>
+            <p style="color:var(--muted)">Transports sauvegardés</p>
+        </div>
+        <div style="display:flex;gap:.75rem">
+            <a href="{{ path('user_dashboard') }}" class="btn btn-outline"><i class="fa fa-home"></i> Mon espace</a>
+            <a href="{{ path('transport_index') }}" class="btn btn-gold"><i class="fa fa-search"></i> Explorer</a>
+        </div>
+    </div>
+
+    <div class="favorites-tabs" style="margin-bottom:1.5rem;display:flex;gap:.5rem;flex-wrap:wrap">
+        <a href="{{ path('favoris_hebergements') }}" class="tab"><i class="fa fa-hotel"></i> Hébergements</a>
+        <a href="{{ path('favoris_circuits') }}" class="tab"><i class="fa fa-route"></i> Circuits</a>
+        <a href="{{ path('favoris_activities') }}" class="tab"><i class="fa fa-hiking"></i> Activités</a>
+        <a href="{{ path('favoris_transports') }}" class="tab active"><i class="fa fa-plane"></i> Transport</a>
+        <a href="{{ path('favoris_posts') }}" class="tab"><i class="fa fa-comments"></i> Posts</a>
+    </div>
+
+    {% if favorites is empty %}
+        <div class="empty-state" style="padding:4rem 2rem;text-align:center;background:var(--card-bg);border-radius:16px">
+            <i class="fa fa-heart-broken" style="font-size:3rem;color:var(--muted)"></i>
+            <h3 style="margin:1rem 0 .5rem">Aucun transport favori</h3>
+            <p style="color:var(--muted);margin-bottom:1.5rem">Ajoutez des transports à vos favoris pour les retrouver ici.</p>
+            <a href="{{ path('transport_index') }}" class="btn btn-gold"><i class="fa fa-search"></i> Explorer les transports</a>
+        </div>
+    {% else %}
+        <div class="acard-wrap">
+            <div class="acard-wrap__head">
+                <span class="acard-wrap__title"><i class="fa fa-plane"></i> Transports ({{ favorites.totalItemCount }})</span>
+            </div>
+            <div class="bookings-list">
+                {% for fav in favorites %}
+                    {% set t = fav.transport %}
+                    <div class="booking-card">
+                        <div class="booking-card__av" style="background:linear-gradient(135deg,#fa709a,#fee140)">
+                            <i class="fa fa-plane"></i>
+                        </div>
+                        <div class="booking-card__info">
+                            <div class="booking-card__name">{{ t.companyName }}</div>
+                            <div class="booking-card__meta">
+                                <span><i class="fa fa-plane"></i> {{ t.departCity }} → {{ t.arrivalCity }}</span>
+                                <span><i class="fa fa-calendar"></i> {{ t.departureDatetime|date('d/m/Y H:i') }}</span>
+                            </div>
+                            <div style="font-size:.85rem;color:var(--muted);margin-top:.3rem">
+                                <span class="badge" style="background:var(--primary);color:#fff;padding:.2rem .5rem;border-radius:4px;font-size:.75rem">{{ t.transportType }}</span>
+                                {% if t.availableSeats %}<span style="margin-left:.5rem"><i class="fa fa-chair"></i> {{ t.availableSeats }} places</span>{% endif %}
+                            </div>
+                            <div style="font-size:1.1rem;font-weight:700;color:var(--navy);margin-top:.5rem">
+                                {{ t.price|number_format(3) }} <small>TND</small>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:.5rem">
+                            <a href="{{ path('transport_show', {id: t.id}) }}" class="btn btn-navy btn-sm"><i class="fa fa-eye"></i> Voir</a>
+                            <button class="btn btn-red btn-sm" onclick="toggleFavorite({{ t.id }}, 'transport', this)" title="Retirer des favoris">
+                                <i class="fa fa-heart"></i> Retirer
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if favorites.pageCount|default(1) > 1 %}
+            <div style="padding:1rem;text-align:center">
+                {% for page in 1..favorites.pageCount %}
+                    <a href="{{ path('favoris_transports', {page: page}) }}" class="btn {{ page == favorites.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}Mon historique — Fly&Go{% endblock %}
+
+{% block stylesheets %}
+<style>
+.acard-wrap { background: var(--bg); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 1.5rem; }
+.acard-wrap__head { background: var(--navy); color: #fff; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+.acard-wrap__title { font-weight: 600; font-size: 1rem; }
+.bookings-list { padding: 0.5rem; }
+.kpis { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.kpi { flex: 1; min-width: 120px; padding: 1rem 1.25rem; border-radius: 12px; text-align: center; }
+.kpi--navy { background: linear-gradient(135deg, var(--navy), #2a4a7f); color: #fff; }
+.kpi--green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+.kpi--gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+.kpi__label { font-size: 0.8rem; opacity: 0.9; margin-bottom: 0.25rem; }
+.kpi__val { font-size: 1.75rem; font-weight: 800; }
+.btn-navy { background: var(--navy); color: #fff; border: none; }
+.btn-navy:hover { background: #2a4a7f; }
+.btn-red { background: var(--red); color: #fff; border: none; }
+.btn-red:hover { background: #dc2626; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { background: var(--bg); }
+.btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
+.tab { padding: 0.5rem 1rem; border-radius: 20px; background: var(--white); border: 1px solid var(--border); color: var(--muted); text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; }
+.tab:hover { border-color: var(--navy); color: var(--navy); }
+.tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+.filter-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.empty-state { padding: 4rem 2rem; text-align: center; background: var(--card-bg); border-radius: 16px; }
+.empty-state i { font-size: 3rem; color: var(--muted); margin-bottom: 1rem; }
+.empty-state h3 { margin: 0.5rem 0; }
+.empty-state p { color: var(--muted); margin-bottom: 1.5rem; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div style="max-width:1280px;margin:0 auto;padding:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900"><i class="fa fa-history"></i> Mon historique</h1>
+            <p style="color:var(--muted)">Vos activités et interactions</p>
+        </div>
+        <div style="display:flex;gap:.75rem">
+            <a href="{{ path('user_dashboard') }}" class="btn btn-outline"><i class="fa fa-home"></i> Mon espace</a>
+            <a href="{{ path('user_avis') }}" class="btn btn-outline"><i class="fa fa-star"></i> Mes avis</a>
+        </div>
+    </div>
+
+    <div class="filter-pills">
+        <a href="{{ path('user_history', {filter: 'all'}) }}" class="tab {{ filter == 'all' ? 'active' : '' }}"><i class="fa fa-th"></i> Tout</a>
+        <a href="{{ path('user_history', {filter: 'reservations'}) }}" class="tab {{ filter == 'reservations' ? 'active' : '' }}"><i class="fa fa-calendar-check"></i> Réservations</a>
+        <a href="{{ path('user_history', {filter: 'favorites'}) }}" class="tab {{ filter == 'favorites' ? 'active' : '' }}"><i class="fa fa-heart"></i> Favoris</a>
+        <a href="{{ path('user_history', {filter: 'reviews'}) }}" class="tab {{ filter == 'reviews' ? 'active' : '' }}"><i class="fa fa-star"></i> Avis</a>
+        <a href="{{ path('user_history', {filter: 'forum'}) }}" class="tab {{ filter == 'forum' ? 'active' : '' }}"><i class="fa fa-comments"></i> Forum</a>
+        <a href="{{ path('chatbot_index') }}" class="tab" style="border-color:var(--gold);color:var(--gold)"><i class="fa fa-suitcase"></i> Conseils voyage</a>
+    </div>
+
+    {% if history is empty %}
+        <div class="empty-state">
+            <i class="fa fa-history"></i>
+            <h3>Aucune activité récente</h3>
+            <p>Votre historique apparaîtra ici après vos premières interactions.</p>
+            <a href="{{ path('hebergement_index') }}" class="btn btn-navy"><i class="fa fa-search"></i> Commencer à explorer</a>
+        </div>
+    {% else %}
+        <div class="kpis">
+            <div class="kpi kpi--navy">
+                <div class="kpi__label">Réservations</div>
+                <div class="kpi__val">{{ history|length }}</div>
+            </div>
+            <div class="kpi kpi--green">
+                <div class="kpi__label">Favoris</div>
+                <div class="kpi__val">0</div>
+            </div>
+            <div class="kpi kpi--gold">
+                <div class="kpi__label">Avis</div>
+                <div class="kpi__val">0</div>
+            </div>
+        </div>
+
+        <div class="acard-wrap">
+            <div class="acard-wrap__head">
+                <span class="acard-wrap__title"><i class="fa fa-list"></i> Historique ({{ history|length }})</span>
+            </div>
+            <div class="bookings-list">
+                {% for item in history %}
+                    <div class="booking-card" style="display:flex;align-items:center;gap:1rem;padding:1rem;border-bottom:1px solid var(--border)">
+                        <div class="booking-card__av" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                            {% if item.type starts with 'hebergement' %}<i class="fa fa-hotel"></i>
+                            {% elseif item.type starts with 'activity' %}<i class="fa fa-hiking"></i>
+                            {% elseif item.type starts with 'circuit' %}<i class="fa fa-route"></i>
+                            {% elseif item.type starts with 'favorite' %}<i class="fa fa-heart"></i>
+                            {% elseif item.type starts with 'review' %}<i class="fa fa-star"></i>
+                            {% elseif item.type starts with 'transport' %}<i class="fa fa-plane"></i>
+                            {% elseif item.type starts with 'forum' %}<i class="fa fa-comments"></i>
+                            {% else %}<i class="fa fa-circle"></i>{% endif %}
+                        </div>
+                        <div class="booking-card__info" style="flex:1;min-width:0">
+                            <div class="booking-card__name" style="font-weight:600;margin-bottom:0.25rem">
+                                <a href="{{ item.link|default('#') }}" style="color:inherit;text-decoration:none">{{ item.title|default('Item') }}</a>
+                            </div>
+                            <div class="booking-card__meta" style="font-size:0.8rem;color:var(--muted);display:flex;gap:1rem">
+                                <span><i class="fa fa-clock"></i> {{ item.date|date('d/m/Y H:i') }}</span>
+                                {% if item.status %}
+                                    <span>{{ item.status }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if item.amount is defined and item.amount %}
+                            <div style="font-weight:700;color:var(--navy);white-space:nowrap">{{ item.amount|number_format(3) }} TND</div>
+                        {% endif %}
+                        <a href="{{ item.link|default('#') }}" class="btn btn-navy btn-sm"><i class="fa fa-eye"></i></a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if history.pageCount|default(1) > 1 %}
+        <div style="padding:1rem;text-align:center">
+            {% for page in 1..history.pageCount|default(1) %}
+                <a href="{{ path('user_history', {page: page, filter: filter|default('all')}) }}" class="btn {{ page == history.currentPageNumber|default(1) ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

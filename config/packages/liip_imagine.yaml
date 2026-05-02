@@ -1,0 +1,31 @@
+liip_imagine:
+    filter_sets:
+        cache: ~
+        activity_thumbnail:
+            quality: 85
+            filters:
+                thumbnail:
+                    mode: outbound
+                    size: [300, 200]
+                background:
+                    color: '#FFFFFF'
+        activity_medium:
+            quality: 90
+            filters:
+                thumbnail:
+                    mode: outbound
+                    size: [800, 600]
+        circuit_thumbnail:
+            quality: 85
+            filters:
+                thumbnail:
+                    mode: outbound
+                    size: [400, 250]
+        circuit_full:
+            quality: 95
+            filters:
+                thumbnail:
+                    mode: outbound
+                    size: [1920, 1080]
+                background:
+                    color: '#000000'

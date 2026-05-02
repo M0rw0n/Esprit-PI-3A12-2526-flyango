@@ -1,0 +1,97 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Confirmation de paiement — Fly&Go{% endblock %}
+{% block body %}
+<style>
+.confirm-hero {
+    background: linear-gradient(135deg, var(--navy, #1B3A6B) 0%, var(--cyan, #00B4D8) 100%);
+    border-radius: 20px;
+    padding: 3rem;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.confirm-hero i { font-size: 4rem; margin-bottom: 1rem; }
+.confirm-hero h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+.confirm-hero p { font-size: 1.1rem; opacity: 0.9; }
+.confirm-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+.info-row:last-child { border-bottom: none; }
+.info-label { color: var(--muted); font-size: 0.9rem; }
+.info-value { font-weight: 600; color: var(--text); }
+.qr-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 2px solid var(--border);
+}
+.btn-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-download:hover { transform: translateY(-2px); }
+</style>
+
+<div style="max-width:700px;margin:0 auto;padding:2rem">
+    <div class="confirm-hero">
+        <i class="fa fa-check-circle"></i>
+        <h1>Paiement réussi!</h1>
+        <p>Votre réservation a été confirmée</p>
+    </div>
+    
+    <div class="confirm-card">
+        <div class="info-row">
+            <span class="info-label"><i class="fa fa-tag" style="color:var(--cyan)"></i> Référence</span>
+            <span class="info-value" style="color:var(--navy);font-size:1rem">{{ booking_id }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fa fa-calendar" style="color:var(--cyan)"></i> Date</span>
+            <span class="info-value">{{ "now"|date("d/m/Y à H:i") }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fa fa-check-circle" style="color:var(--cyan)"></i> Statut</span>
+            <span class="info-value" style="color:var(--cyan)">Confirmé</span>
+        </div>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:start;margin-bottom:2rem">
+        <div class="confirm-card" style="margin:0">
+            <h4 style="color:var(--navy);margin-bottom:1rem;font-size:1rem"><i class="fa fa-download"></i> Téléchargements</h4>
+            <div style="display:flex;flex-direction:column;gap:0.75rem">
+                <a href="{{ path('payment_download_pdf', {bookingId: booking_id}) }}" class="btn-download" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff">
+                    <i class="fa fa-file-pdf-o"></i> Reçu PDF
+                </a>
+                <a href="{{ path('payment_download_word', {bookingId: booking_id}) }}" class="btn-download" style="background:#fff;border:2px solid var(--cyan);color:var(--cyan)">
+                    <i class="fa fa-file-word-o"></i> Reçu Word
+                </a>
+            </div>
+        </div>
+        <div class="qr-box">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ booking_id }}" alt="QR Code" style="width:100px">
+            <p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">Code de confirmation</p>
+        </div>
+    </div>
+    
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <a href="{{ path('user_reservations') }}" class="btn" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;padding:0.75rem 1.5rem;border-radius:10px;font-weight:600">
+            <i class="fa fa-list"></i> Mes réservations
+        </a>
+        <a href="{{ path('home') }}" class="btn" style="background:#fff;border:2px solid var(--navy);color:var(--navy);padding:0.75rem 1.5rem;border-radius:10px;font-weight:600">
+            <i class="fa fa-home"></i> Retour à l'accueil
+        </a>
+    </div>
+</div>
+{% endblock %}
