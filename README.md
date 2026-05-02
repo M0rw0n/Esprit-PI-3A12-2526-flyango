@@ -119,3 +119,4 @@ user module
 admin dashboard
 hebergement entity
 reservation system
+frontend templates
