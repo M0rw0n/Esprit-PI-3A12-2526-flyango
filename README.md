@@ -127,3 +127,4 @@ pdf service
 uploads system
 validation rules
 performance optimization
+error handling
