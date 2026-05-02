@@ -126,3 +126,4 @@ controller cleanup
 pdf service
 uploads system
 validation rules
+performance optimization
