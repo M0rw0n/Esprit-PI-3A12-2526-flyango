@@ -1,0 +1,104 @@
+{% macro comment_item(item, user, depth) %}
+{% set depth = depth|default(0) %}
+{% set comment = item.comment %}
+<div class="comment-wrapper" data-depth="{{ depth }}">
+    <div class="comment" data-comment-id="{{ item.id }}">
+        <div class="comment-left">
+            <div class="comment-avatar">{{ item.author|slice(0, 1)|upper }}</div>
+            {% if item.replies|length > 0 %}
+            <div class="comment-vertical-line"></div>
+            {% endif %}
+        </div>
+        <div class="comment-body">
+            <div class="comment-header">
+                <a href="#">{{ item.author }}</a>
+                <span class="dot">•</span>
+                <span>{{ item.createdAt is defined and item.createdAt ? item.createdAt|time_ago : '' }}</span>
+                {% if item.isPinned %}
+                <span class="dot">•</span>
+                <span style="color: var(--accent);">📌 Pinned</span>
+                {% endif %}
+            </div>
+            <div class="comment-text">
+                {% if item.content %}
+                    {{ item.content|nl2br }}
+                {% else %}
+                    <span class="deleted">[deleted]</span>
+                {% endif %}
+            </div>
+            <div class="comment-actions">
+                <button class="comment-action-btn vote-btn up {{ item.userVote == 1 ? 'active' : '' }}" 
+                        data-vote="1" data-comment="{{ item.id }}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4L4 12h5v8h6v-8h5L12 4z"/></svg>
+                </button>
+                <span class="comment-action-btn score">{{ item.score }}</span>
+                <button class="comment-action-btn vote-btn down {{ item.userVote == -1 ? 'active' : '' }}" 
+                        data-vote="-1" data-comment="{{ item.id }}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20l8-8h-5V4H9v8H4l8 8z"/></svg>
+                </button>
+                <button class="comment-action-btn reply-btn" data-comment="{{ item.id }}" data-author="{{ item.author }}" {{ not user ? 'disabled' : '' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 17l-5-5 5-5M20 12H4"/></svg>
+                    Reply
+                </button>
+                <button class="comment-action-btn translate-link" onclick="showCommentTranslation({{ item.id }}, 'en')">Traduire</button>
+                <div class="translated-content" id="translated-{{ item.id }}" style="display:none;margin-top:.5rem;padding:.5rem;background:rgba(0,180,216,.1);border-radius:8px;border-left:3px solid #00B4D8;font-size:.85rem"></div>
+                <button class="comment-action-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+                    Share
+                </button>
+                <button class="comment-action-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    More
+                </button>
+                {% if is_granted('ROLE_ADMIN') %}
+                <button class="comment-action-btn" onclick="deleteComment({{ item.id }})" style="color: #dc3545;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+                {% endif %}
+            </div>
+            
+            {# Reply Form #}
+            <div class="reply-form" id="reply-form-{{ item.id }}">
+                <form data-parent="{{ item.id }}">
+                    <textarea class="reply-textarea" placeholder="Write a reply..." rows="2"></textarea>
+                    <div class="reply-form-actions">
+                        <button type="button" class="btn btn-ghost btn-sm cancel-reply">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Reply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    {# Nested Replies #}
+    {% if item.replies|length > 0 %}
+    <div class="nested-replies" id="replies-{{ item.id }}">
+        {% for reply in item.replies %}
+            {{ _self.comment_item(reply, user, depth + 1) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {# Show/Hide Replies Button #}
+    {% if item.replies|length > 0 %}
+    <button class="more-replies" data-comment="{{ item.id }}" style="margin-left: 1.5rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        ▼ Hide Replies
+    </button>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Main Entry Point #}
+<div>
+    {% if commentsTree|length > 0 %}
+        {% for item in commentsTree %}
+            {{ _self.comment_item(item, user, 0) }}
+        {% endfor %}
+    {% else %}
+        <div class="empty-comments">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <p>No comments yet. Be the first to share your thoughts!</p>
+        </div>
+    {% endif %}
+</div>

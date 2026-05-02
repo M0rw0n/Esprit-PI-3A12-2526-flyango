@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #333; line-height: 1.5; }
+        .invoice-container { max-width: 800px; margin: 0 auto; padding: 40px; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 40px; border-bottom: 3px solid #0f2744; padding-bottom: 20px; }
+        .logo { font-size: 28px; font-weight: bold; color: #0f2744; }
+        .logo span { color: #c9a232; }
+        .invoice-title { text-align: right; }
+        .invoice-title h1 { font-size: 32px; color: #0f2744; margin-bottom: 5px; }
+        .invoice-title p { color: #666; }
+        .invoice-number { font-size: 14px; margin-top: 10px; }
+        .info-section { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .info-box { width: 45%; }
+        .info-box h3 { color: #0f2744; font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .info-box p { margin-bottom: 5px; }
+        .info-box .label { color: #666; font-size: 10px; text-transform: uppercase; }
+        .info-box .value { font-weight: bold; }
+        .details-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .details-table th { background: #0f2744; color: #fff; padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; }
+        .details-table td { padding: 12px; border-bottom: 1px solid #eee; }
+        .details-table .price { text-align: right; font-weight: bold; }
+        .details-table tfoot td { font-weight: bold; background: #f8f9fa; }
+        .totals { width: 300px; margin-left: auto; }
+        .totals-table { width: 100%; }
+        .totals-table td { padding: 8px 12px; }
+        .totals-table .label { text-align: right; color: #666; }
+        .totals-table .value { text-align: right; font-weight: bold; }
+        .totals-table .total-row { background: #0f2744; color: #fff; font-size: 16px; }
+        .totals-table .total-row td { padding: 15px; }
+        .status { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 10px; }
+        .footer p { margin-bottom: 5px; }
+        .thank-you { font-size: 14px; color: #0f2744; margin-top: 20px; font-weight: bold; }
+        .contact-info { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="header">
+            <div class="logo">Fly<span>&</span>Go</div>
+            <div class="invoice-title">
+                <h1>FACTURE</h1>
+                <p class="invoice-number">N° {{ reservation.id|default('___') }}/{{ date|date('Y') }}</p>
+                <p>Date: {{ date|date('d/m/Y') }}</p>
+                <span class="status {% if reservation.statut == 'CONFIRMEE' %}status-confirmed{% elseif reservation.statut == 'EN_ATTENTE' %}status-pending{% else %}status-cancelled{% endif %}">
+                    {{ reservation.statut|default('En attente') }}
+                </span>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-box">
+                <h3>Informations client</h3>
+                <p class="label">Nom complet</p>
+                <p class="value">{{ reservation.nomClient|default('N/A') }}</p>
+                <p class="label">Email</p>
+                <p class="value">{{ reservation.emailClient|default('N/A') }}</p>
+                <p class="label">Téléphone</p>
+                <p class="value">{{ reservation.telephoneClient|default(reservation.telephone|default('N/A')) }}</p>
+            </div>
+            <div class="info-box">
+                <h3>Hébergement</h3>
+                <p class="value">{{ hebergement.nom|default('N/A') }}</p>
+                <p class="label">Adresse</p>
+                <p>{{ hebergement.adresse|default('N/A') }}, {{ hebergement.ville|default('N/A') }}</p>
+                <p class="label">Type</p>
+                <p>{{ hebergement.type|default('N/A') }}</p>
+            </div>
+        </div>
+
+        <table class="details-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Dates</th>
+                    <th>Personnes</th>
+                    <th class="price">Montant</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <strong>Hébergement</strong><br>
+                        <small>{{ hebergement.nom|default('N/A') }}</small>
+                    </td>
+                    <td>
+                        Du {{ reservation.dateDebut|date('d/m/Y') }}<br>
+                        Au {{ reservation.dateFin|date('d/m/Y') }}
+                    </td>
+                    <td>{{ reservation.nombrePersonnes|default(1) }}</td>
+                    <td class="price">{{ reservation.montantTotal|number_format(3) }} TND</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>Nombre de nuits:</strong> {{ reservation.nombreNuits|default(1) }}</td>
+                    <td class="price"></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="totals">
+            <table class="totals-table">
+                <tr>
+                    <td class="label">Sous-total</td>
+                    <td class="value">{{ reservation.montantTotal|number_format(3) }} TND</td>
+                </tr>
+                <tr>
+                    <td class="label">Réduction</td>
+                    <td class="value">- 0.000 TND</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label">TOTAL</td>
+                    <td class="value">{{ reservation.montantTotal|number_format(3) }} TND</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p class="thank-you">Merci pour votre confiance !</p>
+            <div class="contact-info">
+                <p>Fly&Go - Agence de Voyage</p>
+                <p>Tunis, Tunisie | contact@flyandgo.tn | +216 12 345 678</p>
+            </div>
+            <p style="margin-top: 20px;">Cette facture a été générée automatiquement. Pour toute question, contactez-nous.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,332 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}{{ hebergement.nom }} — Fly&Go{% endblock %}
+{% block body %}
+
+<div style="max-width:1380px;margin:0 auto;padding:2rem">
+    {# Breadcrumb #}
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem">
+        <a href="{{ path('home') }}" style="color:var(--muted)">Accueil</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <a href="{{ path('hebergement_index') }}" style="color:var(--muted)">Hébergements</a>
+        <i class="fa fa-chevron-right fa-xs"></i>
+        <strong style="color:var(--text)">{{ hebergement.nom }}</strong>
+    </div>
+
+    {# Title #}
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900;color:var(--text);margin-bottom:.35rem;letter-spacing:-.02em">{{ hebergement.nom }}</h1>
+            <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+                <span style="font-size:.875rem;color:var(--muted)"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ hebergement.ville }}{% if hebergement.adresse %}, {{ hebergement.adresse }}{% endif %}</span>
+                <span class="tag tag--navy"><i class="fa fa-tag"></i> {{ hebergement.type }}</span>
+                {% if hebergement.avis|length > 0 %}
+                <span style="display:flex;align-items:center;gap:.3rem;font-size:.875rem">
+                    {% set moyenne = hebergement.getMoyenneNotes() %}
+                    {% for i in 1..5 %}
+                    <i class="fa fa-star" style="color:{{ i <= moyenne ? '#F59E0B' : 'var(--border)' }};font-size:.85rem"></i>
+                    {% endfor %}
+                    <strong>{{ moyenne }}</strong>
+                    <span style="color:var(--muted)">({{ hebergement.avis|length }} avis)</span>
+                </span>
+                {% endif %}
+                <span class="status status--{{ hebergement.disponible ? 'confirmed' : 'cancelled' }}">{{ hebergement.disponible ? 'Disponible' : 'Complet' }}</span>
+            </div>
+        </div>
+        <div class="price price--lg">
+            <span class="price__val">{{ hebergement.prixParNuit|number_format(3, ',', ' ') }}</span>
+            <span class="price__cur" style="font-size:.9rem">TND</span>
+            <span class="price__per">/nuit</span>
+        </div>
+    </div>
+
+    <div class="detail-layout">
+        <div>
+            {# Image #}
+            <div class="detail-gallery" style="margin-bottom:2rem">
+                <img src="{{ hebergement.image ? asset(hebergement.image) : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&q=85' }}" alt="{{ hebergement.nom }}"
+                     onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&q=85'">
+            </div>
+
+            {# Tabs #}
+            <div class="detail-tabs">
+                <button class="detail-tab on" data-tab="desc" onclick="switchTab('desc')">Description</button>
+                <button class="detail-tab" data-tab="avis" onclick="switchTab('avis')">Avis ({{ hebergement.avis|length }})</button>
+                <button class="detail-tab" data-tab="donner-avis" onclick="switchTab('donner-avis')">Laisser un avis</button>
+            </div>
+
+            <div id="pane-desc" class="tab-pane on">
+                <p style="font-size:.95rem;line-height:1.85;color:var(--text)">{{ hebergement.description ?: 'Aucune description disponible pour cet hébergement.' }}</p>
+                {% if hebergement.capacite %}
+                <div style="margin-top:1.5rem;display:flex;gap:1rem;flex-wrap:wrap">
+                    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem 1.5rem;text-align:center">
+                        <i class="fa fa-users" style="font-size:1.5rem;color:var(--navy);margin-bottom:.5rem"></i>
+                        <div style="font-size:.75rem;color:var(--muted)">Capacité</div>
+                        <div style="font-size:1.1rem;font-weight:800">{{ hebergement.capacite }} pers.</div>
+                    </div>
+                    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem 1.5rem;text-align:center">
+                        <i class="fa fa-tag" style="font-size:1.5rem;color:var(--gold-d);margin-bottom:.5rem"></i>
+                        <div style="font-size:.75rem;color:var(--muted)">Type</div>
+                        <div style="font-size:1.1rem;font-weight:800">{{ hebergement.type }}</div>
+                    </div>
+                    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem 1.5rem;text-align:center">
+                        <i class="fa fa-map-marker-alt" style="font-size:1.5rem;color:var(--cyan-d);margin-bottom:.5rem"></i>
+                        <div style="font-size:.75rem;color:var(--muted)">Ville</div>
+                        <div style="font-size:1.1rem;font-weight:800">{{ hebergement.ville }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div id="pane-avis" class="tab-pane">
+                {% set positive = 0 %}{% set negative = 0 %}{% set neutral = 0 %}
+                {% for a in hebergement.avis %}
+                    {% if a.sentimentLabel %}{% if a.sentimentLabel in ['excellent','good','positive'] %}{% set positive = positive + 1 %}{% elseif a.sentimentLabel in ['negative','bad'] %}{% set negative = negative + 1 %}{% else %}{% set neutral = neutral + 1 %}{% endif %}{% endif %}
+                {% endfor %}
+                <div style="background:#f0f9ff;padding:0.5rem;margin-bottom:1rem;font-size:0.8rem;border-radius:8px">Debug: {{ hebergement.avis|length }} avis, positive={{ positive }}, negative={{ negative }}, neutral={{ neutral }}</div>
+                {% if hebergement.avis|length > 0 %}
+                <div class="sentiment-summary" style="background:linear-gradient(135deg,#f8f9fa,#fff);padding:1rem;border-radius:12px;margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;border:2px solid var(--navy)">
+                    <div style="font-weight:600;color:var(--navy)">🤖 Analyse IA</div>
+                    <div style="display:flex;gap:1rem"><span style="color:#22c55e;font-weight:bold">👍 {{ positive }}</span><span style="color:#eab308;font-weight:bold">➖ {{ neutral }}</span><span style="color:#ef4444;font-weight:bold">👎 {{ negative }}</span></div>
+                    {% if positive + negative + neutral > 0 %}<span style="background:var(--navy);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:bold">{{ ((positive / (positive + negative + neutral)) * 100)|round }}% satisfait</span>{% endif %}
+                </div>
+                {% endif %}
+                
+                {% for a in hebergement.avis %}
+                <div class="review-item">
+                    <div class="review-item__head">
+                        <span class="review-item__author">{{ a.auteur }}</span>
+                        <span class="review-item__date">{{ a.createdAt|date('d/m/Y') }}</span>
+                    </div>
+                    <div class="review-item__stars">
+                        {% for i in 1..5 %}<i class="fa fa-{{ i <= a.note ? 'star' : 'star' }}" style="color:{{ i <= a.note ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}
+                        <span style="background:#ffeb3b;padding:2px 6px;border-radius:4px;font-size:0.7rem;margin-left:0.5rem">DEBUG: sentimentLabel={{ a.sentimentLabel }}</span>
+                        {% if a.sentimentLabel %}
+                        <span class="sentiment-badge sentiment-{{ a.sentimentLabel }}" style="margin-left:0.5rem;padding:2px 8px;border-radius:10px;font-size:0.7rem;{% if a.sentimentLabel in ['excellent','good','positive'] %}background:#dcfce7;color:#16a34a{% elseif a.sentimentLabel in ['negative','bad'] %}background:#fee2e2;color:#dc2626{% else %}background:#fef3c7;color:#d97706{% endif %}">
+                            {% if a.sentimentLabel == 'excellent' %}<i class="fa fa-smile"></i> excellent
+                            {% elseif a.sentimentLabel == 'good' %}<i class="fa fa-smile"></i> bon
+                            {% elseif a.sentimentLabel == 'positive' %}<i class="fa fa-smile-o"></i> positif
+                            {% elseif a.sentimentLabel == 'neutral' %}<i class="fa fa-meh-o"></i> neutre
+                            {% elseif a.sentimentLabel == 'negative' %}<i class="fa fa-frown-o"></i> négatif
+                            {% elseif a.sentimentLabel == 'bad' %}<i class="fa fa-frown"></i> mauvais
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="review-item__text">{{ a.commentaire }}</div>
+                </div>
+                {% else %}
+                <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis pour l'instant</p></div>
+                {% endfor %}
+            </div>
+
+            <div id="pane-donner-avis" class="tab-pane">
+                <form action="{{ path('hebergement_avis', {id: hebergement.id}) }}" method="POST">
+                    <div class="fg-group">
+                        <label class="fg-label">Votre nom</label>
+                        <input type="text" name="auteur" class="fg-input" required placeholder="Votre prénom" value="{{ app.user ? app.user.fullName : '' }}">
+                    </div>
+                    <div class="fg-group">
+                        <label class="fg-label">Note</label>
+                        <div id="starPickAvis" style="display:flex;gap:.35rem;font-size:1.5rem;cursor:pointer;margin-bottom:.75rem">
+                            {% for i in 1..5 %}<i class="fa fa-star" onclick="setRatingAvis({{ i }})" style="color:{{ i <= 5 ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}
+                        </div>
+                        <input type="hidden" name="note" id="noteInput" value="5">
+                    </div>
+                    <div class="fg-group">
+                        <label class="fg-label">Commentaire</label>
+                        <textarea name="commentaire" class="fg-input" rows="4" required placeholder="Partagez votre expérience..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-navy"><i class="fa fa-paper-plane"></i> Publier mon avis</button>
+                </form>
+            </div>
+        </div>
+
+        {# STICKY BOOKING FORM #}
+        <div class="detail-sticky">
+            <div class="detail-info">
+                <div class="detail-price">
+                    <span class="amount">{{ hebergement.prixParNuit|number_format(3, ',', ' ') }}</span>
+                    <span class="per">TND/nuit</span>
+                </div>
+                <input type="hidden" id="prixBase" value="{{ hebergement.prixParNuit }}">
+
+                {% if hebergement.disponible %}
+                <form action="{{ path('hebergement_reserver', {id: hebergement.id}) }}" method="POST" onsubmit="return validateHebergBooking()">
+                    <div class="book-form">
+                        <h4><i class="fa fa-calendar-check"></i> Réserver cet hébergement</h4>
+                        <div class="fg-group">
+                            <label class="fg-label">Votre nom complet *</label>
+                            <input type="text" name="nom_client" id="nomClient" class="fg-input" required minlength="2" maxlength="100" pattern="[A-Za-zÀ-ÿ\s\-]+" placeholder="Prénom Nom" value="{{ app.user ? app.user.fullName : '' }}">
+                        </div>
+                        <div class="fg-group">
+                            <label class="fg-label">Email *</label>
+                            <input type="email" name="email_client" id="emailClient" class="fg-input" required placeholder="email@example.com" value="{{ app.user ? app.user.email : '' }}">
+                        </div>
+                        <div class="fg-group">
+                            <label class="fg-label">Téléphone</label>
+                            <input type="tel" name="telephone" id="telClient" class="fg-input" pattern="[+]?[0-9\s]{8,15}" placeholder="+216 XX XXX XXX" value="{{ app.user ? app.user.telephone : '' }}">
+                        </div>
+                        <div class="form-row">
+                            <div>
+                                <label class="fg-label">Arrivée *</label>
+                                <input type="date" name="date_debut" id="dateDebut" class="fg-input" required onchange="calcNuits()" min="{{ "now"|date('Y-m-d') }}">
+                            </div>
+                            <div>
+                                <label class="fg-label">Départ *</label>
+                                <input type="date" name="date_fin" id="dateFin" class="fg-input" required onchange="calcNuits()">
+                            </div>
+                        </div>
+                        <div class="fg-group">
+                            <label class="fg-label">Nombre de personnes *</label>
+                            <input type="number" name="nb_personnes" id="nbPersonnes" class="fg-input" value="1" min="1" max="{{ hebergement.capacite ?: 20 }}" required>
+                        </div>
+                        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem;font-size:.875rem">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;color:var(--muted)">
+                                <span>Durée</span><span id="nuitesResult">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.35rem;color:var(--muted)">
+                                <span>Sous-total</span><span id="sousTotal">—</span>
+                            </div>
+                            <div id="promoLine" style="display:none;justify-content:space-between;margin-bottom:.35rem;color:#10b981">
+                                <span>Code promo</span><span id="promoReduction">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1rem;color:var(--navy);border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.25rem">
+                                <span>Total estimé</span><span id="montantCalc">—</span>
+                            </div>
+                        </div>
+                        <div class="fg-group" style="margin-bottom:1rem">
+                            <label class="fg-label" style="font-size:.8rem"><i class="fa fa-tag" style="color:var(--gold)"></i> Code promo</label>
+                            <div style="display:flex;gap:.5rem">
+                                <input type="text" id="promoCode" class="fg-input" placeholder="Ex: BIENVENUE" style="text-transform:uppercase">
+                                <button type="button" class="btn btn-outline" onclick="applyPromoHeb()">Appliquer</button>
+                            </div>
+                            <div id="promoMsg" style="font-size:.75rem;margin-top:.25rem"></div>
+                        </div>
+                        <button type="submit" class="btn btn-navy btn-lg" style="width:100%"><i class="fa fa-calendar-check"></i> Confirmer la réservation</button>
+                    </div>
+                </form>
+                {% else %}
+                <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:var(--r-sm);padding:1.25rem;text-align:center;color:var(--red)">
+                    <i class="fa fa-times-circle fa-2x" style="margin-bottom:.75rem"></i>
+                    <p style="font-weight:700">Hébergement non disponible</p>
+                    <p style="font-size:.85rem;opacity:.8">Cet hébergement est actuellement complet.</p>
+                </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const prixParNuit = {{ hebergement.prixParNuit|default(0) }};
+let currentPromoReduction = 0;
+let originalTotal = 0;
+
+function calcNuits() {
+    const debut = document.getElementById('dateDebut');
+    const fin = document.getElementById('dateFin');
+    const personnes = document.querySelector('input[name="nb_personnes"]');
+    const nuitesResult = document.getElementById('nuitesResult');
+    const montantCalc = document.getElementById('montantCalc');
+    const sousTotal = document.getElementById('sousTotal');
+
+    if (!debut || !fin || !debut.value || !fin.value) {
+        nuitesResult.textContent = '—';
+        sousTotal.textContent = '—';
+        montantCalc.textContent = '—';
+        return;
+    }
+
+    const d1 = new Date(debut.value);
+    const d2 = new Date(fin.value);
+    const diffTime = d2 - d1;
+    const nuits = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const nbPersonnes = parseInt(personnes ? personnes.value : 1) || 1;
+
+    if (nuits > 0) {
+        nuitesResult.textContent = nuits + ' nuit(s) × ' + nbPersonnes + ' pers.';
+        originalTotal = nuits * prixParNuit * nbPersonnes;
+        sousTotal.textContent = originalTotal.toLocaleString('fr-FR') + ' TND';
+        applyPromoToDisplay();
+        fin.min = debut.value;
+    } else {
+        nuitesResult.textContent = '—';
+        sousTotal.textContent = '—';
+        montantCalc.textContent = '—';
+    }
+}
+
+function applyPromoToDisplay() {
+    const finalTotal = Math.max(0, originalTotal - currentPromoReduction);
+    document.getElementById('montantCalc').textContent = finalTotal.toLocaleString('fr-FR') + ' TND';
+}
+
+async function applyPromoHeb() {
+    const code = document.getElementById('promoCode').value.trim().toUpperCase();
+    const msgEl = document.getElementById('promoMsg');
+    const promoLine = document.getElementById('promoLine');
+    const reductionEl = document.getElementById('promoReduction');
+
+    if (!code) {
+        msgEl.textContent = 'Veuillez entrer un code promo';
+        msgEl.style.color = 'var(--red)';
+        return;
+    }
+
+    if (originalTotal <= 0) {
+        msgEl.textContent = 'Calculez d\'abord le montant';
+        msgEl.style.color = 'var(--red)';
+        return;
+    }
+
+    try {
+        const response = await fetch('/ajax/apply-promo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ code, price: originalTotal })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            currentPromoReduction = data.reduction;
+            promoLine.style.display = 'flex';
+            reductionEl.textContent = '-' + data.reduction.toLocaleString('fr-FR') + ' TND';
+            msgEl.textContent = data.message;
+            msgEl.style.color = '#10b981';
+            applyPromoToDisplay();
+        } else {
+            currentPromoReduction = 0;
+            promoLine.style.display = 'none';
+            msgEl.textContent = data.message;
+            msgEl.style.color = 'var(--red)';
+            applyPromoToDisplay();
+        }
+    } catch (e) {
+        msgEl.textContent = 'Erreur lors de l\'application';
+        msgEl.style.color = 'var(--red)';
+    }
+}
+
+function validateHebergBooking() {
+    const nom = document.getElementById('nomClient').value.trim();
+    const email = document.getElementById('emailClient').value.trim();
+    const debut = document.getElementById('dateDebut').value;
+    const fin = document.getElementById('dateFin').value;
+    const personnes = parseInt(document.getElementById('nbPersonnes').value);
+
+    if (nom.length < 2) { alert('Nom invalide (min 2 caractères)'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Email invalide'); return false; }
+    if (!debut || !fin) { alert('Veuillez choisir les dates'); return false; }
+    if (new Date(fin) <= new Date(debut)) { alert('La date de départ doit être avant la date de retour'); return false; }
+    if (personnes < 1) { alert('Nombre de personnes invalide'); return false; }
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const nbPersonnesInput = document.querySelector('input[name="nb_personnes"]');
+    if (nbPersonnesInput) {
+        nbPersonnesInput.addEventListener('input', calcNuits);
+    }
+});
+</script>
+{% endblock %}

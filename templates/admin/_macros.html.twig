@@ -1,0 +1,73 @@
+{% macro adminToolbar(route, searchPlaceholder, filters, currentRoute) %}
+{% set q = app.request.query.get('q', '') %}
+{% set tri = app.request.query.get('tri', 'recent') %}
+{% set page = app.request.query.get('page', 1) %}
+<div class="admin-toolbar">
+    <form method="GET" action="{{ path(currentRoute) }}" class="admin-toolbar__form" id="adminFilterForm">
+        <div class="admin-toolbar__row">
+            <div class="admin-toolbar__search">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" value="{{ q }}" placeholder="{{ searchPlaceholder }}" data-auto-submit>
+            </div>
+            {% if filters %}
+            {% for f in filters %}
+            <div class="admin-toolbar__select">
+                <select name="{{ f.name }}" data-auto-submit>
+                    <option value="">{{ f.label }}</option>
+                    {% for opt in f.options %}
+                    <option value="{{ opt.value }}" {{ app.request.query.get(f.name) == opt.value ? 'selected' : '' }}>{{ opt.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endfor %}
+            {% endif %}
+            <select name="tri" class="admin-toolbar__sort" data-auto-submit>
+                <option value="recent" {{ tri == 'recent' ? 'selected' : '' }}>Plus récents</option>
+                <option value="oldest" {{ tri == 'oldest' ? 'selected' : '' }}>Plus anciens</option>
+                {% if filters|length > 0 %}
+                <option value="name_asc" {{ tri == 'name_asc' ? 'selected' : '' }}>Nom A-Z</option>
+                <option value="name_desc" {{ tri == 'name_desc' ? 'selected' : '' }}>Nom Z-A</option>
+                {% endif %}
+            </select>
+            {% if q or app.request.query.get('ville') or app.request.query.get('type') or app.request.query.get('status') or app.request.query.get('statut') %}
+            <a href="{{ path(currentRoute) }}" class="btn btn-outline btn-sm" title="Réinitialiser">
+                <i class="fa fa-times"></i>
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endmacro %}
+
+{% macro pagination(paginator, currentRoute) %}
+{% if paginator.totalItemCount > paginator.itemNumberPerPage %}
+{% set q = app.request.query.get('q', '') %}
+{% set tri = app.request.query.get('tri', 'recent') %}
+<div class="admin-pagination">
+    <div class="admin-pagination__info">
+        Affichage {{ (paginator.currentPageNumber - 1) * paginator.itemNumberPerPage + 1 }} - {{ min(paginator.currentPageNumber * paginator.itemNumberPerPage, paginator.totalItemCount) }} sur {{ paginator.totalItemCount }}
+    </div>
+    <div class="admin-pagination__pages">
+        {% if paginator.currentPageNumber > 1 %}
+        <a href="{{ path(currentRoute, {page: paginator.currentPageNumber - 1, q: q, tri: tri}) }}" class="admin-pagination__btn">
+            <i class="fa fa-chevron-left"></i>
+        </a>
+        {% endif %}
+        {% for page in paginator.paginationData.pagesInRange %}
+            {% if page == paginator.currentPageNumber %}
+                <span class="admin-pagination__current">{{ page }}</span>
+            {% elseif page == '...' %}
+                <span class="admin-pagination__ellipsis">...</span>
+            {% else %}
+                <a href="{{ path(currentRoute, {page: page, q: q, tri: tri}) }}" class="admin-pagination__btn">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if paginator.currentPageNumber < paginator.pageCount %}
+        <a href="{{ path(currentRoute, {page: paginator.currentPageNumber + 1, q: q, tri: tri}) }}" class="admin-pagination__btn">
+            <i class="fa fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endmacro %}

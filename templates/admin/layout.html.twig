@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin — Fly&Go{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}">
+</head>
+<body>
+<div class="admin">
+
+    <aside class="admin__side" id="adminSide">
+        <div class="admin__logo" style="display:flex;justify-content:center;padding:.5rem 0 1rem">
+            <a href="{{ path('home') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="Fly&Go" style="height:52px;width:auto;object-fit:contain">
+            </a>
+        </div>
+
+        <div class="admin__section">Principal</div>
+        <a href="{{ path('admin_dashboard') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'on' : '' }}">
+            <i class="fa fa-chart-line"></i> Tableau de bord
+        </a>
+
+        <div class="admin__section">Hébergements</div>
+        <a href="{{ path('admin_hebergements') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_hebergement' ? 'on' : '' }}">
+            <i class="fa fa-hotel"></i> Hébergements
+        </a>
+        <a href="{{ path('admin_reservations') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_reservations' ? 'on' : '' }}">
+            <i class="fa fa-calendar-check"></i> Réservations
+        </a>
+        <a href="{{ path('admin_avis') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_avis' ? 'on' : '' }}">
+            <i class="fa fa-star"></i> Avis hébergements
+        </a>
+
+        <div class="admin__section">Activités</div>
+        <a href="{{ path('admin_activities') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_activit' ? 'on' : '' }}">
+            <i class="fa fa-hiking"></i> Activités
+        </a>
+        <a href="{{ path('admin_bookings') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_bookings' ? 'on' : '' }}">
+            <i class="fa fa-shopping-cart"></i> Bookings
+        </a>
+        <a href="{{ path('admin_reviews') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_reviews' ? 'on' : '' }}">
+            <i class="fa fa-comment-dots"></i> Avis activités
+        </a>
+
+        <div class="admin__section">Circuits</div>
+        <a href="{{ path('admin_circuits') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_circuit' ? 'on' : '' }}">
+            <i class="fa fa-route"></i> Circuits
+        </a>
+        <a href="{{ path('admin_res_circuits') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_res_circuits' ? 'on' : '' }}">
+            <i class="fa fa-ticket-alt"></i> Rés. Circuits
+        </a>
+        <a href="{{ path('admin_avis_circuits') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_avis_circuits' ? 'on' : '' }}">
+            <i class="fa fa-star-half-alt"></i> Avis Circuits
+        </a>
+
+        <div class="admin__section">Transports</div>
+        <a href="{{ path('admin_transports') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_transport' and app.request.attributes.get('_route') != 'admin_res_transports' and app.request.attributes.get('_route') != 'admin_avis_transports' ? 'on' : '' }}">
+            <i class="fa fa-plane"></i> Transports
+        </a>
+        <a href="{{ path('admin_res_transports') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_res_transports' ? 'on' : '' }}">
+            <i class="fa fa-ticket-alt"></i> Rés. Transports
+        </a>
+        <a href="{{ path('admin_avis_transports') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_avis_transports' ? 'on' : '' }}">
+            <i class="fa fa-star"></i> Avis Transports
+        </a>
+
+        <div class="admin__section">Communauté</div>
+        <a href="{{ path('admin_forum') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_forum' ? 'on' : '' }}">
+            <i class="fa fa-comments"></i> Forum
+        </a>
+        <a href="{{ path('admin_users') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_users' ? 'on' : '' }}">
+            <i class="fa fa-users"></i> Utilisateurs
+        </a>
+        <a href="{{ path('admin_profils') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_profils' ? 'on' : '' }}">
+            <i class="fa fa-suitcase-rolling"></i> Profils Voyageur
+        </a>
+
+        <div class="admin__section">Site</div>
+        <a href="{{ path('home') }}" class="admin__link" target="_blank">
+            <i class="fa fa-external-link-alt"></i> Voir le site
+        </a>
+        <a href="{{ path('app_logout') }}" class="admin__link" style="color:rgba(239,68,68,0.7)">
+            <i class="fa fa-sign-out-alt"></i> Déconnexion
+        </a>
+
+        <div class="admin__foot">
+            <div class="admin__user">
+                <div class="admin__av" style="background:linear-gradient(135deg,var(--navy),var(--cyan))">{{ app.user ? app.user.prenom|slice(0,1)|upper : 'A' }}</div>
+                <div class="admin__user-info">
+                    <strong>{{ app.user ? app.user.fullName : 'Administrateur' }}</strong>
+                    <span>{{ app.user ? app.user.email : 'admin@flyandgo.tn' }}</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="admin__main">
+        <div class="admin__topbar">
+            <div class="admin__topbar-left">
+                <button class="fg-icon-btn" onclick="toggleSidebar()"><i class="fa fa-bars"></i></button>
+                <div class="admin__bc">
+                    <strong>{% block breadcrumb %}Dashboard{% endblock %}</strong>
+                </div>
+            </div>
+            <div class="admin__topbar-right">
+                {% for type, messages in app.flashes %}
+                    {% for msg in messages %}
+                    <div class="toast toast--{{ type }}" style="position:static;animation:none;font-size:.78rem;padding:.5rem .9rem">{{ msg }}</div>
+                    {% endfor %}
+                {% endfor %}
+                <a href="{{ path('home') }}" class="btn btn-outline btn-sm"><i class="fa fa-external-link-alt"></i> Site</a>
+            </div>
+        </div>
+
+        <div class="admin__content">
+            {% block admin_body %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-toolbar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--s1);
+}
+.admin-toolbar__form { width: 100%; }
+.admin-toolbar__row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.admin-toolbar__search {
+    flex: 2;
+    min-width: 220px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    transition: all var(--t);
+}
+.admin-toolbar__search:focus-within {
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(27,58,107,.08);
+    background: #fff;
+}
+.admin-toolbar__search i {
+    position: absolute;
+    left: 0.85rem;
+    color: var(--muted);
+}
+.admin-toolbar__search input {
+    border: none;
+    background: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.9rem;
+    font-family: var(--font);
+    color: var(--text);
+}
+.admin-toolbar__select {
+    flex: 1;
+    min-width: 140px;
+}
+.admin-toolbar__select select {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.875rem;
+    font-family: var(--font);
+    cursor: pointer;
+    outline: none;
+    transition: all var(--t);
+}
+.admin-toolbar__select select:focus {
+    border-color: var(--navy);
+    background: #fff;
+}
+.admin-toolbar__sort {
+    padding: 0.6rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.875rem;
+    font-family: var(--font);
+    cursor: pointer;
+    outline: none;
+}
+.admin-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding: 1rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.admin-pagination__info {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+.admin-pagination__pages {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.admin-pagination__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--t);
+}
+.admin-pagination__btn:hover {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+}
+.admin-pagination__current {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    background: var(--navy);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+.admin-pagination__ellipsis {
+    padding: 0 0.5rem;
+    color: var(--muted);
+}
+@media (max-width: 768px) {
+    .admin-toolbar__row { flex-direction: column; align-items: stretch; }
+    .admin-toolbar__search, .admin-toolbar__select { min-width: 100%; flex: 1; }
+}
+</style>
+
+<div class="toast-box" id="toastBox"></div>
+<script src="{{ asset('js/flyandgo.js') }}"></script>
+<script>
+document.querySelectorAll('.toast').forEach(function(t) {
+    setTimeout(function() {
+        t.classList.add('fade-out');
+        setTimeout(function() { t.remove(); }, 300);
+    }, 2000);
+});
+</script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

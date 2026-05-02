@@ -1,0 +1,23 @@
+# FOSElastica Configuration - Désactivé (nécessite Elasticsearch)
+# Décommenter et configurer si Elasticsearch est installé
+
+# fos_elastica:
+#     clients:
+#         default:
+#             hosts:
+#                 - localhost:9200
+#     
+#     indexes:
+#         app:
+#             index_name: app_circuits
+#             properties:
+#                 titre: ~
+#                 description: ~
+#                 destination: ~
+#                 difficulte: ~
+#                 prix: ~
+#                 duree: ~
+#                 actif: ~
+#             persistence:
+#                 driver: orm
+#                 model: App\Entity\Circuit

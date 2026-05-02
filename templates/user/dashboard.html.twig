@@ -1,0 +1,75 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Mon espace — Fly&Go{% endblock %}
+{% block body %}
+<div style="max-width:1280px;margin:0 auto;padding:2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+        <div>
+            <h1 style="font-size:1.8rem;font-weight:900">Bonjour {{ app.user.prenom }} 👋</h1>
+            <p style="color:var(--muted)">Retrouvez vos réservations, vos avis et vos circuits personnalisés.</p>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+            <a href="{{ path('user_profile') }}" class="btn btn-outline"><i class="fa fa-user"></i> Mon profil</a>
+            <a href="{{ path('user_reservations') }}" class="btn btn-outline">Mes réservations</a>
+            <a href="{{ path('user_avis') }}" class="btn btn-outline">Mes avis</a>
+            <a href="{{ path('user_profil_voyageur') }}" class="btn btn-outline"><i class="fa fa-suitcase-rolling"></i> Profil voyageur</a>
+            <a href="{{ path('user_circuits') }}" class="btn btn-gold">Mes circuits</a>
+        </div>
+    </div>
+    <div class="kpis" style="margin-bottom:2rem">
+        <div class="kpi kpi--navy"><div class="kpi__label">Réservations</div><div class="kpi__val">{{ reservationsCount }}</div></div>
+        <div class="kpi kpi--gold"><div class="kpi__label">Avis publiés</div><div class="kpi__val">{{ avisCount }}</div></div>
+        <div class="kpi kpi--green"><div class="kpi__label">Circuits personnalisés</div><div class="kpi__val">{{ circuitsCount }}</div></div>
+    </div>
+    <div class="admin-grid">
+        <div class="acard-wrap">
+            <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-calendar-check"></i> Dernières réservations</span></div>
+            <div class="bookings-list">
+                {% for item in latestReservations %}
+                    <div class="booking-card">
+                        <div class="booking-card__av">{{ loop.index }}</div>
+                        <div class="booking-card__info">
+                            <div class="booking-card__name">
+                                {% if attribute(item, 'hebergement') is defined %}{{ item.hebergement.nom }}{% elseif attribute(item, 'activity') is defined %}{{ item.activity.title }}{% else %}{{ item.circuit.titre }}{% endif %}
+                            </div>
+                            <div class="booking-card__meta">
+                                <span>{{ attribute(item, 'createdAt')|date('d/m/Y H:i') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty" style="padding:2rem"><i class="fa fa-calendar"></i><p>Aucune réservation.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="acard-wrap">
+            <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-star"></i> Derniers avis</span></div>
+            <div class="bookings-list">
+                {% for item in latestAvis %}
+                    <div class="booking-card">
+                        <div class="booking-card__av">★</div>
+                        <div class="booking-card__info">
+                            <div class="booking-card__name">{{ attribute(item, 'author') is defined ? attribute(item, 'author') : attribute(item, 'auteur') }}</div>
+                            <div class="booking-card__meta"><span>{{ attribute(item, 'createdAt')|date('d/m/Y') }}</span></div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty" style="padding:2rem"><i class="fa fa-star"></i><p>Aucun avis.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="acard-wrap" style="margin-top:2rem">
+        <div class="acard-wrap__head"><span class="acard-wrap__title"><i class="fa fa-route"></i> Mes derniers circuits</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;padding:1rem 1.25rem 1.5rem">
+            {% for c in circuits %}
+                <a href="{{ path('circuit_show', {id: c.id}) }}" style="text-decoration:none;color:inherit;border:1px solid var(--border);border-radius:16px;padding:1rem;background:#fff">
+                    <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:center;margin-bottom:.6rem"><strong>{{ c.titre }}</strong><span class="tag">{{ c.duree }}</span></div>
+                    <div style="font-size:.85rem;color:var(--muted)">{{ c.depart }} → {{ c.destination }}</div>
+                </a>
+            {% else %}
+                <div class="empty" style="grid-column:1/-1;padding:2rem"><i class="fa fa-brain"></i><p>Pas encore de circuit personnalisé.</p><a href="{{ path('circuit_ai_create') }}" class="btn btn-navy">Créer</a></div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

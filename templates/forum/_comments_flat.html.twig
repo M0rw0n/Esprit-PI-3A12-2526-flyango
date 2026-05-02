@@ -1,0 +1,336 @@
+{% macro comment_flat(item, user) %}
+{% set comment = item.comment|default(item) %}
+<div class="fb-comment-item" data-comment-id="{{ item.id|default(comment.id) }}">
+    <div class="fb-comment-avatar">
+        {{ (item.author|default(comment.author)|slice(0, 1))|upper }}
+    </div>
+    <div class="fb-comment-content">
+        <div class="fb-comment-bubble">
+            <div class="fb-comment-author">{{ item.author|default(comment.author) }}</div>
+            <div class="fb-comment-text">
+                {% if item.content|default(comment.content) %}
+                    {{ item.content|default(comment.content)|nl2br }}
+                {% else %}
+                    <span class="deleted">[Commentaire supprimé]</span>
+                {% endif %}
+            </div>
+            {% if comment.image %}
+            <div style="margin-top:0.5rem">
+                <img src="{{ comment.image }}" alt="Image" style="max-width:100%;max-height:300px;border-radius:8px">
+            </div>
+            {% endif %}
+        </div>
+        <div class="fb-comment-meta">
+            <button class="fb-comment-action like-btn {{ item.userVote == 1 ? 'active' : '' }}" data-vote="1" data-comment="{{ item.id|default(comment.id) }}">
+                J'aime
+            </button>
+            <span class="fb-comment-dot">·</span>
+            <button class="fb-comment-action reply-btn" data-comment="{{ item.id|default(comment.id) }}" data-author="{{ item.author|default(comment.author) }}">
+                Répondre
+            </button>
+            <span class="fb-comment-dot">·</span>
+            <span class="fb-comment-time">{{ item.createdAt|default(comment.createdAt)|time_ago }}</span>
+            <span class="fb-comment-dot">·</span>
+            <button class="fb-comment-action translate-link" data-comment-id="{{ item.id|default(comment.id) }}" onclick="showCommentTranslation({{ item.id|default(comment.id) }}, 'en')">Traduire</button>
+            <div class="translated-content" id="translated-{{ item.id|default(comment.id) }}" style="display:none;margin-top:.5rem;padding:.5rem;background:rgba(0,180,216,.1);border-radius:8px;border-left:3px solid var(--cyan);font-size:.85rem;color:var(--text)"></div>
+            {% if item.score|default(0) > 0 %}
+            <span class="fb-comment-dot">·</span>
+            <span class="fb-comment-score">
+                <i class="fa fa-thumbs-up"></i> {{ item.score|default(0) }}
+            </span>
+            {% endif %}
+        </div>
+        
+        {# Inline reply form #}
+        <div class="fb-reply-form" id="reply-form-{{ item.id|default(comment.id) }}">
+            <form data-parent="{{ item.id|default(comment.id) }}">
+                <textarea class="fb-reply-input" placeholder="Répondre à {{ item.author|default(comment.author) }}..." rows="2"></textarea>
+                <div class="fb-reply-actions">
+                    <button type="button" class="btn btn-ghost btn-sm cancel-reply">Annuler</button>
+                    <button type="submit" class="btn btn-navy btn-sm">Répondre</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if is_granted('ROLE_ADMIN') %}
+    <div class="fb-comment-admin">
+        <button class="fb-comment-menu-btn" onclick="toggleCommentMenu({{ item.id|default(comment.id) }})">
+            <i class="fa fa-ellipsis-h"></i>
+        </button>
+        <div class="fb-comment-dropdown" id="menu-{{ item.id|default(comment.id) }}">
+            <button onclick="pinComment({{ item.id|default(comment.id) }})">
+                <i class="fa fa-thumbtack"></i> Épingler
+            </button>
+            <button onclick="deleteComment({{ item.id|default(comment.id) }})" style="color: #dc3545;">
+                <i class="fa fa-trash"></i> Supprimer
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Main Entry Point #}
+<div class="fb-comments-list">
+    {% if commentsTree|length > 0 %}
+        {% for item in commentsTree %}
+            {{ _self.comment_flat(item, user) }}
+        {% endfor %}
+        
+        {% if totalPages|default(1) > 1 %}
+        <div class="fb-comments-pagination">
+            {% for p in 1..totalPages %}
+                <button class="fb-page-btn {{ p == currentPage|default(1) ? 'active' : '' }}" onclick="loadComments({{ p }})">{{ p }}</button>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="fb-comments-empty">
+            <i class="fa fa-comment-dots"></i>
+            <p>Aucun commentaire pour le moment. Soyez le premier à réagir !</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.fb-comments-list {
+    padding: 0.5rem 0;
+}
+
+.fb-comment-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    position: relative;
+}
+
+.fb-comment-item:hover {
+    background: rgba(0,0,0,0.02);
+}
+
+.fb-comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy, #1B3A6B), var(--cyan, #00B4D8));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.fb-comment-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.fb-comment-bubble {
+    background: var(--bg, #f0f2f5);
+    border-radius: 18px;
+    padding: 0.6rem 1rem;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.fb-comment-author {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text, #1C1C1E);
+    margin-bottom: 0.15rem;
+}
+
+.fb-comment-text {
+    font-size: 0.9rem;
+    color: var(--text, #1C1C1E);
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.fb-comment-text .deleted {
+    color: var(--muted, #65676B);
+    font-style: italic;
+}
+
+.fb-comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+    padding-left: 0.5rem;
+}
+
+.fb-comment-action {
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted, #65676B);
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    border-radius: 4px;
+    transition: all 0.15s;
+}
+
+.fb-comment-action:hover {
+    background: rgba(0,0,0,0.05);
+    color: var(--navy, #1B3A6B);
+}
+
+.fb-comment-action.like-btn.active {
+    color: var(--cyan, #00B4D8);
+}
+
+.fb-comment-dot {
+    color: var(--muted, #65676B);
+    font-size: 0.7rem;
+}
+
+.fb-comment-time {
+    font-size: 0.7rem;
+    color: var(--muted, #65676B);
+}
+
+.fb-comment-score {
+    font-size: 0.7rem;
+    color: var(--cyan, #00B4D8);
+    font-weight: 600;
+}
+
+.fb-reply-form {
+    display: none;
+    margin-top: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.fb-reply-form.active {
+    display: block;
+}
+
+.fb-reply-input {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border, #dee2e6);
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    resize: none;
+    transition: border-color 0.2s;
+}
+
+.fb-reply-input:focus {
+    outline: none;
+    border-color: var(--cyan, #00B4D8);
+}
+
+.fb-reply-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.fb-comment-admin {
+    position: relative;
+}
+
+.fb-comment-menu-btn {
+    background: none;
+    border: none;
+    color: var(--muted, #65676B);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.15s;
+}
+
+.fb-comment-item:hover .fb-comment-menu-btn {
+    opacity: 1;
+}
+
+.fb-comment-menu-btn:hover {
+    background: rgba(0,0,0,0.1);
+}
+
+.fb-comment-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    min-width: 140px;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.fb-comment-dropdown.show {
+    display: block;
+}
+
+.fb-comment-dropdown button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    color: var(--text, #1C1C1E);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.fb-comment-dropdown button:hover {
+    background: var(--bg, #f0f2f5);
+}
+
+.fb-comments-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted, #65676B);
+}
+
+.fb-comments-empty i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.fb-comments-empty p {
+    font-size: 0.9rem;
+}
+
+.fb-comments-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1rem;
+}
+
+.fb-page-btn {
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border, #dee2e6);
+    background: white;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.fb-page-btn:hover {
+    background: var(--bg, #f0f2f5);
+}
+
+.fb-page-btn.active {
+    background: var(--navy, #1B3A6B);
+    color: white;
+    border-color: var(--navy, #1B3A6B);
+}
+</style>

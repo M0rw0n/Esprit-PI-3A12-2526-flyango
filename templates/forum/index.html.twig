@@ -1,0 +1,255 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Forum des voyageurs — Fly&Go{% endblock %}
+{% block body %}
+
+{# Hero Section #}
+<section class="circuit-hero" style="background:linear-gradient(135deg,rgba(27,58,107,0.9),rgba(0,180,216,0.8)),url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1920&q=80');background-size:cover;background-position:center;padding:3rem 0">
+    <div class="container">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff">
+            <h1 style="font-size:2.5rem;font-weight:800;margin-bottom:.5rem">Forum des voyageurs</h1>
+            <p style="font-size:1.1rem;opacity:.9;margin-bottom:1.5rem">{{ posts.totalItemCount|default(posts|length) }} discussions — Posez vos questions et partagez vos expériences</p>
+            
+            <form method="GET" action="{{ path('forum_index') }}" id="filterForm" style="background:#fff;padding:.5rem;border-radius:50px;display:flex;align-items:center;gap:.5rem;width:100%;max-width:700px;box-shadow:0 4px 20px rgba(0,0,0,.15)">
+                <div style="flex:1;display:flex;align-items:center;padding:0 1rem;border-right:1px solid #eee">
+                    <i class="fa fa-search" style="color:var(--navy);margin-right:.75rem"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Rechercher dans le forum..." 
+                           style="border:none;outline:none;width:100%;font-size:.95rem;padding:.5rem 0"
+                           onkeyup="if(event.key==='Enter'){document.getElementById('filterForm').submit()}">
+                </div>
+                <select name="categorie" style="border:none;outline:none;padding:.5rem;font-size:.95rem;color:#555;cursor:pointer;min-width:130px"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option value="">Toutes catégories</option>
+                    <option value="Hébergement" {{ categorie=='Hébergement'?'selected':'' }}>Hébergement</option>
+                    <option value="Circuit" {{ categorie=='Circuit'?'selected':'' }}>Circuit</option>
+                    <option value="Activité" {{ categorie=='Activité'?'selected':'' }}>Activité</option>
+                    <option value="Conseil" {{ categorie=='Conseil'?'selected':'' }}>Conseil</option>
+                    <option value="Destination" {{ categorie=='Destination'?'selected':'' }}>Destination</option>
+                    <option value="Transport" {{ categorie=='Transport'?'selected':'' }}>Transport</option>
+                </select>
+                <select name="tri" style="border:none;outline:none;padding:.5rem;font-size:.95rem;color:#555;cursor:pointer;min-width:130px"
+                        onchange="document.getElementById('filterForm').submit()">
+                    <option value="recent" {{ tri|default('recent')=='recent'?'selected':'' }}>Plus récents</option>
+                    <option value="popular" {{ tri=='popular'?'selected':'' }}>Plus populaires</option>
+                    <option value="discussed" {{ tri=='discussed'?'selected':'' }}>Plus commentés</option>
+                    <option value="oldest" {{ tri=='oldest'?'selected':'' }}>Plus anciens</option>
+                </select>
+                <button type="submit" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;border:none;padding:.75rem 1.5rem;border-radius:50px;font-weight:600;cursor:pointer">
+                    <i class="fa fa-search"></i>
+                </button>
+                {% if q or categorie %}
+                <a href="{{ path('forum_index') }}" style="color:var(--muted);padding:.5rem;font-size:.85rem">
+                    <i class="fa fa-times"></i>
+                </a>
+                {% endif %}
+            </form>
+            
+            <div style="display:flex;gap:2rem;margin-top:1.5rem;opacity:.85">
+                <span><i class="fa fa-comments"></i> {{ posts.totalItemCount|default(posts|length) }} Discussions</span>
+                <span><i class="fa fa-users"></i> Membres actifs</span>
+                <span><i class="fa fa-handshake"></i> Conseils partagés</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Quick Actions #}
+<div style="background:#fff;border-bottom:1px solid var(--border);padding:.75rem 0">
+    <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+            <a href="{{ path('forum_new') }}" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;padding:.6rem 1.25rem;border-radius:25px;text-decoration:none;font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:.5rem">
+                <i class="fa fa-plus"></i> Nouveau sujet
+            </a>
+            <div style="color:var(--muted);font-size:.85rem">
+                {% if q %}<span style="margin-right:1rem">🔍 "{{ q }}"</span>{% endif %}
+                {% if categorie %}<span>📁 {{ categorie }}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Main Content #}
+<div class="container" style="padding:2rem 1rem;max-width:1200px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+        <div>
+            {% if posts %}
+                {% for p in posts %}
+                <article data-id="{{ p.id }}" style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:1rem;overflow:hidden">
+                    <div style="display:flex;align-items:flex-start;gap:.75rem;padding:1rem 1rem .5rem">
+                        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center">
+                            {{ p.author ? p.author|slice(0,1)|upper : 'U' }}
+                        </div>
+                        <div style="flex:1;min-width:0">
+                            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+                                <strong style="font-size:.95rem;color:var(--text)">{{ p.author ?: 'Utilisateur' }}</strong>
+                                {% if p.categorie %}
+                                <span style="padding:.15rem .5rem;background:var(--bg);border-radius:4px;font-size:.7rem;font-weight:600;color:var(--navy)">
+                                    <i class="fa fa-tag"></i> {{ p.categorie }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div style="font-size:.78rem;color:var(--muted);margin-top:.25rem">
+                                {{ p.createdAt|date('d M') }} · <i class="fa fa-globe"></i>
+                                <span style="margin-left:.5rem">{{ p.status == 'APPROVED' ? '✓' : p.status == 'PENDING' ? '⏳' : '✗' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{{ path('forum_show', {id: p.id}) }}" style="display:block;padding:0 1rem 1rem;text-decoration:none;color:inherit">
+                        <h3 style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:.5rem;line-height:1.3">{{ p.title }}</h3>
+                        <p style="font-size:.9rem;color:var(--text);line-height:1.6">{{ p.content|length > 280 ? p.content|slice(0,280)~'…' : p.content }}</p>
+                    </a>
+                    <div style="padding:0 1rem .5rem">
+                        <button onclick="event.preventDefault();showIndexTranslation({{ p.id }})" style="background:none;border:none;color:#00B4D8;font-size:.75rem;cursor:pointer">Traduire</button>
+                        <div id="translated-post-{{ p.id }}" style="display:none;margin-top:.5rem;padding:.5rem;background:rgba(0,180,216,.1);border-radius:8px;border-left:3px solid #00B4D8;font-size:.85rem"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 1rem;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">
+                        <div style="display:flex;gap:1rem">
+                            <span><i class="fa fa-thumbs-up"></i> {{ p.vues ?: 0 }}</span>
+                            <span><i class="fa fa-comment"></i> {{ p.comments|length }}</span>
+                        </div>
+                        <span>{{ p.vues ?: 0 }} vues</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-around;padding:.25rem 1rem;border-top:1px solid var(--border)">
+                        <a href="{{ path('forum_show', {id: p.id}) }}" style="display:flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:4px;font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none">
+                            <i class="fa fa-thumbs-up"></i> J'aime
+                        </a>
+                        <a href="{{ path('forum_show', {id: p.id}) }}" style="display:flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:4px;font-size:.85rem;font-weight:600;color:var(--muted);text-decoration:none">
+                            <i class="fa fa-comment"></i> Commenter
+                        </a>
+                        <button onclick="event.preventDefault();openShareModal({{ p.id }}, '{{ p.title|e('js')|e('js') }}', '{{ p.content|e('js')|slice(0, 100)|e('js') }}')" style="display:flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:4px;font-size:.85rem;font-weight:600;color:var(--muted);background:none;border:none;cursor:pointer">
+                            <i class="fa fa-share"></i> Partager
+                        </button>
+                    </div>
+                </article>
+                {% endfor %}
+                
+                {% if posts.pageCount|default(1) > 1 %}
+                <div style="display:flex;justify-content:center;gap:.5rem;margin-top:1rem">
+                    {% if posts.currentPageNumber|default(1) > 1 %}
+                    <a href="{{ path('forum_index', app.request.query|merge({page: posts.currentPageNumber|default(1) - 1})) }}" style="padding:.5rem 1rem;border:1px solid var(--border);border-radius:20px;color:var(--text)">← Précédent</a>
+                    {% endif %}
+                    {% for page in 1..min(posts.pageCount|default(1), 5) %}
+                    <a href="{{ path('forum_index', app.request.query|merge({page: page})) }}" style="padding:.5rem 1rem;border:1px solid var(--border);border-radius:20px;background:{{ page==posts.currentPageNumber|default(1)?'var(--navy)':'#fff'}};color:{{ page==posts.currentPageNumber|default(1)?'#fff':'var(--text)' }}">{{ page }}</a>
+                    {% endfor %}
+                    {% if posts.currentPageNumber|default(1) < posts.pageCount|default(1) %}
+                    <a href="{{ path('forum_index', app.request.query|merge({page: posts.currentPageNumber|default(1) + 1})) }}" style="padding:.5rem 1rem;border:1px solid var(--border);border-radius:20px;color:var(--text)">Suivant →</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+            <div style="text-align:center;padding:3rem 2rem;background:#fff;border-radius:12px;border:1px solid var(--border)">
+                <div style="width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:var(--muted)">
+                    <i class="fa fa-comments"></i>
+                </div>
+                <h3 style="font-size:1.25rem;font-weight:700;margin-bottom:.5rem">Aucun sujet trouvé</h3>
+                <p style="color:var(--muted);margin-bottom:1.5rem">Soyez le premier à créer un sujet dans le forum !</p>
+                <a href="{{ path('forum_new') }}" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;padding:.75rem 1.5rem;border-radius:25px;text-decoration:none;font-weight:600">
+                    <i class="fa fa-plus"></i> Créer un sujet
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <aside style="position:sticky;top:80px">
+            <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:1rem;margin-bottom:1rem">
+                <h4 style="display:flex;align-items:center;gap:.5rem;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem">
+                    <i class="fa fa-fire" style="color:var(--cyan)"></i> Sujets populaires
+                </h4>
+                <div style="display:flex;flex-direction:column;gap:.25rem">
+                    {% for cat in ['Hébergement', 'Circuit', 'Activité', 'Conseil', 'Destination'] %}
+                    <a href="{{ path('forum_index', {categorie: cat}) }}" style="display:flex;align-items:center;gap:.75rem;padding:.5rem;border-radius:8px;transition:all .2s;text-decoration:none;background:{{ categorie|default('') == cat ? 'var(--bg)' : 'transparent' }}">
+                        <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--navy),var(--cyan));display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem">
+                            <i class="fa fa-hashtag"></i>
+                        </div>
+                        <div style="display:flex;flex-direction:column">
+                            <span style="font-size:.85rem;font-weight:600;color:var(--text)">{{ cat }}</span>
+                            <span style="font-size:.75rem;color:var(--muted)">Discuter</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:1rem">
+                <h4 style="display:flex;align-items:center;gap:.5rem;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1rem">
+                    <i class="fa fa-plus-circle" style="color:var(--cyan)"></i> Créer un sujet
+                </h4>
+                <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Partagez vos questions, conseils ou expériences avec la communauté Fly&Go.</p>
+                <a href="{{ path('forum_new') }}" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;padding:.75rem 1.5rem;border-radius:25px;text-decoration:none;font-weight:600;display:block;text-align:center">
+                    <i class="fa fa-plus"></i> Nouveau sujet
+                </a>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    const searchInput = filterForm.querySelector('[name="q"]');
+    if (searchInput) {
+        let timeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => filterForm.submit(), 600);
+        });
+    }
+});
+
+function showIndexTranslation(postId) {
+    const translatedEl = document.getElementById('translated-post-' + postId);
+    const postEl = document.querySelector('[data-id="' + postId + '"]');
+    const linkEl = postEl.querySelector('a');
+    const titleEl = linkEl.querySelector('h3');
+    const textEl = linkEl.querySelector('p');
+    
+    if (translatedEl.style.display === 'block') {
+        translatedEl.style.display = 'none';
+        return;
+    }
+    
+    const originalText = textEl.innerText;
+    const firstLine = originalText.split('\n')[0];
+    
+    translatedEl.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Traduction...';
+    translatedEl.style.display = 'block';
+    
+    fetch('/api/forum/detect-language', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'text=' + encodeURIComponent(firstLine.slice(0, 100))
+    })
+    .then(r => r.json())
+    .then(detectData => {
+        const detectedLang = detectData.language || 'fr';
+        const translateTo = detectedLang === 'fr' ? 'en' : 'fr';
+        
+        return fetch('/api/forum/post/' + postId + '/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'target=' + translateTo
+        });
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const langNames = {'en': 'English', 'ar': 'العربية', 'fr': 'Français'};
+            translatedEl.innerHTML = '<strong>Traduction en ' + langNames[data.language] + ':</strong><br>' + 
+                '<div style="margin-bottom:.25rem;font-weight:700">' + data.translated.title + '</div>' +
+                (data.translated.content.length > 200 ? data.translated.content.slice(0,200) + '...' : data.translated.content);
+        } else {
+            translatedEl.innerHTML = 'Erreur de traduction';
+        }
+    })
+    .catch(() => {
+        translatedEl.innerHTML = 'Erreur de traduction';
+    });
+}
+</script>
+<script src="{{ asset('js/share-system.js') }}"></script>
+<style>
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+{% endblock %}

@@ -1,0 +1,15 @@
+oneup_flysystem:
+    adapters:
+        activity_adapter:
+            local:
+                location: '%kernel.project_dir%/public/uploads/activities'
+                lazy: true
+        circuit_adapter:
+            local:
+                location: '%kernel.project_dir%/public/uploads/circuits'
+                lazy: true
+    filesystems:
+        activity:
+            adapter: activity_adapter
+        circuit:
+            adapter: circuit_adapter

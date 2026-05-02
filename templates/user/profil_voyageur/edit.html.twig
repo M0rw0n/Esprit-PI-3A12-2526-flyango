@@ -1,0 +1,158 @@
+{% extends 'base/base.html.twig' %}
+
+{% block title %}{{ profil.id ? 'Modifier' : 'Créer' }} mon Profil Voyageur — Fly&Go{% endblock %}
+
+{% block body %}
+<div style="max-width:800px;margin:0 auto;padding:2rem">
+    <div class="section-header" style="margin-bottom:2rem">
+        <a href="{{ path('user_dashboard') }}" class="btn btn-outline btn-sm" style="margin-bottom:1rem">
+            <i class="fa fa-arrow-left"></i> Retour
+        </a>
+        <h1 style="font-size:1.8rem;font-weight:900;margin:0;display:flex;align-items:center;gap:.5rem">
+            <i class="fa fa-suitcase-rolling" style="color:var(--cyan)"></i>
+            {{ profil.id ? 'Modifier' : 'Créer' }} mon Profil Voyageur
+        </h1>
+        <p style="color:var(--muted);margin-top:.5rem">
+            Completez votre profil pour recevoir des recommandations personnalisees.
+        </p>
+    </div>
+
+    <div class="user-card" style="padding:0;overflow:hidden">
+        <div class="user-card-header" style="background:linear-gradient(135deg,var(--navy),var(--navy-dd))">
+            <i class="fa fa-user-circle"></i> Informations de voyage
+        </div>
+        <div class="user-card-body">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            
+            <div class="form-group-custom">
+                <label class="form-label-custom">
+                    <i class="fa fa-map-marker-alt text-danger"></i>
+                    Destination preferee
+                </label>
+                <div class="input-group-modern">
+                    {{ form_widget(form.destinationPreferee, {'attr': {'class': 'form-control-modern', 'placeholder': 'Ex: Djerba, Paris, Barcelone...'}}) }}
+                </div>
+                {{ form_errors(form.destinationPreferee) }}
+                <small class="form-hint">{{ form_help(form.destinationPreferee) ?: 'Votre destination de voyage preferee' }}</small>
+            </div>
+
+            <div class="form-group-custom">
+                <label class="form-label-custom">
+                    <i class="fa fa-tag text-info"></i>
+                    Type de voyage
+                </label>
+                <div class="input-group-modern">
+                    {{ form_widget(form.typeVoyage, {'attr': {'class': 'form-select-modern'}}) }}
+                </div>
+                {{ form_errors(form.typeVoyage) }}
+                <small class="form-hint">{{ form_help(form.typeVoyage) ?: 'Le type de voyage qui vous correspond' }}</small>
+            </div>
+
+            <div class="form-group-custom">
+                <label class="form-label-custom">
+                    <i class="fa fa-coins text-warning"></i>
+                    Budget moyen (TND)
+                </label>
+                <div class="input-group-modern">
+                    {{ form_widget(form.budget, {'attr': {'class': 'form-control-modern', 'placeholder': '1500.00', 'min': 0, 'step': 0.01}}) }}
+                </div>
+                {{ form_errors(form.budget) }}
+                <small class="form-hint">{{ form_help(form.budget) ?: 'Votre budget moyen par voyage en dinars tunisiens' }}</small>
+            </div>
+
+            <div class="form-actions" style="margin-top:2rem">
+                <button type="submit" class="btn btn-navy btn-lg">
+                    <i class="fa fa-save"></i>
+                    {{ profil.id ? 'Mettre a jour' : 'Creer mon profil' }}
+                </button>
+                {% if profil.id %}
+                <a href="{{ path('user_profil_voyageur_view') }}" class="btn btn-outline">
+                    <i class="fa fa-eye"></i> Voir mon profil
+                </a>
+                {% endif %}
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<style>
+.section-header { margin-bottom: 1.5rem; }
+.user-card {
+    background: var(--card);
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+    box-shadow: var(--s2);
+}
+.user-card-header {
+    padding: 1.25rem 1.5rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.user-card-body { padding: 2rem; }
+.form-group-custom { margin-bottom: 1.5rem; }
+.form-label-custom {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+.form-control-modern {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    font-size: 1rem;
+    font-family: var(--font);
+    transition: all var(--t);
+    background: var(--bg);
+}
+.form-control-modern:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
+    background: #fff;
+}
+.form-select-modern {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-sm);
+    font-size: 1rem;
+    font-family: var(--font);
+    transition: all var(--t);
+    background: var(--bg);
+    cursor: pointer;
+}
+.form-select-modern:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
+    background: #fff;
+}
+.form-hint {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.form-error {
+    color: var(--red);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'base/base.html.twig' %}
+{% block title %}Circuit personnalisé — Fly&Go{% endblock %}
+{% block body %}
+<div style="background:linear-gradient(135deg,var(--navy-dd),var(--navy));padding:3rem 0;color:#fff">
+    <div style="max-width:1180px;margin:0 auto;padding:0 2rem">
+        <h1 style="font-size:2rem;font-weight:900;margin-bottom:.5rem">Circuit personnalisé</h1>
+        <p style="opacity:.85;max-width:760px">Wizard simplifié inspiré de vos captures : destination, budget, style et dates pour générer un circuit sur mesure.</p>
+    </div>
+</div>
+<div style="max-width:980px;margin:0 auto;padding:2rem">
+    <div style="background:#fff;border:1px solid var(--border);border-radius:20px;padding:2rem;box-shadow:var(--s1)">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+            <span class="tag tag--navy">Étape 1/4</span>
+            <span class="tag">Destination & dates</span>
+            <span class="tag"> Budget & style</span>
+            <span class="tag">Résumé & génération</span>
+        </div>
+        <form method="POST" id="circuitAIForm">
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Destination *</label>
+                    <input type="text" name="destination" id="destination" class="fg-input" placeholder="Ex: Tokyo, Japon" required minlength="2" maxlength="100">
+                </div>
+                <div>
+                    <label class="fg-label">Ville de départ</label>
+                    <input type="text" name="depart" id="depart" class="fg-input" value="Tunis" required>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Date de départ *</label>
+                    <input type="date" name="date_depart" id="dateDepart" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required onchange="updateDateRetourMin(); calcJours();">
+                </div>
+                <div>
+                    <label class="fg-label">Date de retour *</label>
+                    <input type="date" name="date_retour" id="dateRetour" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required onchange="updateDateRetourMin(); calcJours();">
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Durée (calculée)</label>
+                    <input type="text" id="joursDisplay" class="fg-input" readonly style="background:var(--bg);color:var(--navy);font-weight:700;cursor:not-allowed">
+                    <input type="hidden" name="jours" id="jours" value="7">
+                </div>
+                <div>
+                    <label class="fg-label">Voyageurs *</label>
+                    <input type="number" name="participants" id="participants" class="fg-input" min="1" max="12" value="2" required>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Style</label>
+                    <select name="style" id="styleSelect" class="fg-input">
+                        <option value="Découverte" selected>Découverte</option>
+                        <option value="Famille">Famille</option>
+                        <option value="Romantique">Romantique</option>
+                        <option value="Aventure">Aventure</option>
+                        <option value="Détente">Détente</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="fg-label">Budget</label>
+                    <select name="budget" id="budgetSelect" class="fg-input">
+                        <option value="Économique">Économique</option>
+                        <option value="Moyen" selected>Moyen</option>
+                        <option value="Premium">Premium</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="validationMsg" style="display:none;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem"></div>
+            
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:1rem;margin-bottom:1.5rem;color:#1e3a8a">
+                <i class="fa fa-lightbulb"></i> Le système analysera la destination et créera un programme complet avec estimation de prix, niveau de difficulté et points forts.
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:1rem;flex-wrap:wrap">
+                <a href="{{ path('circuit_index') }}" class="btn btn-outline">Annuler</a>
+                <button class="btn btn-gold" type="submit" id="submitBtn"><i class="fa fa-brain"></i> Générer le circuit</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block stylesheets %}
+<style>
+#validationMsg.error{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
+#validationMsg.success{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
+#validationMsg.warning{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+</style>
+{% endblock %}
+{% block javascripts %}
+<script>
+function showMsg(text, type) {
+    const msg = document.getElementById('validationMsg');
+    msg.textContent = text;
+    msg.className = type;
+    msg.style.display = 'block';
+}
+
+function updateDateRetourMin() {
+    const dateDepart = document.getElementById('dateDepart').value;
+    const dateRetour = document.getElementById('dateRetour');
+    if (dateDepart) {
+        dateRetour.min = dateDepart;
+        if (dateRetour.value && dateRetour.value < dateDepart) {
+            dateRetour.value = '';
+            showMsg('La date de retour a été réinitialisée (doit être après le départ)', 'warning');
+        }
+    }
+}
+
+function calcJours() {
+    const dateDepart = document.getElementById('dateDepart').value;
+    const dateRetour = document.getElementById('dateRetour').value;
+    const joursDisplay = document.getElementById('joursDisplay');
+    const joursInput = document.getElementById('jours');
+    
+    if (dateDepart && dateRetour) {
+        const d1 = new Date(dateDepart);
+        const d2 = new Date(dateRetour);
+        const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+        
+        if (diff > 0) {
+            joursDisplay.value = diff + ' jour(s)';
+            joursInput.value = diff;
+            showMsg('Durée automatiquement calculée : ' + diff + ' jour(s)', 'success');
+        } else if (diff === 0) {
+            joursDisplay.value = '1 jour(s)';
+            joursInput.value = 1;
+            showMsg('Durée minimum : 1 jour', 'warning');
+        } else {
+            joursDisplay.value = '';
+            joursInput.value = '';
+            showMsg('La date de retour doit être après la date de départ', 'error');
+        }
+    } else {
+        joursDisplay.value = '';
+        joursInput.value = '';
+    }
+}
+
+document.getElementById('circuitAIForm').addEventListener('submit', function(e) {
+    const destination = document.getElementById('destination').value.trim();
+    const depart = document.getElementById('depart').value.trim();
+    const dateDepart = document.getElementById('dateDepart').value;
+    const dateRetour = document.getElementById('dateRetour').value;
+    const jours = parseInt(document.getElementById('jours').value);
+    const participants = parseInt(document.getElementById('participants').value);
+    
+    const errors = [];
+    
+    if (!destination || destination.length < 2) {
+        errors.push('Destination invalide (min 2 caractères)');
+    }
+    
+    if (!depart || depart.length < 2) {
+        errors.push('Ville de départ invalide');
+    }
+    
+    if (!dateDepart) {
+        errors.push('Date de départ requise');
+    }
+    
+    if (!dateRetour) {
+        errors.push('Date de retour requise');
+    }
+    
+    if (dateDepart && dateRetour) {
+        const d1 = new Date(dateDepart);
+        const d2 = new Date(dateRetour);
+        if (d2 <= d1) {
+            errors.push('La date de retour doit être après la date de départ');
+        }
+    }
+    
+    if (!jours || jours < 1 || jours > 30) {
+        errors.push('Durée invalide (1 à 30 jours)');
+    }
+    
+    if (!participants || participants < 1 || participants > 12) {
+        errors.push('Nombre de voyageurs invalide (1 à 12)');
+    }
+    
+    if (errors.length > 0) {
+        e.preventDefault();
+        showMsg(errors.join(' • '), 'error');
+        return false;
+    }
+    
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').innerHTML = '<i class="fa fa-spinner fa-spin"></i> Génération en cours...';
+    return true;
+});
+
+// Initialize
+calcJours();
+</script>
+{% endblock %}
