@@ -111,3 +111,4 @@ payment foundation
 merge cleanup
 resource optimization
 deployment prep
+setup structure
