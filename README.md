@@ -115,3 +115,4 @@ setup structure
 configure symfony
 database layer
 security auth
+user module
