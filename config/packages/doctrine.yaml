@@ -3,15 +3,21 @@ doctrine:
         url: '%env(resolve:DATABASE_URL)%'
         server_version: '10.4'
         charset: utf8mb4
+<<<<<<< HEAD
         default_table_options:
             charset: utf8mb4
             collate: utf8mb4_unicode_ci
+=======
+>>>>>>> testsisi
         types:
             enum: App\Doctrine\Type\EnumType
             user_role_enum: App\Doctrine\Type\UserRoleType
             booking_status_enum: App\Doctrine\Type\BookingStatusType
+<<<<<<< HEAD
             circuit_status_enum: App\Doctrine\Type\CircuitStatusType
             payment_method_enum: App\Doctrine\Type\PaymentMethodType
+=======
+>>>>>>> testsisi
             travel_class_enum: App\Doctrine\Type\TravelClassType
             car_category_enum: App\Doctrine\Type\CarCategoryType
             car_transmission_enum: App\Doctrine\Type\CarTransmissionType
@@ -20,10 +26,15 @@ doctrine:
             voyage_type_enum: App\Doctrine\Type\VoyageTypeType
             vehicle_type_enum: App\Doctrine\Type\VehicleTypeType
             transport_type_enum: App\Doctrine\Type\TransportTypeType
+<<<<<<< HEAD
         options:
             1002: "SET SESSION sql_mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION', time_zone='+00:00'"
     orm:
         auto_generate_proxy_classes: '%kernel.debug%'
+=======
+    orm:
+        auto_generate_proxy_classes: true
+>>>>>>> testsisi
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
         mappings:
@@ -32,11 +43,14 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+<<<<<<< HEAD
             Embeddable:
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Embeddable'
                 prefix: 'App\Embeddable'
                 alias: Embeddable
+=======
+>>>>>>> testsisi
         controller_resolver:
             auto_mapping: false
 

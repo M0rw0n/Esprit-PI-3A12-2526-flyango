@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Service\ChatbotService;
+<<<<<<< HEAD
 use App\Service\TravelPreparationAssistantService;
 use App\Service\OpenRouterService;
 use App\Repository\HebergementRepository;
+=======
+>>>>>>> testsisi
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,9 +22,12 @@ class ChatbotController extends AbstractController
 
     public function __construct(
         private ChatbotService $chatbotService,
+<<<<<<< HEAD
         private ?TravelPreparationAssistantService $travelAdviceService = null,
         private ?OpenRouterService $openRouterService = null,
         private ?HebergementRepository $hebergementRepository = null,
+=======
+>>>>>>> testsisi
         private RequestStack $requestStack
     ) {}
 
@@ -49,6 +55,7 @@ class ChatbotController extends AbstractController
 
         $session = $this->requestStack->getSession();
         $history = $session->get('chatbot_history', []);
+<<<<<<< HEAD
 
         $userContext = null;
         $user = $this->getUser();
@@ -156,6 +163,10 @@ class ChatbotController extends AbstractController
         $start = microtime(true);
         $result = $this->chatbotService->processMessage($message, $history, $userContext);
         $duration = round((microtime(true) - $start) * 1000, 2);
+=======
+        
+        $result = $this->chatbotService->processMessage($message, $history);
+>>>>>>> testsisi
 
         $history[] = ['content' => $message, 'isUser' => true, 'timestamp' => time()];
         $history[] = ['content' => $result['response'], 'isUser' => false, 'timestamp' => time()];
@@ -170,7 +181,10 @@ class ChatbotController extends AbstractController
             'response' => $result['response'],
             'action' => $result['action'],
             'filters' => $result['filters'],
+<<<<<<< HEAD
             'duration_ms' => $duration,
+=======
+>>>>>>> testsisi
             'timestamp' => (new \DateTime())->format('Y-m-d H:i:s')
         ]);
     }
@@ -199,6 +213,7 @@ class ChatbotController extends AbstractController
             ], 400);
         }
 
+<<<<<<< HEAD
         $userContext = null;
         $user = $this->getUser();
         if ($user) {
@@ -210,6 +225,9 @@ class ChatbotController extends AbstractController
         }
 
         $result = $this->chatbotService->processMessage($query, [], $userContext);
+=======
+        $result = $this->chatbotService->processMessage($query);
+>>>>>>> testsisi
 
         return $this->json([
             'success' => true,
@@ -220,6 +238,7 @@ class ChatbotController extends AbstractController
             'timestamp' => (new \DateTime())->format('Y-m-d H:i:s')
         ]);
     }
+<<<<<<< HEAD
 
     #[Route('/chatbot/feedback', name: 'chatbot_feedback', methods: ['POST'])]
     public function feedback(Request $request, \App\Repository\FAQRepository $faqRepo, \Doctrine\ORM\EntityManagerInterface $em): JsonResponse
@@ -417,4 +436,6 @@ class ChatbotController extends AbstractController
             'best' => $best
         ]);
     }
+=======
+>>>>>>> testsisi
 }

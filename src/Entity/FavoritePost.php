@@ -4,14 +4,20 @@ namespace App\Entity;
 
 use App\Repository\FavoritePostRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: FavoritePostRepository::class)]
 #[ORM\Table(name: 'favorite_post')]
 #[ORM\UniqueConstraint(name: 'user_post_unique', columns: ['user_id', 'post_id'])]
 class FavoritePost
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
     private ?int $id = null;
 
@@ -26,9 +32,12 @@ class FavoritePost
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -40,7 +49,10 @@ class FavoritePost
     public function getPost(): ?ForumPost { return $this->post; }
     public function setPost(?ForumPost $p): static { $this->post = $p; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
+=======
+>>>>>>> testsisi
 }

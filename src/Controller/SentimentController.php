@@ -72,9 +72,15 @@ class SentimentController extends AbstractController
         $hebergementId = $request->query->get('hebergement_id');
         
         if ($hebergementId) {
+<<<<<<< HEAD
             $reviews = $avisRepo->findByHebergement((int) $hebergementId, 100);
         } else {
             $reviews = $avisRepo->findUnanalyzedReviews();
+=======
+            $reviews = $avisRepo->findByHebergement($hebergementId);
+        } else {
+            $reviews = $avisRepo->findAll();
+>>>>>>> testsisi
         }
 
         $reviewsData = [];
@@ -99,7 +105,11 @@ class SentimentController extends AbstractController
     #[Route('/api/sentiment/hotel/{id}/score', name: 'sentiment_hotel_score', methods: ['GET'])]
     public function getHotelScore(int $id, AvisRepository $avisRepo): JsonResponse
     {
+<<<<<<< HEAD
         $reviews = $avisRepo->findByHebergement($id, 200);
+=======
+        $reviews = $avisRepo->findByHebergement($id);
+>>>>>>> testsisi
         
         if (empty($reviews)) {
             return $this->json([

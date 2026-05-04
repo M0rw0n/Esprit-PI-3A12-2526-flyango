@@ -1,0 +1,111 @@
+.animal-card {
+  background: var(--white);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.animal-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+}
+
+.animal-card-image {
+  height: 200px;
+  background: linear-gradient(135deg, #e8f4fd 0%, #f4f7fb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.animal-card-image::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(13, 91, 215, 0.1) 0%, transparent 70%);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.animal-emoji {
+  font-size: 80px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  animation: float 4s ease-in-out infinite;
+}
+
+.animal-card-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.animal-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.animal-name {
+  font-size: 22px;
+  color: var(--dark-text);
+}
+
+.animal-order {
+  display: inline-block;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, var(--primary-blue), #3b82f6);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  width: fit-content;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.animal-description {
+  color: var(--light-text);
+  font-size: 15px;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.explore-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-arrow {
+  transition: transform var(--transition);
+}
+
+.explore-btn:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .animal-card-image {
+    height: 160px;
+  }
+
+  .animal-emoji {
+    font-size: 60px;
+  }
+
+  .animal-card-content {
+    padding: 20px;
+  }
+
+  .animal-name {
+    font-size: 20px;
+  }
+}

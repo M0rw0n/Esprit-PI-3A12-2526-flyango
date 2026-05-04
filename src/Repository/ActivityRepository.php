@@ -5,7 +5,11 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 class ActivityRepository extends ServiceEntityRepository {
     public function __construct(ManagerRegistry $registry) { parent::__construct($registry, Activity::class); }
+<<<<<<< HEAD
     public function search(?string $q, ?string $lieu, ?string $categorie = null, ?float $prixMax = null, int $limit = 50): array {
+=======
+    public function search(?string $q, ?string $lieu, ?string $categorie = null, ?float $prixMax = null): array {
+>>>>>>> testsisi
         $qb = $this->createQueryBuilder('a')
             ->andWhere('a.actif = :actif')
             ->setParameter('actif', true);
@@ -13,6 +17,7 @@ class ActivityRepository extends ServiceEntityRepository {
         if ($lieu) $qb->andWhere('a.lieu LIKE :lieu')->setParameter('lieu','%'.$lieu.'%');
         if ($categorie) $qb->andWhere('a.title LIKE :cat OR a.description LIKE :cat')->setParameter('cat','%'.$categorie.'%');
         if ($prixMax) $qb->andWhere('a.price <= :pm')->setParameter('pm', $prixMax);
+<<<<<<< HEAD
 
         return $qb->orderBy('a.createdAt', 'DESC')->setMaxResults($limit)->getQuery()->getResult();
     }
@@ -31,5 +36,8 @@ class ActivityRepository extends ServiceEntityRepository {
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+=======
+        return $qb->orderBy('a.createdAt','DESC')->getQuery()->getResult();
+>>>>>>> testsisi
     }
 }

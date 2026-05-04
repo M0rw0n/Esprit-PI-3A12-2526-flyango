@@ -16,7 +16,11 @@ class CircuitRepository extends ServiceEntityRepository
         parent::__construct($registry, Circuit::class);
     }
 
+<<<<<<< HEAD
     public function searchVisible(?string $q, ?string $difficulte, string $sort = 'recent', ?User $user = null, ?string $destination = null, ?string $source = null, int $limit = 50): array
+=======
+    public function searchVisible(?string $q, ?string $difficulte, string $sort = 'recent', ?User $user = null, ?string $destination = null, ?string $source = null): array
+>>>>>>> testsisi
     {
         $qb = $this->createQueryBuilder('c')
             ->andWhere('c.actif = :actif')
@@ -55,16 +59,26 @@ class CircuitRepository extends ServiceEntityRepository
             default => $qb->orderBy('c.createdAt', 'DESC'),
         };
 
+<<<<<<< HEAD
         return $qb->setMaxResults($limit)->getQuery()->getResult();
     }
 
     public function findUserCustomCircuits(User $user, int $limit = 50): array
+=======
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findUserCustomCircuits(User $user): array
+>>>>>>> testsisi
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.creator = :user')
             ->setParameter('user', $user)
             ->orderBy('c.createdAt', 'DESC')
+<<<<<<< HEAD
             ->setMaxResults($limit)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
@@ -87,7 +101,11 @@ class CircuitRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+<<<<<<< HEAD
     public function findWithPromo(int $limit = 50): array
+=======
+    public function findWithPromo(): array
+>>>>>>> testsisi
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.actif = :actif')
@@ -96,6 +114,7 @@ class CircuitRepository extends ServiceEntityRepository
             ->setParameter('actif', true)
             ->setParameter('source', 'admin')
             ->orderBy('c.createdAt', 'DESC')
+<<<<<<< HEAD
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -115,6 +134,8 @@ class CircuitRepository extends ServiceEntityRepository
                 ORDER BY COUNT(f2.id) DESC, MAX(f2.createdAt) DESC
             )')
             ->setMaxResults($limit)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }

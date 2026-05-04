@@ -45,9 +45,12 @@ class Call
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $duration = null;
 
@@ -80,15 +83,26 @@ class Call
     public function setType(string $type): static { $this->type = $type; return $this; }
     
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
+=======
+    public function setCreatedAt(\DateTimeInterface $createdAt): static { $this->createdAt = $createdAt; return $this; }
+>>>>>>> testsisi
     
     public function getDuration(): ?int { return $this->duration; }
     public function setDuration(?int $duration): static { $this->duration = $duration; return $this; }
     
     public function getStartedAt(): ?\DateTimeInterface { return $this->startedAt; }
+<<<<<<< HEAD
     public function getEndedAt(): ?\DateTimeInterface { return $this->endedAt; }
+=======
+    public function setStartedAt(?\DateTimeInterface $startedAt): static { $this->startedAt = $startedAt; return $this; }
+    
+    public function getEndedAt(): ?\DateTimeInterface { return $this->endedAt; }
+    public function setEndedAt(?\DateTimeInterface $endedAt): static { $this->endedAt = $endedAt; return $this; }
+>>>>>>> testsisi
     
     public function accept(): void
     {

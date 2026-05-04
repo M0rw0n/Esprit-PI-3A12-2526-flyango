@@ -31,13 +31,17 @@ class ActivityApiController extends AbstractController
         private readonly TripAdvisorService $tripAdvisorService,
         private readonly ViatorService $viatorService,
         private readonly GetYourGuideService $getYourGuideService,
+<<<<<<< HEAD
         private readonly \App\Service\NearbyActivityService $nearbyActivityService,
+=======
+>>>>>>> testsisi
         private ?RecommendationService $recommendationService = null,
     ) {}
 
     #[Route('/activities/nearby', name: 'api_activities_nearby', methods: ['GET'])]
     public function nearby(Request $request): JsonResponse
     {
+<<<<<<< HEAD
         $lat = (float) $request->query->get('lat');
         $lng = (float) $request->query->get('lng');
         $maxDistance = (float) $request->query->get('distance', 20.0);
@@ -88,6 +92,23 @@ class ActivityApiController extends AbstractController
             'results' => $formatted,
             'center' => ['lat' => $lat, 'lng' => $lng]
         ]);
+=======
+        $lat = (float) $request->query->get('lat', 0);
+        $lng = (float) $request->query->get('lng', 0);
+        $category = $request->query->get('category', '');
+        $radius = (int) $request->query->get('radius', 5000);
+
+        if ($lat === 0 && $lng === 0) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Coordonnées requis (lat, lng)'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $result = $this->activityService->getNearbyActivities($lat, $lng, $category, $radius);
+
+        return new JsonResponse($result);
+>>>>>>> testsisi
     }
 
     #[Route('/activities/search', name: 'api_activities_search', methods: ['GET'])]
@@ -320,6 +341,7 @@ class ActivityApiController extends AbstractController
             // Return top 6
             $results = array_slice($scored, 0, 6);
             
+<<<<<<< HEAD
             // AI REINFORCEMENT
             $aiSuggestions = "";
             try {
@@ -342,11 +364,42 @@ class ActivityApiController extends AbstractController
                     'price' => method_exists($item['activity'], 'getPrice') ? $item['activity']->getPrice() : null,
                     'rating' => $item['rating'],
                     'image' => method_exists($item['activity'], 'getImage') ? $item['activity']->getImage() : null,
+=======
+            // If still empty, show message
+            if (empty($results)) {
+                return new JsonResponse([
+                    'success' => true,
+                    'location' => $location,
+                    'recommendations' => [],
+                    'message' => 'Aucune activité trouvée pour ' . $location
+                ]);
+            }
+            
+            return new JsonResponse([
+                'success' => true,
+                'location' => $location,
+                'recommendations' => array_map(fn($item) => [
+                    'id' => $item['activity']->getId(),
+                    'title' => method_exists($item['activity'], 'getTitle') ? $item['activity']->getTitle() : 'Activité',
+                    'description' => method_exists($item['activity'], 'getDescription') ? substr($item['activity']->getDescription() ?? '', 0, 150) : '',
+                    'price' => method_exists($item['activity'], 'getPrice') ? $item['activity']->getPrice() : 0,
+                    'image' => method_exists($item['activity'], 'getImage') ? $item['activity']->getImage() : '',
+                    'category' => method_exists($item['activity'], 'getCategory') ? $item['activity']->getCategory() : '',
+                    'lieu' => method_exists($item['activity'], 'getLieu') ? $item['activity']->getLieu() : '',
+                    'rating' => $item['rating'],
+>>>>>>> testsisi
                     'score' => $item['score']
                 ], $results)
             ]);
         } catch (\Exception $e) {
+<<<<<<< HEAD
             return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 500);
+=======
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+>>>>>>> testsisi
         }
     }
 

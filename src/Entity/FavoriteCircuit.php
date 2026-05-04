@@ -4,14 +4,20 @@ namespace App\Entity;
 
 use App\Repository\FavoriteCircuitRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: FavoriteCircuitRepository::class)]
 #[ORM\Table(name: 'favorite_circuit')]
 #[ORM\UniqueConstraint(name: 'user_circuit_unique', columns: ['user_id', 'circuit_id'])]
 class FavoriteCircuit
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
     private ?int $id = null;
 

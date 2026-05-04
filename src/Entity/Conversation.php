@@ -6,15 +6,21 @@ use App\Repository\ConversationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Message;
 use App\Entity\ConversationParticipant;
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: ConversationRepository::class)]
 #[ORM\Table(name: 'conversation')]
 class Conversation
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     const TYPE_PRIVATE = 'private';
     const TYPE_GROUP = 'group';
 
@@ -36,10 +42,22 @@ class Conversation
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
+<<<<<<< HEAD
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private Collection $messages;
 
     #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: ConversationParticipant::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+=======
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'created_by_id')]
+    private ?User $createdBy = null;
+
+    #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: Message::class, cascade: ['remove'])]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
+    private Collection $messages;
+
+    #[ORM\OneToMany(mappedBy: 'conversation', targetEntity: ConversationParticipant::class, cascade: ['remove'], orphanRemoval: true)]
+>>>>>>> testsisi
     private Collection $participants;
 
     public function __construct()
@@ -57,6 +75,7 @@ class Conversation
     public function getImage(): ?string { return $this->image; }
     public function setImage(?string $i): static { $this->image = $i; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
@@ -73,3 +92,13 @@ class Conversation
         return null;
     }
 }
+=======
+    public function setCreatedAt(\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+    public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
+    public function setUpdatedAt(?\DateTimeInterface $d): static { $this->updatedAt = $d; return $this; }
+    public function getCreatedBy(): ?User { return $this->createdBy; }
+    public function setCreatedBy(?User $u): static { $this->createdBy = $u; return $this; }
+    public function getMessages(): Collection { return $this->messages; }
+    public function getParticipants(): Collection { return $this->participants; }
+}
+>>>>>>> testsisi

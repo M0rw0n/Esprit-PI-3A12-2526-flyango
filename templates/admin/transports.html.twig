@@ -52,7 +52,11 @@
             {% else %}<div style="height:130px;background:var(--bg2);display:flex;align-items:center;justify-content:center"><i class="fa {{ t.transportIcon }} fa-2x" style="color:var(--border)"></i></div>{% endif %}
         </div>
         <div class="adm-act__body">
+<<<<<<< HEAD
             <div class="adm-act__title">{{ t.companyName }} <span class="diff-badge diff-badge--{{ t.transportType|lower }}">{{ t.transportType.value }}</span></div>
+=======
+            <div class="adm-act__title">{{ t.companyName }} <span class="diff-badge diff-badge--{{ t.transportType|lower }}">{{ t.transportType }}</span></div>
+>>>>>>> testsisi
             <div class="adm-act__meta">
                 <span><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ t.departureCity }} → {{ t.arrivalCity }}</span>
                 <span><i class="fa fa-clock"></i> {{ t.departureDatetime|date('d/m H:i') }}</span>

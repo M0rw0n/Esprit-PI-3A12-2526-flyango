@@ -2,7 +2,10 @@
 
 namespace App\Service\Api;
 
+<<<<<<< HEAD
 use App\Entity\Circuit;
+=======
+>>>>>>> testsisi
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -71,6 +74,7 @@ class MapboxService
         return "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+1B3A6B($center)/$center,$zoom/{$width}x{$height}?access_token=$token";
     }
 
+<<<<<<< HEAD
     public function getStaticMapWithRoute(array $waypoints, int $width = 800, int $height = 600): string
     {
         if (empty($waypoints)) return '';
@@ -200,6 +204,8 @@ class MapboxService
         ];
     }
 
+=======
+>>>>>>> testsisi
     public function getDirections(array $waypoints): array
     {
         if (empty($this->accessToken) || count($waypoints) < 2) {
@@ -243,6 +249,7 @@ class MapboxService
             'hammamet' => [36.4, 10.6],
             'tozeur' => [33.92, 8.12],
             'kairouan' => [35.68, 10.11],
+<<<<<<< HEAD
             'sfax' => [34.74, 10.76],
             'monastir' => [35.77, 10.82],
             'bizerte' => [37.27, 9.87],
@@ -257,23 +264,39 @@ class MapboxService
         ];
 
         $key = mb_strtolower(trim($address));
+=======
+        ];
+
+        $key = strtolower($address);
+>>>>>>> testsisi
         foreach ($mockCoords as $city => $coords) {
             if (str_contains($key, $city)) {
                 return [
                     'success' => true,
                     'lat' => $coords[0],
                     'lng' => $coords[1],
+<<<<<<< HEAD
                     'place_name' => ucfirst($city) . ', ' . (in_array($city, ['paris', 'london', 'new york', 'istanbul', 'marrakech', 'casablanca', 'alger']) ? 'Monde' : 'Tunisie')
+=======
+                    'place_name' => $address
+>>>>>>> testsisi
                 ];
             }
         }
 
+<<<<<<< HEAD
         // Default to Tunis if no match
+=======
+>>>>>>> testsisi
         return [
             'success' => true,
             'lat' => 36.8065,
             'lng' => 10.1815,
+<<<<<<< HEAD
             'place_name' => $address . ' (Position estimée)'
+=======
+            'place_name' => $address
+>>>>>>> testsisi
         ];
     }
 

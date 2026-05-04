@@ -23,6 +23,7 @@ class HomeController extends AbstractController
     ): Response {
         $hebergements = $hebRepo->findBy(['disponible' => true], ['createdAt' => 'DESC'], 6);
         $circuits = $circRepo->findBy(['actif' => true], ['createdAt' => 'DESC'], 4);
+<<<<<<< HEAD
         $topCircuits = $circRepo->getTopCircuitsByFavorites(4);
         $activities = $actRepo->findBy(['actif' => true], ['createdAt' => 'DESC'], 6);
         $topActivities = $actRepo->getTopActivitiesByFavorites(6);
@@ -46,13 +47,27 @@ class HomeController extends AbstractController
             'topCircuits' => $topCircuits,
             'activities' => $activities,
             'topActivities' => $topActivities,
+=======
+        $activities = $actRepo->findBy(['actif' => true], ['createdAt' => 'DESC'], 6);
+        $posts = $forumRepo->findBy(['status' => 'APPROVED'], ['createdAt' => 'DESC'], 4);
+        $villesData = $hebRepo->getDistinctVilles();
+        $villes = array_values(array_filter(array_column($villesData, 'ville')));
+
+        return $this->render('home/index.html.twig', [
+            'hebergements' => $hebergements,
+            'circuits' => $circuits,
+            'activities' => $activities,
+>>>>>>> testsisi
             'posts' => $posts,
             'villes' => $villes,
             'totalHebergements' => $hebRepo->count(['disponible' => true]),
             'totalCircuits' => $circRepo->count(['actif' => true]),
             'totalActivities' => $actRepo->count(['actif' => true]),
             'totalPosts' => $forumRepo->count(['status' => 'APPROVED']),
+<<<<<<< HEAD
             'postCommentCounts' => $postCommentCounts,
+=======
+>>>>>>> testsisi
         ]);
     }
 }

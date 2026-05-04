@@ -45,7 +45,11 @@ class TransportOfferRepository extends ServiceEntityRepository
             default => $qb->orderBy('t.departureDatetime', 'DESC'),
         };
 
+<<<<<<< HEAD
         return $qb->setMaxResults(50)->getQuery()->getResult();
+=======
+        return $qb->getQuery()->getResult();
+>>>>>>> testsisi
     }
 
     public function getDistinctCities(): array

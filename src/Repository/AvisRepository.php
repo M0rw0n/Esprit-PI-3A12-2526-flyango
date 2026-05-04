@@ -22,6 +22,7 @@ class AvisRepository extends ServiceEntityRepository
         return round((float)$result, 1);
     }
 
+<<<<<<< HEAD
     public function findByHebergement(int $hebergementId, int $limit = 50): array
     {
         return $this->createQueryBuilder('a')
@@ -31,20 +32,37 @@ class AvisRepository extends ServiceEntityRepository
             ->setParameter('hebergementId', $hebergementId)
             ->orderBy('a.createdAt', 'DESC')
             ->setMaxResults($limit)
+=======
+    public function findByHebergement(int $hebergementId): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.hebergement = :hebergementId')
+            ->setParameter('hebergementId', $hebergementId)
+            ->orderBy('a.createdAt', 'DESC')
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
 
+<<<<<<< HEAD
     public function findWithSentimentByHebergement(int $hebergementId, int $limit = 50): array
     {
         return $this->createQueryBuilder('a')
             ->select('PARTIAL a.{id,idAvisHebergement,note,commentaire,createdAt,sentimentScore,sentimentLabel,sentimentStars,sentimentConfidence,sentimentCategory}')
             ->join('a.hebergement', 'h')
+=======
+    public function findWithSentimentByHebergement(int $hebergementId): array
+    {
+        return $this->createQueryBuilder('a')
+>>>>>>> testsisi
             ->andWhere('a.hebergement = :hebergementId')
             ->setParameter('hebergementId', $hebergementId)
             ->andWhere('a.sentimentScore IS NOT NULL')
             ->orderBy('a.createdAt', 'DESC')
+<<<<<<< HEAD
             ->setMaxResults($limit)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
@@ -70,7 +88,10 @@ class AvisRepository extends ServiceEntityRepository
             ->andWhere('a.sentimentScore >= :minScore')
             ->setParameter('minScore', $minScore)
             ->orderBy('a.sentimentScore', 'DESC')
+<<<<<<< HEAD
             ->setMaxResults(20)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
@@ -83,13 +104,17 @@ class AvisRepository extends ServiceEntityRepository
             ->andWhere('a.sentimentScore <= :maxScore')
             ->setParameter('maxScore', $maxScore)
             ->orderBy('a.sentimentScore', 'ASC')
+<<<<<<< HEAD
             ->setMaxResults(20)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
 
     public function getSentimentDistributionByHebergement(int $hebergementId): array
     {
+<<<<<<< HEAD
         $results = $this->createQueryBuilder('a')
             ->select('a.sentimentLabel as label')
             ->addSelect('COUNT(a.id) as count')
@@ -99,6 +124,14 @@ class AvisRepository extends ServiceEntityRepository
             ->groupBy('a.sentimentLabel')
             ->getQuery()
             ->getScalarResult();
+=======
+        $reviews = $this->createQueryBuilder('a')
+            ->andWhere('a.hebergement = :hebergementId')
+            ->setParameter('hebergementId', $hebergementId)
+            ->andWhere('a.sentimentLabel IS NOT NULL')
+            ->getQuery()
+            ->getResult();
+>>>>>>> testsisi
 
         $distribution = [
             'excellent' => 0,
@@ -109,10 +142,17 @@ class AvisRepository extends ServiceEntityRepository
             'bad' => 0
         ];
 
+<<<<<<< HEAD
         foreach ($results as $row) {
             $label = $row['label'];
             if (isset($distribution[$label])) {
                 $distribution[$label] = (int) $row['count'];
+=======
+        foreach ($reviews as $review) {
+            $label = $review->getSentimentLabel();
+            if ($label && isset($distribution[$label])) {
+                $distribution[$label]++;
+>>>>>>> testsisi
             }
         }
 

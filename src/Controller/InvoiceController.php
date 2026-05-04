@@ -34,6 +34,7 @@ class InvoiceController extends AbstractController
 
         return $pdfService->generateAndStream($reservation);
     }
+<<<<<<< HEAD
 
     #[Route('/facture/{id}', name: 'public_facture', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function publicFacture(int $id, ReservationRepository $repo): Response
@@ -50,4 +51,6 @@ class InvoiceController extends AbstractController
             'date' => new \DateTime(),
         ]);
     }
+=======
+>>>>>>> testsisi
 }

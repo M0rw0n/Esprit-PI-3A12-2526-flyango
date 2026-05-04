@@ -41,6 +41,10 @@ class History
     public function getPuzzle(): ?Puzzle { return $this->puzzle; }
     public function setPuzzle(?Puzzle $puzzle): static { $this->puzzle = $puzzle; return $this; }
     public function getCompletedAt(): \DateTimeInterface { return $this->completedAt; }
+<<<<<<< HEAD
+=======
+    public function setCompletedAt(\DateTimeInterface $completedAt): static { $this->completedAt = $completedAt; return $this; }
+>>>>>>> testsisi
     public function getTimeSpent(): ?int { return $this->timeSpent; }
     public function setTimeSpent(?int $timeSpent): static { $this->timeSpent = $timeSpent; return $this; }
     public function getPointsEarned(): int { return $this->pointsEarned; }

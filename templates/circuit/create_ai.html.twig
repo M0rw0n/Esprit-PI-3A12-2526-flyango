@@ -3,6 +3,7 @@
 {% block body %}
 <div style="background:linear-gradient(135deg,var(--navy-dd),var(--navy));padding:3rem 0;color:#fff">
     <div style="max-width:1180px;margin:0 auto;padding:0 2rem">
+<<<<<<< HEAD
         <h1 style="font-size:2rem;font-weight:900;margin-bottom:.5rem"><i class="fa fa-map-marked-alt" style="margin-right:.5rem"></i> Circuit personnalisé</h1>
         <p style="opacity:.85;max-width:760px">Créez votre circuit sur mesure avec étapes détaillées et positions gps.</p>
     </div>
@@ -182,6 +183,83 @@
                 </div>
             </div>
         </div>
+=======
+        <h1 style="font-size:2rem;font-weight:900;margin-bottom:.5rem">Circuit personnalisé</h1>
+        <p style="opacity:.85;max-width:760px">Wizard simplifié inspiré de vos captures : destination, budget, style et dates pour générer un circuit sur mesure.</p>
+    </div>
+</div>
+<div style="max-width:980px;margin:0 auto;padding:2rem">
+    <div style="background:#fff;border:1px solid var(--border);border-radius:20px;padding:2rem;box-shadow:var(--s1)">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
+            <span class="tag tag--navy">Étape 1/4</span>
+            <span class="tag">Destination & dates</span>
+            <span class="tag"> Budget & style</span>
+            <span class="tag">Résumé & génération</span>
+        </div>
+        <form method="POST" id="circuitAIForm">
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Destination *</label>
+                    <input type="text" name="destination" id="destination" class="fg-input" placeholder="Ex: Tokyo, Japon" required minlength="2" maxlength="100">
+                </div>
+                <div>
+                    <label class="fg-label">Ville de départ</label>
+                    <input type="text" name="depart" id="depart" class="fg-input" value="Tunis" required>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Date de départ *</label>
+                    <input type="date" name="date_depart" id="dateDepart" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required onchange="updateDateRetourMin(); calcJours();">
+                </div>
+                <div>
+                    <label class="fg-label">Date de retour *</label>
+                    <input type="date" name="date_retour" id="dateRetour" class="fg-input" min="{{ "now"|date('Y-m-d') }}" required onchange="updateDateRetourMin(); calcJours();">
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Durée (calculée)</label>
+                    <input type="text" id="joursDisplay" class="fg-input" readonly style="background:var(--bg);color:var(--navy);font-weight:700;cursor:not-allowed">
+                    <input type="hidden" name="jours" id="jours" value="7">
+                </div>
+                <div>
+                    <label class="fg-label">Voyageurs *</label>
+                    <input type="number" name="participants" id="participants" class="fg-input" min="1" max="12" value="2" required>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:1rem">
+                <div>
+                    <label class="fg-label">Style</label>
+                    <select name="style" id="styleSelect" class="fg-input">
+                        <option value="Découverte" selected>Découverte</option>
+                        <option value="Famille">Famille</option>
+                        <option value="Romantique">Romantique</option>
+                        <option value="Aventure">Aventure</option>
+                        <option value="Détente">Détente</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="fg-label">Budget</label>
+                    <select name="budget" id="budgetSelect" class="fg-input">
+                        <option value="Économique">Économique</option>
+                        <option value="Moyen" selected>Moyen</option>
+                        <option value="Premium">Premium</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="validationMsg" style="display:none;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem"></div>
+            
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:1rem;margin-bottom:1.5rem;color:#1e3a8a">
+                <i class="fa fa-lightbulb"></i> Le système analysera la destination et créera un programme complet avec estimation de prix, niveau de difficulté et points forts.
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:1rem;flex-wrap:wrap">
+                <a href="{{ path('circuit_index') }}" class="btn btn-outline">Annuler</a>
+                <button class="btn btn-gold" type="submit" id="submitBtn"><i class="fa fa-brain"></i> Générer le circuit</button>
+            </div>
+        </form>
+>>>>>>> testsisi
     </div>
 </div>
 {% endblock %}
@@ -190,11 +268,15 @@
 #validationMsg.error{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
 #validationMsg.success{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
 #validationMsg.warning{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+<<<<<<< HEAD
 .stop-item{position:relative}
+=======
+>>>>>>> testsisi
 </style>
 {% endblock %}
 {% block javascripts %}
 <script>
+<<<<<<< HEAD
 const TunisiaLocations = {
     'djerba': { name: 'Djerba', lat: 33.8074, lng: 10.8588, region: 'Médenine', type: 'Île' },
     'tunis': { name: 'Tunis', lat: 36.8065, lng: 10.1815, region: 'Tunis', type: 'Capitale' },
@@ -228,6 +310,8 @@ const TunisiaLocations = {
 
 let stopCount = 1;
 
+=======
+>>>>>>> testsisi
 function showMsg(text, type) {
     const msg = document.getElementById('validationMsg');
     msg.textContent = text;
@@ -242,7 +326,11 @@ function updateDateRetourMin() {
         dateRetour.min = dateDepart;
         if (dateRetour.value && dateRetour.value < dateDepart) {
             dateRetour.value = '';
+<<<<<<< HEAD
             showMsg('Date de retour réinitialisée', 'warning');
+=======
+            showMsg('La date de retour a été réinitialisée (doit être après le départ)', 'warning');
+>>>>>>> testsisi
         }
     }
 }
@@ -261,6 +349,7 @@ function calcJours() {
         if (diff > 0) {
             joursDisplay.value = diff + ' jour(s)';
             joursInput.value = diff;
+<<<<<<< HEAD
         } else if (diff === 0) {
             joursDisplay.value = '1 jour(s)';
             joursInput.value = 1;
@@ -356,6 +445,24 @@ document.addEventListener('click', function(e) {
     }
 });
 
+=======
+            showMsg('Durée automatiquement calculée : ' + diff + ' jour(s)', 'success');
+        } else if (diff === 0) {
+            joursDisplay.value = '1 jour(s)';
+            joursInput.value = 1;
+            showMsg('Durée minimum : 1 jour', 'warning');
+        } else {
+            joursDisplay.value = '';
+            joursInput.value = '';
+            showMsg('La date de retour doit être après la date de départ', 'error');
+        }
+    } else {
+        joursDisplay.value = '';
+        joursInput.value = '';
+    }
+}
+
+>>>>>>> testsisi
 document.getElementById('circuitAIForm').addEventListener('submit', function(e) {
     const destination = document.getElementById('destination').value.trim();
     const depart = document.getElementById('depart').value.trim();
@@ -367,6 +474,7 @@ document.getElementById('circuitAIForm').addEventListener('submit', function(e) 
     const errors = [];
     
     if (!destination || destination.length < 2) {
+<<<<<<< HEAD
         errors.push('Destination invalide');
     }
     
@@ -376,22 +484,49 @@ document.getElementById('circuitAIForm').addEventListener('submit', function(e) 
     
     if (!dateDepart || !dateRetour) {
         errors.push('Dates requises');
+=======
+        errors.push('Destination invalide (min 2 caractères)');
+    }
+    
+    if (!depart || depart.length < 2) {
+        errors.push('Ville de départ invalide');
+    }
+    
+    if (!dateDepart) {
+        errors.push('Date de départ requise');
+    }
+    
+    if (!dateRetour) {
+        errors.push('Date de retour requise');
+>>>>>>> testsisi
     }
     
     if (dateDepart && dateRetour) {
         const d1 = new Date(dateDepart);
         const d2 = new Date(dateRetour);
         if (d2 <= d1) {
+<<<<<<< HEAD
             errors.push('Date de retour après départ');
+=======
+            errors.push('La date de retour doit être après la date de départ');
+>>>>>>> testsisi
         }
     }
     
     if (!jours || jours < 1 || jours > 30) {
+<<<<<<< HEAD
         errors.push('Durée invalide (1-30 jours)');
     }
     
     if (!participants || participants < 1) {
         errors.push('Nombre voyageurs invalide');
+=======
+        errors.push('Durée invalide (1 à 30 jours)');
+    }
+    
+    if (!participants || participants < 1 || participants > 12) {
+        errors.push('Nombre de voyageurs invalide (1 à 12)');
+>>>>>>> testsisi
     }
     
     if (errors.length > 0) {
@@ -400,6 +535,7 @@ document.getElementById('circuitAIForm').addEventListener('submit', function(e) 
         return false;
     }
     
+<<<<<<< HEAD
     // Collect stops
     const stops = [];
     document.querySelectorAll('.stop-item').forEach(item => {
@@ -481,5 +617,14 @@ function applyPreset(preset) {
         showMsg('Circuit prédéfini appliqué: ' + p.destination + ' - ' + p.jours + ' jours', 'success');
     }
 }
+=======
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').innerHTML = '<i class="fa fa-spinner fa-spin"></i> Génération en cours...';
+    return true;
+});
+
+// Initialize
+calcJours();
+>>>>>>> testsisi
 </script>
 {% endblock %}

@@ -35,6 +35,7 @@ function initMessenger() {
     loadConversations();
     setupEventListeners();
     
+<<<<<<< HEAD
     startRealTimePolling();
 }
 
@@ -53,12 +54,46 @@ function connectMercure() {
     var hubUrl = getMercureHubUrl();
     console.log('Connecting to Mercure at:', hubUrl);
     
+=======
+    connectMercure();
+    startOnlineStatusPing();
+}
+
+function startOnlineStatusPing() {
+    // Ping every 30 seconds
+    setInterval(function() {
+        fetch('/api/messages/ping', { method: 'POST' }).catch(function() {});
+    }, 30000);
+}
+
+var mercureEventSource = null;
+
+function connectMercure() {
+    if (mercureEventSource) {
+        mercureEventSource.close();
+    }
+    
+    // In dev, Mercure hub is often on port 3000
+    // We try to detect if we're on localhost to use port 3000
+    var hubUrl = '/.well-known/mercure';
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        hubUrl = 'http://localhost:3000/.well-known/mercure';
+    }
+    
+    console.log('📡 Connecting to Mercure Hub at:', hubUrl);
+    
+    // Listen to all conversation topics
+>>>>>>> testsisi
     mercureEventSource = new EventSource(hubUrl + '?topic=conversation/*');
     
     mercureEventSource.onmessage = function(event) {
         try {
             var data = JSON.parse(event.data);
+<<<<<<< HEAD
             console.log('Mercure message received:', data);
+=======
+            console.log('🔔 Mercure update received:', data);
+>>>>>>> testsisi
             
             if (data.type === 'new_message') {
                 handleNewMessage(data);
@@ -68,23 +103,47 @@ function connectMercure() {
                 updateReadStatus(data.messageId);
             } else if (data.type === 'user_online') {
                 handleUserOnlineStatus(data);
+<<<<<<< HEAD
             }
         } catch (e) {
             console.log('Mercure parse error:', e);
+=======
+            } else if (data.type === 'message_deleted') {
+                handleMessageDeleted(data);
+            } else if (data.type === 'call_signaling') {
+                if (window.CallManager) {
+                    window.CallManager.handleSignaling(data);
+                }
+            }
+        } catch (e) {
+            console.error('❌ Mercure parse error:', e);
+>>>>>>> testsisi
         }
     };
     
     mercureEventSource.onerror = function(err) {
+<<<<<<< HEAD
         console.log('Mercure error, falling back to polling');
+=======
+        console.warn('⚠️ Mercure connection lost. Retrying in 5s...');
+>>>>>>> testsisi
         if (mercureEventSource) {
             mercureEventSource.close();
             mercureEventSource = null;
         }
+<<<<<<< HEAD
         startRealTimePolling();
     };
     
     mercureEventSource.onopen = function() {
         console.log('Mercure connected!');
+=======
+        setTimeout(connectMercure, 5000);
+    };
+    
+    mercureEventSource.onopen = function() {
+        console.log('✅ Mercure connected!');
+>>>>>>> testsisi
     };
 }
 
@@ -176,6 +235,7 @@ function getConversationAvatar(conv) {
 }
 
 function getLastMessagePreview(conv) {
+<<<<<<< HEAD
     if (!conv.lastMessage) return 'Aucun message';
     
     if (conv.lastMessage.type === 'SHARE_ACTIVITY') return '📍 Activité partagée';
@@ -185,6 +245,10 @@ function getLastMessagePreview(conv) {
     if (conv.lastMessage.audio) return '🎤 Message vocal';
     
     return conv.lastMessage.content || '...';
+=======
+    if (!conv.lastMessage || !conv.lastMessage.content) return 'Aucun message';
+    return conv.lastMessage.content;
+>>>>>>> testsisi
 }
 
 function formatMessageTime(dateStr) {
@@ -207,23 +271,33 @@ function formatMessageTime(dateStr) {
 }
 
 // ==================== MESSAGES ====================
+<<<<<<< HEAD
 var currentOffset = 0;
 var hasMoreMessages = true;
 
+=======
+>>>>>>> testsisi
 function openConversation(convId) {
     console.log('Opening conversation:', convId);
     var conv = messengerState.conversations.find(function(c) { return c.id === convId; });
     if (!conv) return;
+<<<<<<< HEAD
 
     messengerState.currentConversation = conv;
     currentOffset = 0;
     hasMoreMessages = true;
     messengerState.messages = [];
 
+=======
+    
+    messengerState.currentConversation = conv;
+    
+>>>>>>> testsisi
     // Update UI
     document.getElementById('emptyChatState').style.display = 'none';
     document.getElementById('chatHeader').classList.add('active');
     document.getElementById('chatInputArea').classList.add('active');
+<<<<<<< HEAD
 
     // Set nickname if exists
     var nicknameInput = document.getElementById('nicknameInput');
@@ -233,10 +307,16 @@ function openConversation(convId) {
     updateChatHeader();
     document.getElementById('chatAvatar').innerHTML = getConversationAvatar(conv);
 
+=======
+    document.getElementById('chatName').textContent = getConversationName(conv);
+    document.getElementById('chatAvatar').innerHTML = getConversationAvatar(conv);
+    
+>>>>>>> testsisi
     // Load messages
     loadMessages(convId);
 }
 
+<<<<<<< HEAD
 function loadMessages(convId, append = false) {
     var container = document.getElementById('messagesContainer');
     if (!convId) return;
@@ -248,11 +328,26 @@ function loadMessages(convId, append = false) {
     var url = '/api/messages/conversation/' + convId + '?limit=50&offset=' + currentOffset;
     
     fetch(url, {
+=======
+function loadMessages(convId) {
+    var container = document.getElementById('messagesContainer');
+    if (!convId) return;
+    
+    messengerState.currentConversation = messengerState.currentConversation || {};
+    messengerState.currentConversation.id = convId;
+    
+    if (container) {
+        container.innerHTML = '<div class="messenger-loading"><i class="fa fa-spinner fa-spin"></i><p>Chargement...</p></div>';
+    }
+    
+    fetch('/api/messages/conversation/' + convId + '?limit=50', {
+>>>>>>> testsisi
         headers: { 
             'X-Requested-With': 'XMLHttpRequest',
             'Cache-Control': 'no-cache'
         }
     })
+<<<<<<< HEAD
     .then(function(r) { return r.json(); })
     .then(function(data) {
         var newMessages = data.messages || [];
@@ -266,40 +361,79 @@ function loadMessages(convId, append = false) {
         
         if (data.conversation) {
             messengerState.currentConversation = data.conversation;
+=======
+    .then(function(r) { 
+        if (!r.ok) throw new Error('API error: ' + r.status);
+        return r.json(); 
+    })
+    .then(function(data) {
+        messengerState.messages = data.messages || [];
+        
+        if (data.conversation) {
+            messengerState.currentConversation = data.conversation;
+            var existingUser = messengerState.currentConversation.otherUser;
+            if (data.conversation.otherUser && !existingUser) {
+                messengerState.currentConversation.otherUser = data.conversation.otherUser;
+            }
+>>>>>>> testsisi
         }
         
         var maxId = 0;
         messengerState.messages.forEach(function(m) { if (m.id > maxId) maxId = m.id; });
         if (maxId > 0) messengerState.lastMessageId = maxId;
         
+<<<<<<< HEAD
         renderMessages(append);
+=======
+        renderMessages();
+>>>>>>> testsisi
         markConversationAsRead(convId);
     })
     .catch(function(err) {
         console.error('Error loading messages:', err);
+<<<<<<< HEAD
     });
 }
 
 function renderMessages(isAppending = false) {
+=======
+        if (container) container.innerHTML = '<div class="messenger-error"><i class="fa fa-exclamation-triangle"></i><p>Erreur de chargement</p><small>Cliquez pour réessayer</small></div>';
+        container.onclick = function() { loadMessages(convId); };
+    });
+}
+
+function renderMessages() {
+>>>>>>> testsisi
     var container = document.getElementById('messagesContainer');
     if (!container) return;
     
     if (messengerState.messages.length === 0) {
+<<<<<<< HEAD
         container.innerHTML = '<div class="messenger-empty"><i class="fa fa-commenting-o"></i><p>Aucun message</p></div>';
+=======
+        container.innerHTML = '<div class="messenger-empty"><i class="fa fa-commenting-o"></i><p>Aucun message</p><small>Envoyez le premier message!</small></div>';
+>>>>>>> testsisi
         return;
     }
     
     var currentUserId = messengerState.currentUserId;
     var lastDate = '';
+<<<<<<< HEAD
     var lastSenderId = null;
     var html = '';
     
     messengerState.messages.forEach(function(msg, index) {
         // Date separator
+=======
+    var html = '';
+    
+    messengerState.messages.forEach(function(msg) {
+>>>>>>> testsisi
         var msgDate = new Date(msg.createdAt).toLocaleDateString('fr-FR');
         if (msgDate !== lastDate) {
             html += '<div class="date-separator"><span>' + formatDateSeparator(msg.createdAt) + '</span></div>';
             lastDate = msgDate;
+<<<<<<< HEAD
             lastSenderId = null; // Reset grouping on new date
         }
         
@@ -309,10 +443,17 @@ function renderMessages(isAppending = false) {
         lastSenderId = senderId;
         
         var senderName = msg.sender ? msg.sender.name : 'Utilisateur';
+=======
+        }
+        
+        var isMe = (msg.sender && msg.sender.id == currentUserId) || (msg.senderId == currentUserId);
+        var senderName = msg.sender ? msg.sender.name : (msg.senderName || 'U');
+>>>>>>> testsisi
         var avatar = senderName.charAt(0).toUpperCase();
         var time = new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         var status = isMe ? getMessageStatusIcon(msg.status) : '';
         
+<<<<<<< HEAD
         var content = '';
         if (msg.image) {
             content = '<div class="message-image" onclick="window.open(\'' + msg.image + '\', \'_blank\')"><img src="' + msg.image + '" loading="lazy"></div>';
@@ -405,10 +546,78 @@ function renderMessages(isAppending = false) {
                 '<button onclick="showReplyForm(' + msg.id + ')" title="Répondre"><i class="fa fa-reply"></i></button>' +
                 '<button onclick="showReactionPicker(' + msg.id + ', event)" title="Réaction"><i class="fa fa-smile"></i></button>' +
                 '<button onclick="showMessageMenu(' + msg.id + ')" title="Plus"><i class="fa fa-ellipsis-h"></i></button>' +
+=======
+// Message content
+        var content = '';
+        
+        // Image/GIF message
+        if (msg.image || msg.gifUrl) {
+            var imageUrl = msg.image || msg.gifUrl;
+            if (imageUrl.startsWith('http')) {
+                // ok
+            } else {
+                imageUrl = imageUrl;
+            }
+            content = '<div class="message-image" onclick="window.open(\'' + imageUrl + '\', \'_blank\')">' +
+                '<img src="' + imageUrl + '" style="max-width:280px;border-radius:12px;cursor:zoom-in;" loading="lazy" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<div class=message-error>Média non disponible</div>\';">' +
+            '</div>';
+        }
+        
+        // Video message
+        if (msg.video) {
+            content += '<div class="message-video">' +
+                '<video src="' + msg.video + '" controls style="max-width:280px;border-radius:12px;"></video>' +
+            '</div>';
+        }
+        
+        // Audio message
+        if (msg.audio) {
+            var audioUrl = msg.audio.startsWith('http') ? msg.audio : msg.audio;
+            content += '<div class="voice-message" data-audio="' + audioUrl + '">' +
+                '<button class="play-voice-btn" onclick="playVoiceMessage(this, \'' + audioUrl + '\')">' +
+                    '<i class="fa fa-play"></i>' +
+                '</button>' +
+                '<div class="voice-progress"><div class="voice-progress-bar"></div></div>' +
+                '<span class="voice-duration">0:00</span>' +
+                '<audio src="' + audioUrl + '" preload="metadata" onerror="this.parentElement.innerHTML=\'<div class=message-error>Audio non disponible</div>\';"></audio>' +
+            '</div>';
+        }
+        
+        if (msg.forumPostId) {
+            content += '<div class="shared-post-preview" onclick="window.location.href=\'/forum/post/' + msg.forumPostId + '\'">' +
+                '<i class="fa fa-link"></i> Post partagé</div>';
+        }
+        
+        // Add content text if there's actual text (not just for voice messages)
+        if (msg.content && msg.content !== '🎤 Message vocal') {
+            content += '<div class="message-text">' + escapeHtml(msg.content) + '</div>';
+        }
+        
+        // Reactions
+        var reactions = '';
+        if (msg.reactions && msg.reactions.length > 0) {
+            reactions = '<div class="message-reactions">';
+            msg.reactions.forEach(function(r) {
+                reactions += '<span class="reaction-badge" onclick="toggleReactionPicker(' + msg.id + ')">' + r.emoji + ' ' + r.count + '</span>';
+            });
+            reactions += '</div>';
+        }
+        
+        html += '<div class="message-row ' + (isMe ? 'sent' : 'received') + '" data-id="' + msg.id + '">' +
+            '<div class="message-avatar">' + avatar + '</div>' +
+            '<div class="message-content">' +
+                '<div class="message-bubble">' + content + reactions + '</div>' +
+                '<div class="message-meta"><span class="message-time">' + time + '</span>' + status + '</div>' +
+            '</div>' +
+            '<div class="message-actions">' +
+                '<button onclick="showReplyForm(' + msg.id + ')"><i class="fa fa-reply"></i></button>' +
+                '<button onclick="showMessageMenu(' + msg.id + ')"><i class="fa fa-ellipsis-h"></i></button>' +
+>>>>>>> testsisi
             '</div>' +
         '</div>';
     });
     
+<<<<<<< HEAD
     var oldHeight = container.scrollHeight;
     container.innerHTML = html;
     
@@ -432,6 +641,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+=======
+    container.innerHTML = html;
+    scrollToBottom(true);
+}
+
+>>>>>>> testsisi
 // Voice message player
 var currentPlayingAudio = null;
 var currentPlayBtn = null;
@@ -466,8 +681,16 @@ function playVoiceMessage(btn, audioUrl) {
         audio.onloadedmetadata = function() {
             var duration = audio.duration;
             if (!isNaN(duration)) {
+<<<<<<< HEAD
                 var durationSpan = btn.parentElement.querySelector('.voice-duration');
                 if (durationSpan) durationSpan.textContent = formatAudioTime(duration);
+=======
+                var min = Math.floor(duration / 60);
+                var sec = Math.floor(duration % 60);
+                var timeStr = ('0' + min).slice(-2) + ':' + ('0' + sec).slice(-2);
+                var durationSpan = btn.parentElement.querySelector('.voice-duration');
+                if (durationSpan) durationSpan.textContent = timeStr;
+>>>>>>> testsisi
             }
         };
         
@@ -476,9 +699,12 @@ function playVoiceMessage(btn, audioUrl) {
                 var progress = (audio.currentTime / audio.duration) * 100;
                 var progressBar = btn.parentElement.querySelector('.voice-progress-bar');
                 if (progressBar) progressBar.style.width = progress + '%';
+<<<<<<< HEAD
                 
                 var durationSpan = btn.parentElement.querySelector('.voice-duration');
                 if (durationSpan) durationSpan.textContent = formatAudioTime(audio.currentTime);
+=======
+>>>>>>> testsisi
             }
         };
         
@@ -527,6 +753,7 @@ function playVoiceMessage(btn, audioUrl) {
     tryPlayAudio(audioUrl);
 }
 
+<<<<<<< HEAD
 function formatAudioTime(seconds) {
     if (isNaN(seconds)) return "0:00";
     var min = Math.floor(seconds / 60);
@@ -534,6 +761,8 @@ function formatAudioTime(seconds) {
     return min + ":" + (sec < 10 ? "0" : "") + sec;
 }
 
+=======
+>>>>>>> testsisi
 // Auto-scroll to bottom function
 function scrollToBottom(force) {
     var chatMessages = document.getElementById('chatMessages');
@@ -579,6 +808,7 @@ function sendMessage(content) {
     var input = document.getElementById('messageInput');
     if (input) input.value = '';
     
+<<<<<<< HEAD
     var replyTo = null;
     if (messengerState.replyTo) {
         replyTo = messengerState.replyTo.id;
@@ -591,11 +821,18 @@ function sendMessage(content) {
     if (replyTo) {
         payload.replyTo = replyTo;
     }
+=======
+    console.log('Sending message:', content, 'to conversation:', messengerState.currentConversation.id);
+>>>>>>> testsisi
     
     fetch('/api/messages/conversation/' + messengerState.currentConversation.id + '/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+<<<<<<< HEAD
         body: JSON.stringify(payload)
+=======
+        body: JSON.stringify({ content: content })
+>>>>>>> testsisi
     })
     .then(function(r) {
         console.log('Response status:', r.status);
@@ -643,7 +880,10 @@ function switchMessengerTab(tab) {
     document.getElementById('conversationList').style.display = tab === 'conversations' ? 'block' : 'none';
     document.getElementById('invitationsPanel').classList.toggle('active', tab === 'invitations');
     document.getElementById('friendsListPanel').classList.toggle('active', tab === 'friends');
+<<<<<<< HEAD
     document.getElementById('archivesPanel').classList.toggle('active', tab === 'archives');
+=======
+>>>>>>> testsisi
     document.getElementById('newChatPanel').style.display = 'none';
     
     messengerState.currentMessengerTab = tab;
@@ -652,8 +892,11 @@ function switchMessengerTab(tab) {
         loadReceivedInvitations();
     } else if (tab === 'friends') {
         loadFriendsList();
+<<<<<<< HEAD
     } else if (tab === 'archives') {
         loadArchivedConversations();
+=======
+>>>>>>> testsisi
     } else if (tab === 'conversations' && messengerState.conversations.length === 0) {
         loadConversations();
     }
@@ -877,6 +1120,7 @@ function showReplyForm(msgId) {
     if (!msg) return;
     
     messengerState.replyTo = msg;
+<<<<<<< HEAD
     var senderName = msg.senderName || (msg.sender ? msg.sender.name : 'Utilisateur');
     var input = document.getElementById('messageInput');
     if (input) {
@@ -901,6 +1145,13 @@ function showReplyToActiveMessage() {
             showReplyForm(lastMsg.id);
         }
     }
+=======
+    var input = document.getElementById('messageInput');
+    if (input) {
+        input.placeholder = 'Répondre à ' + (msg.senderName || msg.sender.name) + '...';
+        input.focus();
+    }
+>>>>>>> testsisi
 }
 
 function showMessageMenu(msgId) {
@@ -934,9 +1185,15 @@ function showContextMenu(msgId, items) {
 }
 
 function deleteMessage(msgId) {
+<<<<<<< HEAD
     if (!confirm('Supprimer ce message?')) return;
     
     fetch('/api/messages/delete/' + msgId, {
+=======
+    var forAll = confirm('Supprimer pour tout le monde ? (Annuler pour supprimer seulement pour moi)');
+    
+    fetch('/api/messages/delete/' + msgId + '?forAll=' + forAll, {
+>>>>>>> testsisi
         method: 'DELETE',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
@@ -956,6 +1213,7 @@ function clearReplyTo() {
     messengerState.replyTo = null;
     var input = document.getElementById('messageInput');
     if (input) input.placeholder = 'Écrivez un message...';
+<<<<<<< HEAD
     
     var bar = document.getElementById('replyActiveBar');
     if (bar) bar.style.display = 'none';
@@ -1011,10 +1269,28 @@ function connectMercure() {
         console.warn('Mercure connection lost, retrying in 5s...');
         setTimeout(connectMercure, 5000);
     };
+=======
+}
+
+// Mercure connection is handled at the beginning of the file
+
+function handleMessageDeleted(data) {
+    if (messengerState.currentConversation && data.conversationId === messengerState.currentConversation.id) {
+        var msg = messengerState.messages.find(function(m) { return m.id === data.messageId; });
+        if (msg) {
+            msg.content = '🚫 Ce message a été supprimé';
+            msg.image = null;
+            msg.audio = null;
+            msg.video = null;
+            renderMessages();
+        }
+    }
+>>>>>>> testsisi
 }
 
 function handleNewMessage(data) {
     if (messengerState.currentConversation && data.conversationId === messengerState.currentConversation.id) {
+<<<<<<< HEAD
         // If it's the current conversation, add message to list
         if (!messengerState.messages.find(m => m.id === data.message.id)) {
             messengerState.messages.push(data.message);
@@ -1043,10 +1319,27 @@ function handleMessageRead(data) {
             msg.status = 'read';
             renderMessages();
         }
+=======
+        messengerState.messages.push(data.message);
+        renderMessages();
+        markConversationAsRead(messengerState.currentConversation.id);
+    } else {
+        loadConversations();
+        showToast('Nouveau message', 'info');
+    }
+}
+
+function updateReadStatus(messageId) {
+    var msg = messengerState.messages.find(function(m) { return m.id === messageId; });
+    if (msg) {
+        msg.status = 'read';
+        renderMessages();
+>>>>>>> testsisi
     }
 }
 
 function handleUserOnlineStatus(data) {
+<<<<<<< HEAD
     if (messengerState.currentConversation && messengerState.currentConversation.otherUser && 
         messengerState.currentConversation.otherUser.id === data.userId) {
         updateOnlineIndicator(true);
@@ -1061,6 +1354,101 @@ function handleUserOnlineStatus(data) {
 function updateOnlineIndicator(isOnline) {
     var statusEl = document.getElementById('chatStatus');
     if (!statusEl) return;
+=======
+    if (!data.userId) return;
+    
+    if (data.online) {
+        if (!messengerState.onlineUsers.includes(data.userId)) {
+            messengerState.onlineUsers.push(data.userId);
+        }
+    } else {
+        messengerState.onlineUsers = messengerState.onlineUsers.filter(function(id) { return id !== data.userId; });
+    }
+    
+    updateOnlineIndicators();
+}
+
+function publishToMercure(topic, data) {
+    var formData = new FormData();
+    formData.append('topic', topic);
+    formData.append('data', JSON.stringify(data));
+    
+    fetch('/api/hub', { method: 'POST', body: formData }).catch(function() {});
+}
+
+// ==================== REAL TIME POLLING ====================
+function startRealTimePolling() {
+    if (messengerState.pollingInterval) clearInterval(messengerState.pollingInterval);
+    
+    messengerState.pollingInterval = setInterval(function() {
+        checkNewMessages();
+        checkTypingIndicators();
+        checkOnlineStatus();
+    }, 1000);
+}
+
+function checkNewMessages() {
+    if (!messengerState.currentConversation) return;
+    
+    var convId = messengerState.currentConversation.id;
+    fetch('/api/messages/conversation/' + convId + '/last', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.message && data.message.id > messengerState.lastMessageId) {
+            messengerState.lastMessageId = data.message.id;
+            if (!data.isMe) {
+                loadMessages(convId);
+                showNewMessageToast(data.message);
+            }
+        }
+        if (data.lastId > messengerState.lastMessageId) {
+            messengerState.lastMessageId = data.lastId;
+        }
+    })
+    .catch(function() {});
+}
+
+function showNewMessageToast(msg) {
+    var name = messengerState.currentConversation ? getConversationName(messengerState.currentConversation) : 'Nouveau message';
+    showToast('Nouveau message de ' + name, 'info');
+}
+
+function checkTypingIndicators() {
+    if (!messengerState.currentConversation) return;
+    
+    var convId = messengerState.currentConversation.id;
+    fetch('/api/messages/conversation/' + convId + '/typing', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        updateTypingIndicator(data.typing);
+    })
+    .catch(function() {});
+}
+
+function checkOnlineStatus() {
+    fetch('/api/user/online', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        messengerState.onlineUsers = data.online || [];
+        updateOnlineIndicators();
+    })
+    .catch(function() {});
+}
+
+function updateOnlineIndicators() {
+    var statusEl = document.getElementById('chatStatus');
+    if (!statusEl || !messengerState.currentConversation) return;
+    
+    var conv = messengerState.currentConversation;
+    var otherUserId = conv.otherUser ? conv.otherUser.id : null;
+    var isOnline = otherUserId && messengerState.onlineUsers.includes(otherUserId);
+>>>>>>> testsisi
     
     if (isOnline) {
         statusEl.innerHTML = '<span class="online-dot"></span>En ligne';
@@ -1069,6 +1457,7 @@ function updateOnlineIndicator(isOnline) {
     }
 }
 
+<<<<<<< HEAD
 function showTypingIndicator(name) {
     var statusEl = document.getElementById('chatStatus');
     if (!statusEl) return;
@@ -1296,6 +1685,8 @@ function handleImageUpload(input) {
     .catch(err => showToast('Erreur upload image', 'error'));
 }
 
+=======
+>>>>>>> testsisi
 // ==================== TYPING INDICATOR ====================
 function sendTypingIndicator() {
     if (!messengerState.currentConversation) return;
@@ -1304,11 +1695,43 @@ function sendTypingIndicator() {
     fetch('/api/messages/conversation/' + convId + '/typing', {
         method: 'POST',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
+<<<<<<< HEAD
     }).catch(function() {});
+=======
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {})
+    .catch(function() {});
+>>>>>>> testsisi
 }
 
 function onMessageInput() {
     sendTypingIndicator();
+<<<<<<< HEAD
+=======
+    
+    if (messengerState.typingTimeout) clearTimeout(messengerState.typingTimeout);
+    messengerState.typingTimeout = setTimeout(function() {
+        clearTypingIndicator();
+    }, 2000);
+}
+
+function updateTypingIndicator(data) {
+    var statusEl = document.getElementById('chatStatus');
+    if (!statusEl || !data || !data.user) return;
+    
+    // Don't show typing for self
+    if (data.user.id === messengerState.currentUserId) return;
+    
+    if (messengerState.typingTimeout) clearTimeout(messengerState.typingTimeout);
+    
+    var name = data.user.name || 'Quelqu\'un';
+    statusEl.innerHTML = '<span class="typing-indicator"><i class="fa fa-circle"></i><i class="fa fa-circle"></i><i class="fa fa-circle"></i></span> ' + name + ' est en train d\'écrire...';
+    
+    messengerState.typingTimeout = setTimeout(function() {
+        updateOnlineIndicators();
+    }, 3000);
+>>>>>>> testsisi
 }
 
 function clearTypingIndicator() {}
@@ -1515,7 +1938,10 @@ window.startConversationWithFriend = startConversationWithFriend;
 window.sharePostToConversation = sharePostToConversation;
 window.searchNewChat = searchNewChat;
 window.showReplyForm = showReplyForm;
+<<<<<<< HEAD
 window.showReplyToActiveMessage = showReplyToActiveMessage;
+=======
+>>>>>>> testsisi
 window.showMessageMenu = showMessageMenu;
 window.clearReplyTo = clearReplyTo;
 window.deleteMessage = deleteMessage;
@@ -1627,6 +2053,18 @@ function showUserProfileInfo() {
             '<button onclick="startVideoCall()" style="width:100%;padding:10px;margin-bottom:8px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;">' +
                 '<i class="fa fa-video"></i> Appel vidéo' +
             '</button>' +
+<<<<<<< HEAD
+=======
+            '<button onclick="toggleMuteConversation()" style="width:100%;padding:10px;margin-bottom:8px;background:#f59e0b;color:white;border:none;border-radius:8px;cursor:pointer;">' +
+                '<i class="fa fa-bell-slash"></i> Sourdine' +
+            '</button>' +
+            '<button onclick="toggleArchiveConversation()" style="width:100%;padding:10px;margin-bottom:8px;background:#6b7280;color:white;border:none;border-radius:8px;cursor:pointer;">' +
+                '<i class="fa fa-archive"></i> Archiver' +
+            '</button>' +
+            '<button onclick="blockUser(' + otherUser.id + ')" style="width:100%;padding:10px;margin-bottom:8px;background:#ef4444;color:white;border:none;border-radius:8px;cursor:pointer;">' +
+                '<i class="fa fa-ban"></i> Bloquer' +
+            '</button>' +
+>>>>>>> testsisi
         '</div>' +
     '</div>';
     
@@ -1648,6 +2086,60 @@ function showUserProfileInfo() {
 
 window.showUserProfileInfo = showUserProfileInfo;
 
+<<<<<<< HEAD
+=======
+function toggleMuteConversation() {
+    if (!messengerState.currentConversation) return;
+    var convId = messengerState.currentConversation.id;
+    
+    fetch('/api/messages/conversation/' + convId + '/mute', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ mute: true })
+    })
+    .then(function() { showToast('Conversation en sourdine', 'success'); })
+    .catch(function() {});
+}
+
+function toggleArchiveConversation() {
+    if (!messengerState.currentConversation) return;
+    var convId = messengerState.currentConversation.id;
+    
+    fetch('/api/messages/conversation/' + convId + '/archive', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ archive: true })
+    })
+    .then(function() { 
+        showToast('Conversation archivée', 'success');
+        loadConversations();
+        document.getElementById('emptyChatState').style.display = 'flex';
+        document.getElementById('chatHeader').classList.remove('active');
+        document.getElementById('chatInputArea').classList.remove('active');
+    })
+    .catch(function() {});
+}
+
+function blockUser(userId) {
+    if (!confirm('Voulez-vous vraiment bloquer cet utilisateur ?')) return;
+    
+    fetch('/api/friend/block/' + userId, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function() { 
+        showToast('Utilisateur bloqué', 'success');
+        loadConversations();
+        document.getElementById('userProfileModal').remove();
+    })
+    .catch(function() {});
+}
+
+window.toggleMuteConversation = toggleMuteConversation;
+window.toggleArchiveConversation = toggleArchiveConversation;
+window.blockUser = blockUser;
+
+>>>>>>> testsisi
 // ==================== VOICE MESSAGES ====================
 var voiceMediaRecorder = null;
 var voiceChunks = [];
@@ -1832,6 +2324,318 @@ window.startVoiceMessage = startVoiceMessage;
 window.stopVoiceMessage = stopVoiceMessage;
 window.cancelVoiceMessage = cancelVoiceMessage;
 
+<<<<<<< HEAD
+=======
+// ==================== EMOJI PICKER ====================
+var emojiPickerShown = false;
+
+function toggleEmojiPicker() {
+    var existing = document.getElementById('emojiPicker');
+    if (existing) {
+        existing.remove();
+        emojiPickerShown = false;
+        return;
+    }
+    
+    emojiPickerShown = true;
+    
+    var picker = document.createElement('div');
+    picker.id = 'emojiPicker';
+    picker.style.cssText = 'position:absolute;bottom:70px;left:10px;background:#fff;border-radius:16px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:1000;width:300px;max-height:350px;';
+    
+    var categories = {
+        '😀': ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋'],
+        '👋': ['👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👍','👎','✊','👊','🤛','🤜','👋'],
+        '❤️': ['❤️','🧡','💛','💚','💙','💜','🤎','🖤','🤍','💔','❣️','💕','💞','💓','💗','💖','💘','💝','⭐','🌟','✨','💫','🔥','💯','🙏','👏','🙌','🤝','💪'],
+        '😎': ['😎','🤓','🧐','😱','🥳','🥸','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','🎉','🎊','🎁','🏆','🥇','🎯','🎲']
+    };
+    
+    var tabs = '<div style="display:flex;gap:4px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #eee;">';
+    var i = 0;
+    for (var cat in categories) {
+        tabs += '<button onclick="filterEmojis(\'' + i + '\', this)" style="flex:1;padding:6px;border:none;background:#f5f5f5;border-radius:6px;cursor:pointer;font-size:16px;">' + cat + '</button>';
+        i++;
+    }
+    tabs += '</div>';
+    
+    var grid = '<div id="emojiGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-height:240px;overflow-y:auto;">';
+    var allEmojis = [];
+    for (var cat in categories) {
+        allEmojis = allEmojis.concat(categories[cat]);
+    }
+    grid += allEmojis.map(function(e, idx) {
+        return '<span class="emoji-item" style="cursor:pointer;font-size:22px;padding:4px;text-align:center;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background=#f0f0f0" onmouseout="this.style.background=transparent" onclick="insertEmoji(\'' + e + '\')">' + e + '</span>';
+    }).join('');
+    grid += '</div>';
+    
+    picker.innerHTML = tabs + grid;
+    
+    window.filterEmojis = function(idx, btn) {
+        var emojis = Object.values(categories)[idx];
+        var grid = document.getElementById('emojiGrid');
+        if (grid) {
+            grid.innerHTML = emojis.map(function(e) {
+                return '<span style="cursor:pointer;font-size:22px;padding:4px;text-align:center;border-radius:6px;" onclick="insertEmoji(\'' + e + '\')">' + e + '</span>';
+            }).join('');
+        }
+        document.querySelectorAll('#emojiPicker button').forEach(function(b) {
+            b.style.background = '#f5f5f5';
+        });
+        btn.style.background = '#00B4D8';
+        btn.style.color = 'white';
+    };
+    
+    var inputArea = document.getElementById('chatInputArea');
+    if (inputArea) {
+        inputArea.appendChild(picker);
+    }
+    
+    setTimeout(function() {
+        document.addEventListener('click', function closeEmoji(e) {
+            if (e.target.closest('#emojiPicker') || e.target.closest('.fa-smile-o')) return;
+            var p = document.getElementById('emojiPicker');
+            if (p) {
+                p.remove();
+                emojiPickerShown = false;
+            }
+            document.removeEventListener('click', closeEmoji);
+        });
+    }, 100);
+}
+
+function insertEmoji(emoji) {
+    var input = document.getElementById('messageInput');
+    if (input) {
+        input.value += emoji;
+        input.focus();
+        var evt = new Event('input', {bubbles: true});
+        input.dispatchEvent(evt);
+    }
+    var picker = document.getElementById('emojiPicker');
+    if (picker) {
+        picker.remove();
+        emojiPickerShown = false;
+    }
+}
+
+window.toggleEmojiPicker = toggleEmojiPicker;
+window.insertEmoji = insertEmoji;
+
+// ==================== GIF SUPPORT ====================
+var gifPickerShown = false;
+
+function toggleGifPicker() {
+    var existing = document.getElementById('gifPicker');
+    if (existing) {
+        existing.remove();
+        gifPickerShown = false;
+        return;
+    }
+    
+    gifPickerShown = true;
+    
+    var picker = document.createElement('div');
+    picker.id = 'gifPicker';
+    picker.style.cssText = 'position:absolute;bottom:80px;left:60px;background:#fff;border-radius:12px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:1000;width:320px;max-height:380px;display:flex;flex-direction:column;';
+    picker.style.position = 'absolute';
+    picker.style.bottom = '80px';
+    picker.style.left = '60px';
+    
+    picker.innerHTML = '<div style="margin-bottom:10px;"><input type="text" id="gifSearch" placeholder="Rechercher un GIF..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;"></div>' +
+        '<div id="gifResults" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-height:250px;overflow-y:auto;"></div>' +
+        '<div id="gifEmpty" style="text-align:center;padding:20px;color:#999;">Tapez pour rechercher des GIFs</div>';
+    
+    document.getElementById('gifSearch').addEventListener('input', function(e) {
+        searchGifs(e.target.value);
+    });
+    
+    document.getElementById('gifSearch').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            searchGifs(e.target.value);
+        }
+    });
+    
+    var inputArea = document.getElementById('chatInputArea');
+    if (inputArea) {
+        inputArea.appendChild(picker);
+    }
+}
+
+function searchGifs(query) {
+    var results = document.getElementById('gifResults');
+    var empty = document.getElementById('gifEmpty');
+    
+    if (!query || query.length < 1) {
+        if (empty) empty.style.display = 'block';
+        if (results) results.innerHTML = '';
+        return;
+    }
+    
+    if (empty) empty.style.display = 'none';
+    if (!results) return;
+    
+    results.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:20px;"><i class="fa fa-spinner fa-spin"></i> Recherche...</div>';
+    
+    var tenorKey = 'AIzaSyA4tvT2WqhK3lC2lLxf1K3lC2lLxf1K3lC2';
+    var url = 'https://tenor.googleapis.com/v2/search?q=' + encodeURIComponent(query) + '&key=' + tenorKey + '&limit=20&media_filter=gif,tinygif';
+    
+    fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        console.log('Tenor response:', data);
+        if (data.results && data.results.length > 0) {
+            results.innerHTML = data.results.map(function(gif) {
+                var imgUrl = gif.media_formats.gif.url;
+                var previewUrl = gif.media_formats.tinygif.url;
+                return '<div style="cursor:pointer;border-radius:8px;overflow:hidden;" onclick="sendGif(\'' + imgUrl.replace(/'/g, "\\'") + '\')">' +
+                    '<img src="' + previewUrl + '" style="width:100%;display:block;">' +
+                '</div>';
+            }).join('');
+        } else if (data.error) {
+            results.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:20px;color:#999;">API Error: ' + data.error.message + '</div>';
+        } else {
+            results.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:20px;color:#999;">Aucun résultat</div>';
+        }
+    })
+    .catch(function(err) {
+        console.error('Tenor error:', err);
+        results.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:20px;color:#999;">Erreur:Vérifiez connexion</div>';
+    });
+}
+
+function sendGif(gifUrl) {
+    if (!messengerState.currentConversation) {
+        showToast('Sélectionnez une conversation', 'info');
+        return;
+    }
+    
+    var convId = messengerState.currentConversation.id;
+    
+    var formData = new FormData();
+    formData.append('conversation_id', convId);
+    formData.append('gif_url', gifUrl);
+    
+    fetch('/api/messages/send-gif', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            loadMessages(convId);
+            showToast('GIF envoyé!', 'success');
+        } else {
+            showToast('Erreur: ' + (data.error || 'Inconnue'), 'error');
+        }
+    })
+    .catch(function() {
+        showToast('Erreur envoi GIF', 'error');
+    });
+    
+    toggleGifPicker();
+}
+
+window.toggleGifPicker = toggleGifPicker;
+window.searchGifs = searchGifs;
+window.sendGif = sendGif;
+
+// ==================== IMAGE UPLOAD ====================
+function handleImageUpload(input) {
+    var file = input.files[0];
+    if (!file) return;
+    
+    if (!messengerState.currentConversation) {
+        showToast('Sélectionnez une conversation', 'info');
+        return;
+    }
+    
+    var allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedTypes.indexOf(file.type) === -1) {
+        showToast('Type d\'image non supporté', 'error');
+        return;
+    }
+    
+    showToast('Traitement de l\'image...', 'info');
+    
+    // Client-side compression for large images
+    if (file.size > 1 * 1024 * 1024 && file.type !== 'image/gif') {
+        compressImage(file, function(compressedBlob) {
+            uploadMedia(compressedBlob, 'image');
+        });
+    } else {
+        uploadMedia(file, 'image');
+    }
+    
+    input.value = '';
+}
+
+function compressImage(file, callback) {
+    var reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function(event) {
+        var img = new Image();
+        img.src = event.target.result;
+        img.onload = function() {
+            var canvas = document.createElement('canvas');
+            var MAX_WIDTH = 1200;
+            var MAX_HEIGHT = 1200;
+            var width = img.width;
+            var height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            canvas.toBlob(function(blob) {
+                callback(blob);
+            }, 'image/jpeg', 0.8);
+        };
+    };
+}
+
+function uploadMedia(file, type) {
+    var convId = messengerState.currentConversation.id;
+    var formData = new FormData();
+    formData.append(type, file);
+    formData.append('conversation_id', convId);
+    
+    showToast('Envoi en cours...', 'info');
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', type === 'image' ? '/api/messages/upload-image' : '/api/messages/upload-video');
+    
+    xhr.onload = function() {
+        try {
+            var data = JSON.parse(xhr.responseText);
+            if (data.success) {
+                loadMessages(convId);
+                showToast('Média envoyé!', 'success');
+            } else {
+                showToast('Erreur: ' + (data.error || 'Inconnue'), 'error');
+            }
+        } catch(e) {
+            showToast('Erreur envoi', 'error');
+        }
+    };
+    xhr.send(formData);
+}
+
+window.handleImageUpload = handleImageUpload;
+
+>>>>>>> testsisi
 // ==================== DARK MODE ====================
 var isDarkMode = false;
 
@@ -1927,10 +2731,55 @@ function requestNotificationPermission() {
     }
 }
 
+<<<<<<< HEAD
+=======
+function showNotification(title, body, icon) {
+    if (notificationPermission === 'granted') {
+        new Notification(title, { body: body, icon: icon });
+    }
+}
+
+function playNotificationSound() {
+    if (!notificationSoundEnabled) return;
+    
+    var audio = new Audio('/assets/sounds/notification.mp3');
+    audio.volume = 0.3;
+    audio.play().catch(function() {});
+}
+
+// ==================== LOCATION SHARING ====================
+function shareLocation() {
+    if (!navigator.geolocation) {
+        showToast('Géolocalisation non supportée', 'error');
+        return;
+    }
+    
+    if (!messengerState.currentConversation) {
+        showToast('Sélectionnez une conversation', 'info');
+        return;
+    }
+    
+    showToast('Obtention de votre position...', 'info');
+    
+    navigator.geolocation.getCurrentPosition(function(position) {
+        var lat = position.coords.latitude;
+        var lon = position.coords.longitude;
+        var locationUrl = 'https://www.google.com/maps?q=' + lat + ',' + lon;
+        
+        sendMessage('📍 Ma position : ' + locationUrl);
+    }, function(err) {
+        showToast('Impossible d\'obtenir votre position', 'error');
+    });
+}
+
+window.shareLocation = shareLocation;
+
+>>>>>>> testsisi
 // Initialize notifications on load
 if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission();
 }
+<<<<<<< HEAD
 notificationPermission = Notification.permission;
 
 // ==================== CONVERSATION SETTINGS ====================
@@ -2345,3 +3194,6 @@ window.addReaction = addReaction;
 window.toggleInlineNickname = toggleInlineNickname;
 window.saveInlineNickname = saveInlineNickname;
 window.updateChatHeader = updateChatHeader;
+=======
+notificationPermission = Notification.permission;
+>>>>>>> testsisi

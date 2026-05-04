@@ -4,21 +4,28 @@ namespace App\Entity;
 
 use App\Repository\AvisRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: AvisRepository::class)]
 #[ORM\Table(name: 'avis_hebergement')]
 class Avis
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_avis_hebergement', type: 'integer')]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Hebergement::class, inversedBy: 'avis')]
+<<<<<<< HEAD
     #[ORM\JoinColumn(name: 'hebergement_id', referencedColumnName: 'id_hebergement', nullable: true, onDelete: 'CASCADE')]
     private ?Hebergement $hebergement = null;
 
@@ -41,6 +48,24 @@ class Avis
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+    #[ORM\JoinColumn(name: 'id_hebergement', referencedColumnName: 'id_hebergement', nullable: true)]
+    private ?Hebergement $hebergement = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $user = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $note = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $commentaire = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $createdAt = null;
+
+>>>>>>> testsisi
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $sentimentScore = null;
 
@@ -61,6 +86,10 @@ class Avis
 
     public function __construct()
     {
+<<<<<<< HEAD
+=======
+        $this->createdAt = new \DateTime();
+>>>>>>> testsisi
     }
 
     public function getId(): ?int { return $this->id; }
@@ -73,9 +102,13 @@ class Avis
     public function getCommentaire(): ?string { return $this->commentaire; }
     public function setCommentaire(?string $c): static { $this->commentaire = $c; return $this; }
     public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
+=======
+    public function setCreatedAt(?\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+>>>>>>> testsisi
     public function getAuteur(): string { return $this->user ? $this->user->getFullName() : 'Anonyme'; }
     public function setAuteur(string $a): static { return $this; }
 

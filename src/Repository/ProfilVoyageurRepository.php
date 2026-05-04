@@ -77,7 +77,11 @@ class ProfilVoyageurRepository extends ServiceEntityRepository
     public function findByUser(int $userId): ?ProfilVoyageur
     {
         return $this->createQueryBuilder('p')
+<<<<<<< HEAD
             ->join('p.user', 'u')
+=======
+            ->leftJoin('p.user', 'u')
+>>>>>>> testsisi
             ->addSelect('u')
             ->andWhere('u.id = :userId')
             ->setParameter('userId', $userId)

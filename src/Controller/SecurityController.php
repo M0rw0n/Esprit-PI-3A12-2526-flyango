@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+<<<<<<< HEAD
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -19,6 +20,11 @@ class SecurityController extends AbstractController
 {
     private const TEST_RECAPTCHA_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
 
+=======
+
+class SecurityController extends AbstractController
+{
+>>>>>>> testsisi
     private function redirectAuthenticatedUser(): Response
     {
         return $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'admin_dashboard' : 'user_dashboard');
@@ -37,8 +43,12 @@ class SecurityController extends AbstractController
             'last_username' => $lastUsername,
             'error' => $error,
             'google_client_id' => '455416813258-6jue7nupumfub7jtsguc6pg89s9mdh9r.apps.googleusercontent.com',
+<<<<<<< HEAD
             'facebook_app_id' => '951675844123224',
             'recaptcha_site_key' => $this->getParameter('recaptcha_site_key'),
+=======
+            'facebook_app_id' => '947651210933536',
+>>>>>>> testsisi
             'api_auth_google' => $this->generateUrl('api_auth_google'),
             'api_auth_facebook' => $this->generateUrl('api_auth_facebook'),
         ]);
@@ -61,7 +71,11 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/register', name: 'app_register')]
+<<<<<<< HEAD
     public function register(Request $request, UserPasswordHasherInterface $hasher, EntityManagerInterface $em, HttpClientInterface $httpClient): Response
+=======
+    public function register(Request $request, UserPasswordHasherInterface $hasher, EntityManagerInterface $em): Response
+>>>>>>> testsisi
     {
         if ($this->getUser()) {
             return $this->redirectAuthenticatedUser();
@@ -70,6 +84,7 @@ class SecurityController extends AbstractController
         $errors = [];
 
         if ($request->isMethod('POST')) {
+<<<<<<< HEAD
             $nom = trim($request->request->get('nom', ''));
             $prenom = trim($request->request->get('prenom', ''));
             $email = trim($request->request->get('email', ''));
@@ -96,6 +111,20 @@ class SecurityController extends AbstractController
             if (!$this->verifyRecaptcha($httpClient, $recaptchaResponse)) {
                 $errors[] = 'La vérification CAPTCHA a échoué.';
             }
+=======
+            $nom    = trim($request->request->get('nom', ''));
+            $prenom = trim($request->request->get('prenom', ''));
+            $email  = trim($request->request->get('email', ''));
+            $pass   = $request->request->get('password', '');
+            $pass2  = $request->request->get('password_confirm', '');
+            $tel    = trim($request->request->get('telephone', ''));
+
+            if (!$nom) $errors[] = 'Le nom est requis.';
+            if (!$prenom) $errors[] = 'Le prénom est requis.';
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Email invalide.';
+            if (strlen($pass) < 6) $errors[] = 'Mot de passe minimum 6 caractères.';
+            if ($pass !== $pass2) $errors[] = 'Les mots de passe ne correspondent pas.';
+>>>>>>> testsisi
 
             if (!$errors) {
                 $existing = $em->getRepository(User::class)->findOneBy(['email' => $email]);
@@ -104,20 +133,34 @@ class SecurityController extends AbstractController
                 } else {
                     $user = new User();
                     $user->setNom($nom)
+<<<<<<< HEAD
                         ->setPrenom($prenom)
                         ->setEmail($email)
                         ->setTelephone($tel ?: null)
                         ->setPassword($hasher->hashPassword($user, $pass))
                         ->setRoles(['ROLE_USER']);
+=======
+                         ->setPrenom($prenom)
+                         ->setEmail($email)
+                         ->setTelephone($tel ?: null)
+                         ->setPassword($hasher->hashPassword($user, $pass))
+                         ->setRoles(['ROLE_USER']);
+>>>>>>> testsisi
 
                     $em->persist($user);
                     $em->flush();
 
+<<<<<<< HEAD
                     return $this->redirectToRoute('app_after_login');
+=======
+                    $this->addFlash('success', '✅ Compte créé ! Connectez-vous maintenant.');
+                    return $this->redirectToRoute('app_login');
+>>>>>>> testsisi
                 }
             }
         }
 
+<<<<<<< HEAD
         return $this->render('security/register.html.twig', [
             'errors' => $errors,
             'recaptcha_site_key' => $this->getParameter('recaptcha_site_key'),
@@ -327,10 +370,21 @@ class SecurityController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
+=======
+        return $this->render('security/register.html.twig', ['errors' => $errors]);
+    }
+
+    #[Route('/api/auth/google', name: 'api_auth_google', methods: ['POST'])]
+    public function apiAuthGoogle(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+>>>>>>> testsisi
         $email = $data['email'] ?? null;
         $googleId = $data['google_id'] ?? null;
         $name = $data['name'] ?? 'Utilisateur';
         $avatar = $data['avatar'] ?? null;
+<<<<<<< HEAD
 
         if (!$email || !$googleId) {
             return $this->json(['success' => false, 'error' => 'Données invalides']);
@@ -341,6 +395,18 @@ class SecurityController extends AbstractController
         if (!$user) {
             $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
 
+=======
+        
+        if (!$email || !$googleId) {
+            return $this->json(['success' => false, 'error' => 'Données invalides']);
+        }
+        
+        $user = $em->getRepository(User::class)->findOneBy(['googleId' => $googleId]);
+        
+        if (!$user) {
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+            
+>>>>>>> testsisi
             if ($user) {
                 $user->setGoogleId($googleId);
             } else {
@@ -349,12 +415,17 @@ class SecurityController extends AbstractController
                 $user->setPassword($hasher->hashPassword($user, bin2hex(random_bytes(16))));
                 $user->setGoogleId($googleId);
                 $user->setRoles(['ROLE_USER']);
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> testsisi
                 $parts = explode(' ', $name, 2);
                 $user->setPrenom($parts[0]);
                 $user->setNom($parts[1] ?? '');
             }
         }
+<<<<<<< HEAD
 
         if (!$user->isActif()) {
             return $this->json(['success' => false, 'error' => 'Votre compte a été désactivé. Veuillez contacter le support.']);
@@ -370,18 +441,36 @@ class SecurityController extends AbstractController
         $token = new UsernamePasswordToken($user, 'google', $user->getRoles());
         $tokenStorage->setToken($token);
 
+=======
+        
+        if ($avatar && !$user->getAvatar()) {
+            $user->setAvatar($avatar);
+        }
+        
+        $em->persist($user);
+        $em->flush();
+        
+>>>>>>> testsisi
         return $this->json(['success' => true, 'redirect' => $this->generateUrl('user_dashboard')]);
     }
 
     #[Route('/api/auth/facebook', name: 'api_auth_facebook', methods: ['POST'])]
+<<<<<<< HEAD
     public function apiAuthFacebook(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher, TokenStorageInterface $tokenStorage): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
+=======
+    public function apiAuthFacebook(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+>>>>>>> testsisi
         $email = $data['email'] ?? null;
         $facebookId = $data['facebook_id'] ?? null;
         $name = $data['name'] ?? 'Utilisateur';
         $avatar = $data['avatar'] ?? null;
+<<<<<<< HEAD
 
         if (!$email || !$facebookId) {
             return $this->json(['success' => false, 'error' => 'Données invalides']);
@@ -392,6 +481,18 @@ class SecurityController extends AbstractController
         if (!$user) {
             $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
 
+=======
+        
+        if (!$email || !$facebookId) {
+            return $this->json(['success' => false, 'error' => 'Données invalides']);
+        }
+        
+        $user = $em->getRepository(User::class)->findOneBy(['facebookId' => $facebookId]);
+        
+        if (!$user) {
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+            
+>>>>>>> testsisi
             if ($user) {
                 $user->setFacebookId($facebookId);
             } else {
@@ -400,12 +501,17 @@ class SecurityController extends AbstractController
                 $user->setPassword($hasher->hashPassword($user, bin2hex(random_bytes(16))));
                 $user->setFacebookId($facebookId);
                 $user->setRoles(['ROLE_USER']);
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> testsisi
                 $parts = explode(' ', $name, 2);
                 $user->setPrenom($parts[0]);
                 $user->setNom($parts[1] ?? '');
             }
         }
+<<<<<<< HEAD
 
         if (!$user->isActif()) {
             return $this->json(['success' => false, 'error' => 'Votre compte a été désactivé. Veuillez contacter le support.']);
@@ -424,3 +530,16 @@ class SecurityController extends AbstractController
         return $this->json(['success' => true, 'redirect' => $this->generateUrl('user_dashboard')]);
     }
 }
+=======
+        
+        if ($avatar && !$user->getAvatar()) {
+            $user->setAvatar($avatar);
+        }
+        
+        $em->persist($user);
+        $em->flush();
+        
+        return $this->json(['success' => true, 'redirect' => $this->generateUrl('user_dashboard')]);
+    }
+}
+>>>>>>> testsisi

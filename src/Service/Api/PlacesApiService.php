@@ -150,6 +150,7 @@ class PlacesApiService
 
     private function getMockSearchResults(string $query): array
     {
+<<<<<<< HEAD
         $dest = mb_strtolower(trim($query));
         $lat = 36.8065;
         $lng = 10.1815;
@@ -172,11 +173,14 @@ class PlacesApiService
             }
         }
 
+=======
+>>>>>>> testsisi
         return [
             'success' => true,
             'places' => [
                 [
                     'id' => 'mock_1',
+<<<<<<< HEAD
                     'name' => "Top Attraction in " . ucfirst($query),
                     'address' => 'Centre ville, ' . ucfirst($query),
                     'lat' => $lat + 0.001,
@@ -196,6 +200,15 @@ class PlacesApiService
                     'rating' => 4.5,
                     'user_ratings_total' => 850,
                     'types' => ['museum'],
+=======
+                    'name' => "$query - Location 1",
+                    'address' => 'Address for ' . $query,
+                    'lat' => 48.8566,
+                    'lng' => 2.3522,
+                    'rating' => 4.2,
+                    'user_ratings_total' => 125,
+                    'types' => ['point_of_interest'],
+>>>>>>> testsisi
                     'icon' => '',
                     'photo_reference' => null
                 ]

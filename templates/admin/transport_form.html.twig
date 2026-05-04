@@ -15,10 +15,17 @@
                     <label>Type de transport <span class="required">*</span></label>
                     <select name="transportType" id="transportType" required>
                         <option value="">-- Choisir --</option>
+<<<<<<< HEAD
                         <option value="FLIGHT" {{ transport and transport.transportType.value == 'FLIGHT' ? 'selected' : '' }}>Vol</option>
                         <option value="TRAIN" {{ transport and transport.transportType.value == 'TRAIN' ? 'selected' : '' }}>Train</option>
                         <option value="BUS" {{ transport and transport.transportType.value == 'BUS' ? 'selected' : '' }}>Bus</option>
                         <option value="CAR" {{ transport and transport.transportType.value == 'CAR' ? 'selected' : '' }}>Voiture</option>
+=======
+                        <option value="FLIGHT" {{ transport and transport.transportType == 'FLIGHT' ? 'selected' : '' }}>Vol</option>
+                        <option value="TRAIN" {{ transport and transport.transportType == 'TRAIN' ? 'selected' : '' }}>Train</option>
+                        <option value="BUS" {{ transport and transport.transportType == 'BUS' ? 'selected' : '' }}>Bus</option>
+                        <option value="CAR" {{ transport and transport.transportType == 'CAR' ? 'selected' : '' }}>Voiture</option>
+>>>>>>> testsisi
                     </select>
                 </div>
                 <div class="ffield">

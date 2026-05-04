@@ -90,6 +90,7 @@ class NLPService
                 'name' => 'Réservation circuit',
                 'keywords' => ['circuit', 'roadtrip', 'parcours', 'générer', 'generer', 'créer', 'creer', 'personnalisé', 'sur mesure', 'ia', 'ai', 'itinerary', 'itineraire', 'voyage organisé'],
                 'required_words' => ['circuit', 'roadtrip', 'générer', 'generer', 'créer', 'personnalisé', 'sur mesure', 'ia', 'ai'],
+<<<<<<< HEAD
                 'response' => "Découvrez nos circuits exceptionnels ! 🌍
 
 🗺️ **Options disponibles :**
@@ -105,6 +106,23 @@ class NLPService
 4. Cliquez sur 'Réserver'
 
 💡 Vous pouvez aussi créer votre propre itinéraire dans votre espace personnel !"
+=======
+                'response' => "Pour un circuit personnalisé, utilisez notre assistant IA!
+
+🗺️ **Options:**
+• Circuits prédéfinis variés
+• Création de circuit sur mesure
+• IA qui génère votre itinéraire
+
+🤖 **Comment créer un circuit IA:**
+1. Allez dans Circuits
+2. Cliquez sur 'Créer avec l\'IA'
+3. Décrivez vos préférences
+4. L'IA génère votre circuit!
+
+💡 Notre IA prend en compte: budget, durée, style de voyage, centres d'intérêt.
+Essayez-le, c'est gratuit et rapide!"
+>>>>>>> testsisi
             ],
 
             'paris_travel' => [
@@ -308,6 +326,7 @@ Bonne continuation et meilleurs voyages avec Fly&Go! ✈️🌍🌴"
         ];
     }
 
+<<<<<<< HEAD
     private function normalizeText(string $text): string
     {
         $text = mb_strtolower(trim($text));
@@ -366,6 +385,70 @@ Bonne continuation et meilleurs voyages avec Fly&Go! ✈️🌍🌴"
     }
 
     public function getResponse(string $message): ?string
+=======
+    public function classifyIntent(string $message): array
+    {
+        $message = mb_strtolower(trim($message));
+        
+        $scores = [];
+        
+        foreach ($this->intents as $intentId => $intent) {
+            $score = $this->calculateScore($message, $intent);
+            if ($score > 0) {
+                $scores[$intentId] = $score;
+            }
+        }
+        
+        if (empty($scores)) {
+            return ['intent' => null, 'confidence' => 0];
+        }
+        
+        arsort($scores);
+        $topIntent = array_key_first($scores);
+        
+        return [
+            'intent' => $topIntent,
+            'confidence' => $scores[$topIntent],
+            'intent_name' => $this->intents[$topIntent]['name'] ?? ''
+        ];
+    }
+
+    private function calculateScore(string $message, array $intent): float
+    {
+        $score = 0;
+        
+        if (isset($intent['required_words'])) {
+            $requiredFound = 0;
+            foreach ($intent['required_words'] as $word) {
+                if (mb_strpos($message, $word) !== false) {
+                    $requiredFound++;
+                }
+            }
+            if ($requiredFound > 0) {
+                $score += $requiredFound * 5;
+            } else {
+                return 0;
+            }
+        }
+        
+        if (isset($intent['keywords'])) {
+            foreach ($intent['keywords'] as $keyword) {
+                if (mb_strpos($message, $keyword) !== false) {
+                    $weight = $this->wordWeights[$keyword] ?? 2;
+                    $score += $weight;
+                    
+                    if (mb_strlen($keyword) > 5) {
+                        $score += 2;
+                    }
+                }
+            }
+        }
+        
+        return $score;
+    }
+
+    public function getResponse(string $message): string
+>>>>>>> testsisi
     {
         $classification = $this->classifyIntent($message);
         

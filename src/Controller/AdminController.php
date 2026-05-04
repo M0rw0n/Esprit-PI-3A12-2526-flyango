@@ -4,7 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Activity;
 use App\Entity\Avis;
+<<<<<<< HEAD
 use App\Entity\CalendarEvent;
+=======
+>>>>>>> testsisi
 use App\Entity\Circuit;
 use App\Entity\CircuitAvis;
 use App\Entity\ForumPost;
@@ -18,7 +21,10 @@ use App\Entity\User;
 use App\Repository\ActivityRepository;
 use App\Repository\AvisRepository;
 use App\Repository\BookingRepository;
+<<<<<<< HEAD
 use App\Repository\CalendarEventRepository;
+=======
+>>>>>>> testsisi
 use App\Repository\CircuitAvisRepository;
 use App\Repository\CircuitRepository;
 use App\Repository\ForumCommentRepository;
@@ -33,6 +39,7 @@ use App\Repository\TransportOfferRepository;
 use App\Repository\TransportBookingRepository;
 use App\Repository\UserRepository;
 use App\Service\WeatherService;
+<<<<<<< HEAD
 use App\Service\Api\RapidApiHotelService;
 use App\Service\RapidHotelService;
 use App\Service\ExchangeRateService;
@@ -40,6 +47,11 @@ use App\Service\GeoIPService;
 use App\Service\AnalyticsService;
 use App\Service\GeocodingService;
 use Symfony\Contracts\Cache\CacheInterface;
+=======
+use App\Service\ExchangeRateService;
+use App\Service\GeoIPService;
+use App\Service\AnalyticsService;
+>>>>>>> testsisi
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -47,7 +59,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+<<<<<<< HEAD
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+=======
+>>>>>>> testsisi
 
 #[Route('/admin')]
 class AdminController extends AbstractController
@@ -57,9 +72,12 @@ class AdminController extends AbstractController
         private ?ExchangeRateService $exchangeRateService = null,
         private ?GeoIPService $geoIPService = null,
         private ?AnalyticsService $analyticsService = null,
+<<<<<<< HEAD
         private ?GeocodingService $geocodingService = null,
         private ?RapidApiHotelService $rapidApiHotelService = null,
         private ?RapidHotelService $rapidHotelService = null,
+=======
+>>>>>>> testsisi
     ) {}
 
     /* ══════════════════════ DASHBOARD ══════════════════════ */
@@ -74,6 +92,7 @@ class AdminController extends AbstractController
         ForumPostRepository      $forumRepo,
         ForumCommentRepository   $commentRepo,
         AvisRepository           $avisRepo,
+<<<<<<< HEAD
         CircuitAvisRepository    $circuitAvisRepo,
         UserRepository           $userRepo,
         ProfilVoyageurRepository $profilRepo,
@@ -100,12 +119,26 @@ class AdminController extends AbstractController
         $totalHebergements = $hebRepo->count([]);
         $totalActivities = $actRepo->count([]);
         $totalTransports = $transportRepo->count([]);
+=======
+        UserRepository           $userRepo,
+        ProfilVoyageurRepository $profilRepo
+    ): Response {
+        $reservations = $resRepo->findBy([], ['id' => 'DESC']);
+        $bookings     = $bookRepo->findBy([], ['id' => 'DESC']);
+        $rcList       = $rcRepo->findBy([], ['id' => 'DESC']);
+        $posts        = $forumRepo->findAll();
+
+        $revenus = array_sum(array_map(fn($r) => $r->getMontantTotal(), $reservations))
+                 + array_sum(array_map(fn($b) => $b->getTotalPrice(), $bookings))
+                 + array_sum(array_map(fn($r) => $r->getMontantTotal(), $rcList));
+>>>>>>> testsisi
 
         $revenusParMois = $resRepo->getRevenusParMois();
         $occParVille    = $resRepo->getTauxOccupationParVille();
         $topHeb         = $resRepo->getTopHebergements();
         $profilStats    = $profilRepo->getStatistics();
 
+<<<<<<< HEAD
         // Nouvelles stats : par mois, catégorie, saison
         $monthlyData = ['labels' => [], 'values' => [], 'revenus' => []];
         $monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
@@ -205,6 +238,8 @@ class AdminController extends AbstractController
             }
         } catch (\Exception $e) {}
 
+=======
+>>>>>>> testsisi
         $totalForumComments = $commentRepo->count([]);
         $todayReservations = count(array_filter($reservations, fn($r) => $r->getCreatedAt() >= new \DateTime('today')));
         $todayBookings = count(array_filter($bookings, fn($b) => $b->getCreatedAt() >= new \DateTime('today')));
@@ -231,11 +266,18 @@ class AdminController extends AbstractController
         }
 
         return $this->render('admin/dashboard.html.twig', [
+<<<<<<< HEAD
             'totalHebergements'  => $totalHebergements,
             'totalReservations'  => count($reservations) + count($bookings) + count($rcList),
             'totalCircuits'      => $totalCircuits,
             'totalActivities'    => $totalActivities,
             'totalTransports'    => $totalTransports,
+=======
+            'totalHebergements'  => $hebRepo->count([]),
+            'totalReservations'  => count($reservations) + count($bookings) + count($rcList),
+            'totalCircuits'      => $circRepo->count([]),
+            'totalActivities'    => $actRepo->count([]),
+>>>>>>> testsisi
             'totalUsers'         => $userRepo->count([]),
             'totalForumPosts'    => count($posts),
             'totalForumComments' => $totalForumComments,
@@ -265,6 +307,7 @@ class AdminController extends AbstractController
             'totalViews'          => $this->analyticsService ? $this->analyticsService->getConversionRate()['totalViews'] ?? 12500 : 12500,
             'growthRate'          => $this->analyticsService ? $this->analyticsService->getRevenueForecasting(6)['growthRate'] ?? 12 : 12,
             'forecastGrowth'      => $this->analyticsService ? $this->analyticsService->getRevenueForecasting(6)['growthRate'] ?? 8 : 8,
+<<<<<<< HEAD
             'monthlyData'         => $monthlyData,
             'statsParCategorie'   => $statsParCategorie,
             'statsParCategorieLabels' => $categorieLabels,
@@ -526,6 +569,10 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
         }
         return $stats;
     }
+=======
+        ]);
+    }
+>>>>>>> testsisi
 
     /* ══════════════════════ USERS ══════════════════════ */
     #[Route('/users', name: 'admin_users')]
@@ -659,6 +706,7 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
     }
 
     #[Route('/hebergement/new', name: 'admin_hebergement_new', methods: ['GET', 'POST'])]
+<<<<<<< HEAD
     public function hebergementNew(Request $request, EntityManagerInterface $em, ValidatorInterface $validator): Response
     {
         if ($request->isMethod('POST')) {
@@ -678,13 +726,49 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
             $existingImage = $h->getImage();
             $file = $request->files->get('image');
             if (!$existingImage && (!$file || $file->getError() !== UPLOAD_ERR_OK)) {
+=======
+    public function hebergementNew(Request $request, EntityManagerInterface $em): Response
+    {
+        if ($request->isMethod('POST')) {
+            $nom = trim($request->request->get('nom', ''));
+            $ville = trim($request->request->get('ville', ''));
+            $type = $request->request->get('type', '');
+            $prix = $request->request->get('prix_par_nuit', '');
+            
+            if (!$nom) {
+                $this->addFlash('error', 'Le nom est obligatoire.');
+                return $this->render('admin/hebergement_form.html.twig', ['hebergement' => null]);
+            }
+            if (!$ville) {
+                $this->addFlash('error', 'La ville est obligatoire.');
+                return $this->render('admin/hebergement_form.html.twig', ['hebergement' => null]);
+            }
+            if (!$type) {
+                $this->addFlash('error', 'Le type est obligatoire.');
+                return $this->render('admin/hebergement_form.html.twig', ['hebergement' => null]);
+            }
+            if ($prix === '' || (float)$prix <= 0) {
+                $this->addFlash('error', 'Le prix doit être supérieur à 0.');
+                return $this->render('admin/hebergement_form.html.twig', ['hebergement' => null]);
+            }
+            
+            $file = $request->files->get('image');
+            if (!$file || $file->getError() !== UPLOAD_ERR_OK) {
+>>>>>>> testsisi
                 $this->addFlash('error', 'L\'image est obligatoire.');
                 return $this->render('admin/hebergement_form.html.twig', ['hebergement' => null]);
             }
             
+<<<<<<< HEAD
             $em->persist($h);
             $em->flush();
             (new \App\Service\NotificationService())->notifyHebergementCreated($h);
+=======
+            $h = new Hebergement();
+            $this->fillHebergement($h, $request);
+            $em->persist($h);
+            $em->flush();
+>>>>>>> testsisi
             $this->addFlash('success', '✅ Hébergement « ' . $h->getNom() . ' » créé !');
             return $this->redirectToRoute('admin_hebergements');
         }
@@ -692,11 +776,16 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
     }
 
     #[Route('/hebergement/{id}/edit', name: 'admin_hebergement_edit', methods: ['GET', 'POST'])]
+<<<<<<< HEAD
     public function hebergementEdit(int $id, Request $request, HebergementRepository $repo, EntityManagerInterface $em, ValidatorInterface $validator): Response
+=======
+    public function hebergementEdit(int $id, Request $request, HebergementRepository $repo, EntityManagerInterface $em): Response
+>>>>>>> testsisi
     {
         $h = $repo->find($id);
         if (!$h) throw $this->createNotFoundException();
         if ($request->isMethod('POST')) {
+<<<<<<< HEAD
             $this->fillHebergement($h, $request);
             
             $errors = $validator->validate($h);
@@ -710,15 +799,46 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
             }
             
             if (!$h->getImage()) {
+=======
+            $nom = trim($request->request->get('nom', ''));
+            $ville = trim($request->request->get('ville', ''));
+            $type = $request->request->get('type', '');
+            $prix = $request->request->get('prix_par_nuit', '');
+            
+            if (!$nom) {
+                $this->addFlash('error', 'Le nom est obligatoire.');
+                return $this->render('admin/hebergement_form.html.twig', ['hebergement' => $h]);
+            }
+            if (!$ville) {
+                $this->addFlash('error', 'La ville est obligatoire.');
+                return $this->render('admin/hebergement_form.html.twig', ['hebergement' => $h]);
+            }
+            if (!$type) {
+                $this->addFlash('error', 'Le type est obligatoire.');
+                return $this->render('admin/hebergement_form.html.twig', ['hebergement' => $h]);
+            }
+            if ($prix === '' || (float)$prix <= 0) {
+                $this->addFlash('error', 'Le prix doit être supérieur à 0.');
+                return $this->render('admin/hebergement_form.html.twig', ['hebergement' => $h]);
+            }
+            
+            $file = $request->files->get('image');
+            if (!$h->getImage() && (!$file || $file->getError() !== UPLOAD_ERR_OK)) {
+>>>>>>> testsisi
                 $this->addFlash('error', 'L\'image est obligatoire.');
                 return $this->render('admin/hebergement_form.html.twig', ['hebergement' => $h]);
             }
             
+<<<<<<< HEAD
             $em->flush();
             (new \App\Service\NotificationService())->notifyHebergementUpdated($h);
             if (!$h->isDisponible()) {
                 (new \App\Service\NotificationService())->notifyHebergementUnavailable($h);
             }
+=======
+            $this->fillHebergement($h, $request);
+            $em->flush();
+>>>>>>> testsisi
             $this->addFlash('success', '✅ Hébergement mis à jour !');
             return $this->redirectToRoute('admin_hebergements');
         }
@@ -729,6 +849,7 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
     public function hebergementDelete(int $id, HebergementRepository $repo, EntityManagerInterface $em): Response
     {
         $h = $repo->find($id);
+<<<<<<< HEAD
         if ($h) {
             $nom = $h->getNom();
             $id = $h->getId();
@@ -736,6 +857,9 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
             $em->flush();
             (new \App\Service\NotificationService())->notifyHebergementDeleted($id, $nom);
         }
+=======
+        if ($h) { $em->remove($h); $em->flush(); }
+>>>>>>> testsisi
         $this->addFlash('success', 'Hébergement supprimé.');
         return $this->redirectToRoute('admin_hebergements');
     }
@@ -749,6 +873,7 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
           ->setDescription($request->request->get('description') ?: null)
           ->setAdresse($request->request->get('adresse') ?: null)
           ->setCapacite($request->request->get('capacite') ? (int)$request->request->get('capacite') : null)
+<<<<<<< HEAD
           ->setDisponible((bool)$request->request->get('disponible', true))
           ->setLatitude($request->request->get('latitude') ? (float)$request->request->get('latitude') : null)
           ->setLongitude($request->request->get('longitude') ? (float)$request->request->get('longitude') : null)
@@ -758,6 +883,11 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
         $existingImage = $request->request->get('existing_image', '');
         $file = $request->files->get('image');
         
+=======
+          ->setDisponible((bool)$request->request->get('disponible', true));
+
+        $file = $request->files->get('image');
+>>>>>>> testsisi
         if ($file && $file->getError() === UPLOAD_ERR_OK) {
             $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
             $ext = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
@@ -768,6 +898,7 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
                 $file->move($dir, $filename);
                 $h->setImage('uploads/hebergements/' . $filename);
             }
+<<<<<<< HEAD
         } elseif ($existingImage) {
             $h->setImage($existingImage);
         } else {
@@ -946,6 +1077,9 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
                 'checkout' => $checkout
             ]
         ]);
+=======
+        }
+>>>>>>> testsisi
     }
 
     /* ══════════════════════ RÉSERVATIONS HÉBERGEMENT ══════════════════════ */
@@ -1085,11 +1219,15 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
                 return $this->render('admin/circuit_form.html.twig', ['circuit' => null]);
             }
             
+<<<<<<< HEAD
             $adminUser = $this->getUser();
             if (!$adminUser instanceof \App\Entity\User) {
                 throw $this->createAccessDeniedException('User must be logged in to create circuits.');
             }
             $c = new Circuit($adminUser);
+=======
+            $c = new Circuit();
+>>>>>>> testsisi
             $this->fillCircuit($c, $request);
             $em->persist($c);
             $em->flush();
@@ -1566,6 +1704,7 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
     {
         $a->setTitle(trim($request->request->get('title', '')))
           ->setDescription($request->request->get('description') ?: null)
+<<<<<<< HEAD
           ->setLieu(trim($request->request->get('lieu', '')))
           ->setPrice((float)$request->request->get('price', 0))
           ->setDuration($request->request->get('duration') ?: null)
@@ -1573,6 +1712,17 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
           ->setInclus($request->request->get('inclus') ?: null)
           ->setPointsForts($request->request->get('points_forts') ?: null)
           ->setDisponible((bool)$request->request->get('disponible', true));
+=======
+          ->setPrice((float)$request->request->get('price', 0))
+          ->setDuration($request->request->get('duration') ?: null)
+          ->setCapacity((int)$request->request->get('capacity', 10))
+          ->setLieu($request->request->get('lieu') ?: null)
+          ->setActif((bool)$request->request->get('actif', true));
+
+        if ($d = $request->request->get('date')) {
+            try { $a->setDate(new \DateTime($d)); } catch (\Exception $e) {}
+        }
+>>>>>>> testsisi
 
         $file = $request->files->get('image');
         if ($file && $file->getError() === UPLOAD_ERR_OK) {
@@ -1588,6 +1738,7 @@ private function getTopRatedCircuits(CircuitRepository $circRepo): array {
         }
     }
 
+<<<<<<< HEAD
     /* ══════════════════════ FAQ CHATBOT ══════════════════════ */
     #[Route('/faq', name: 'admin_faq')]
     public function faq(Request $request, \App\Repository\FAQRepository $repo, PaginatorInterface $paginator): Response
@@ -2000,6 +2151,8 @@ PROMPT;
         return $this->redirectToRoute('admin_faq');
     }
 
+=======
+>>>>>>> testsisi
     /* ══════════════════════ BOOKINGS ACTIVITÉ ══════════════════════ */
     #[Route('/bookings', name: 'admin_bookings')]
     public function bookings(Request $request, BookingRepository $repo, PaginatorInterface $paginator): Response
@@ -2185,6 +2338,7 @@ PROMPT;
 
         return new Response($html, 200, ['Content-Type' => 'text/html']);
     }
+<<<<<<< HEAD
 
     /* ══════════════════════ CALENDAR EVENTS ══════════════════════ */
     #[Route('/calendar', name: 'admin_calendar')]
@@ -2333,4 +2487,6 @@ PROMPT;
         
         return $this->json($coords);
     }
+=======
+>>>>>>> testsisi
 }

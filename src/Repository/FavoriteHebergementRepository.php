@@ -6,7 +6,10 @@ use App\Entity\FavoriteHebergement;
 use App\Entity\Hebergement;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+<<<<<<< HEAD
 use Doctrine\ORM\Tools\Pagination\Paginator;
+=======
+>>>>>>> testsisi
 use Doctrine\Persistence\ManagerRegistry;
 
 class FavoriteHebergementRepository extends ServiceEntityRepository
@@ -57,7 +60,11 @@ class FavoriteHebergementRepository extends ServiceEntityRepository
 
     public function getTopHebergements(int $limit = 10): array
     {
+<<<<<<< HEAD
         $query = $this->createQueryBuilder('f')
+=======
+        return $this->createQueryBuilder('f')
+>>>>>>> testsisi
             ->select('h, COUNT(f.id) as favoriteCount, AVG(a.note) as avgRating')
             ->join('f.hebergement', 'h')
             ->leftJoin('h.avis', 'a')
@@ -65,8 +72,13 @@ class FavoriteHebergementRepository extends ServiceEntityRepository
             ->orderBy('favoriteCount', 'DESC')
             ->addOrderBy('avgRating', 'DESC')
             ->setMaxResults($limit)
+<<<<<<< HEAD
             ->getQuery();
 
         return iterator_to_array((new Paginator($query))->getIterator());
+=======
+            ->getQuery()
+            ->getResult();
+>>>>>>> testsisi
     }
 }

@@ -69,7 +69,11 @@ class FriendController extends AbstractController
             return new JsonResponse(['success' => false, 'error' => 'ID utilisateur manquant'], 400);
         }
 
+<<<<<<< HEAD
         $friend = $this->em->getReference(User::class, $friendId);
+=======
+        $friend = $this->userRepository->find($friendId);
+>>>>>>> testsisi
         if (!$friend) {
             return new JsonResponse(['success' => false, 'error' => 'Utilisateur non trouvé'], 404);
         }
@@ -111,6 +115,7 @@ class FriendController extends AbstractController
 
         $result = $this->friendService->acceptFriendRequest($request, $user);
 
+<<<<<<< HEAD
         if (!$result['success']) {
             return new JsonResponse($result, 400);
         }
@@ -119,6 +124,50 @@ class FriendController extends AbstractController
             'success' => true,
             'message' => $result['message'],
         ]);
+=======
+        return new JsonResponse($result);
+    }
+
+    #[Route('/block/{userId}', name: 'api_friend_block', methods: ['POST'])]
+    public function blockUser(int $userId): JsonResponse
+    {
+        $user = $this->getCurrentUser();
+        if (!$user) return new JsonResponse(['success' => false], 401);
+
+        $target = $this->userRepository->find($userId);
+        if (!$target) return new JsonResponse(['success' => false], 404);
+
+        $blocked = new \App\Entity\BlockedUser();
+        $blocked->setUser($user);
+        $blocked->setBlockedUser($target);
+        
+        $this->em->persist($blocked);
+        $this->em->flush();
+
+        return new JsonResponse(['success' => true]);
+    }
+
+    #[Route('/unblock/{userId}', name: 'api_friend_unblock', methods: ['POST'])]
+    public function unblockUser(int $userId): JsonResponse
+    {
+        $user = $this->getCurrentUser();
+        if (!$user) return new JsonResponse(['success' => false], 401);
+
+        $target = $this->userRepository->find($userId);
+        if (!$target) return new JsonResponse(['success' => false], 404);
+
+        $blocked = $this->em->getRepository(\App\Entity\BlockedUser::class)->findOneBy([
+            'user' => $user,
+            'blockedUser' => $target
+        ]);
+
+        if ($blocked) {
+            $this->em->remove($blocked);
+            $this->em->flush();
+        }
+
+        return new JsonResponse(['success' => true]);
+>>>>>>> testsisi
     }
 
     #[Route('/reject/{requestId}', name: 'api_friend_reject', methods: ['POST'])]
@@ -294,6 +343,7 @@ class FriendController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
     #[Route('/block/{userId}', name: 'api_friend_block', methods: ['POST'])]
     public function blockUser(int $userId): JsonResponse
     {
@@ -320,6 +370,8 @@ class FriendController extends AbstractController
         return new JsonResponse(['success' => true]);
     }
 
+=======
+>>>>>>> testsisi
     #[Route('/search', name: 'api_friend_search', methods: ['GET'])]
     public function searchByName(Request $request): JsonResponse
     {

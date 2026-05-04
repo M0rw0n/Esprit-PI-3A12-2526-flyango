@@ -40,9 +40,13 @@ class ForumCommentService
         $result = [];
         foreach ($tree as $item) {
             $comment = $item['comment'];
+<<<<<<< HEAD
             $isEntity = is_object($comment) && method_exists($comment, 'getId');
             
             $id = $isEntity ? $comment->getId() : ($comment['id'] ?? 0);
+=======
+            $id = $comment->getId();
+>>>>>>> testsisi
             $userVote = 0;
             
             if ($user) {
@@ -60,6 +64,7 @@ class ForumCommentService
                 'id' => $id,
                 'comment' => $comment,
                 'userVote' => $userVote,
+<<<<<<< HEAD
                 'author' => $isEntity ? $comment->getAuthor() : ($comment['author'] ?? ''),
                 'content' => $isEntity ? $comment->getContent() : ($comment['content'] ?? ''),
                 'score' => $isEntity ? $comment->getScore() : ($comment['score'] ?? 0),
@@ -67,6 +72,15 @@ class ForumCommentService
                 'dislikes' => $isEntity ? $comment->getDislikes() : ($comment['dislikes'] ?? 0),
                 'isPinned' => $isEntity ? $comment->isIsPinned() : ($comment['isPinned'] ?? false),
                 'createdAt' => $isEntity ? $comment->getCreatedAt() : ($comment['createdAt'] ?? null),
+=======
+                'author' => $comment->getAuthor(),
+                'content' => $comment->getContent(),
+                'score' => $comment->getScore(),
+                'likes' => $comment->getLikes(),
+                'dislikes' => $comment->getDislikes(),
+                'isPinned' => $comment->isIsPinned(),
+                'createdAt' => $comment->getCreatedAt(),
+>>>>>>> testsisi
                 'depth' => 0,
                 'replyCount' => count($item['replies']),
                 'replies' => $this->prepareCommentsForDisplay($item['replies'], $user),

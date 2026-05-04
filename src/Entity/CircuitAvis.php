@@ -4,23 +4,37 @@ namespace App\Entity;
 
 use App\Repository\CircuitAvisRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: CircuitAvisRepository::class)]
 #[ORM\Table(name: 'circuit_avis')]
 class CircuitAvis
 {
+<<<<<<< HEAD
     use BlameableTrait;
 
+=======
+>>>>>>> testsisi
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Circuit::class, inversedBy: 'avis')]
+<<<<<<< HEAD
     #[ORM\JoinColumn(name: 'circuit_id', referencedColumnName: 'id_circuit', nullable: false, onDelete: 'CASCADE')]
     private ?Circuit $circuit = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+=======
+    #[ORM\JoinColumn(name: 'id_circuit', referencedColumnName: 'id_circuit', nullable: false)]
+    private ?Circuit $circuit = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+>>>>>>> testsisi
     private ?User $user = null;
 
     #[ORM\Column(length: 100)]
@@ -35,9 +49,12 @@ class CircuitAvis
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $sentimentScore = null;
 
@@ -70,7 +87,11 @@ class CircuitAvis
     public function getComment(): string { return $this->comment; }
     public function setComment(string $comment): static { $this->comment = $comment; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
+=======
+    public function setCreatedAt(\DateTimeInterface $createdAt): static { $this->createdAt = $createdAt; return $this; }
+>>>>>>> testsisi
 
     public function getSentimentScore(): ?float { return $this->sentimentScore; }
     public function setSentimentScore(?float $s): static { $this->sentimentScore = $s; return $this; }

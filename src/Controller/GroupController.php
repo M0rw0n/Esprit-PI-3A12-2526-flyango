@@ -48,7 +48,11 @@ class GroupController extends AbstractController
 
         $members = [];
         foreach ($userIds as $id) {
+<<<<<<< HEAD
             $member = $this->em->getReference(User::class, (int)$id);
+=======
+            $member = $this->em->getRepository(User::class)->find((int)$id);
+>>>>>>> testsisi
             if ($member) {
                 $members[] = $member;
             }
@@ -104,7 +108,11 @@ class GroupController extends AbstractController
             return new JsonResponse(['error' => 'Unauthorized'], 401);
         }
 
+<<<<<<< HEAD
         $conversation = $this->em->getReference(Conversation::class, $id);
+=======
+        $conversation = $this->em->getRepository(Conversation::class)->find($id);
+>>>>>>> testsisi
         if (!$conversation || $conversation->getType() !== Conversation::TYPE_GROUP) {
             return new JsonResponse(['error' => 'Group not found'], 404);
         }
@@ -114,7 +122,11 @@ class GroupController extends AbstractController
         }
 
         $userId = $request->request->get('userId');
+<<<<<<< HEAD
         $member = $this->em->getReference(User::class, $userId);
+=======
+        $member = $this->em->getRepository(User::class)->find($userId);
+>>>>>>> testsisi
         if (!$member) {
             return new JsonResponse(['error' => 'User not found'], 404);
         }
@@ -132,7 +144,11 @@ class GroupController extends AbstractController
             return new JsonResponse(['error' => 'Unauthorized'], 401);
         }
 
+<<<<<<< HEAD
         $conversation = $this->em->getReference(Conversation::class, $id);
+=======
+        $conversation = $this->em->getRepository(Conversation::class)->find($id);
+>>>>>>> testsisi
         if (!$conversation) {
             return new JsonResponse(['error' => 'Conversation not found'], 404);
         }

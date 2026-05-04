@@ -2,6 +2,7 @@
 
 namespace App\Entity\Passport;
 
+<<<<<<< HEAD
 use App\Repository\Passport\PassportUserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -10,6 +11,14 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Security\Core\Attribute\SensitiveParameter;
 
 #[ORM\Entity(repositoryClass: PassportUserRepository::class)]
+=======
+use App\Repository\Passport\UserRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+>>>>>>> testsisi
 #[ORM\Table(name: 'passport_user')]
 class PassportUser implements PasswordAuthenticatedUserInterface
 {
@@ -25,7 +34,10 @@ class PassportUser implements PasswordAuthenticatedUserInterface
     private array $roles = [];
 
     #[ORM\Column]
+<<<<<<< HEAD
     #[Ignore]
+=======
+>>>>>>> testsisi
     private ?string $password = null;
 
     #[ORM\Column(name: 'first_name', length: 100)]
@@ -34,6 +46,7 @@ class PassportUser implements PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'points', type: 'integer', options: ['default' => 0])]
     private int $points = 0;
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'created_at', type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -56,6 +69,21 @@ class PassportUser implements PasswordAuthenticatedUserInterface
     private $reviews;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: History::class)]
+=======
+    #[ORM\Column(name: 'created_at', type: 'datetime')]
+    private \DateTimeInterface $createdAt;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserProgress::class, cascade: ['remove'])]
+    private $progress;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Favorite::class, cascade: ['remove'])]
+    private $favorites;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class, cascade: ['remove'])]
+    private $reviews;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: History::class, cascade: ['remove'])]
+>>>>>>> testsisi
     private $history;
 
     public function __construct()
@@ -74,20 +102,32 @@ class PassportUser implements PasswordAuthenticatedUserInterface
     public function getRoles(): array { return $this->roles; }
     public function setRoles(array $roles): static { $this->roles = $roles; return $this; }
     public function getPassword(): ?string { return $this->password; }
+<<<<<<< HEAD
     public function setPassword(#[SensitiveParameter] string $password): static { $this->password = $password; return $this; }
+=======
+    public function setPassword(string $password): static { $this->password = $password; return $this; }
+>>>>>>> testsisi
     public function getFirstName(): ?string { return $this->firstName; }
     public function setFirstName(?string $firstName): static { $this->firstName = $firstName; return $this; }
     public function getPoints(): int { return $this->points; }
     public function setPoints(int $points): static { $this->points = $points; return $this; }
     public function addPoints(int $points): static { $this->points += $points; return $this; }
+<<<<<<< HEAD
     public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?PassportUser { return $this->createdBy; }
     public function getUpdatedBy(): ?PassportUser { return $this->updatedBy; }
+=======
+    public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+>>>>>>> testsisi
     public function eraseCredentials(): void {}
 
     public function getProgress(): \Doctrine\Common\Collections\Collection { return $this->progress; }
     public function getFavorites(): \Doctrine\Common\Collections\Collection { return $this->favorites; }
     public function getReviews(): \Doctrine\Common\Collections\Collection { return $this->reviews; }
     public function getHistory(): \Doctrine\Common\Collections\Collection { return $this->history; }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> testsisi

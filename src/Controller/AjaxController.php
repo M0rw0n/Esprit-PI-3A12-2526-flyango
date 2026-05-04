@@ -44,7 +44,14 @@ class AjaxController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Type invalide'], 400);
         }
 
+<<<<<<< HEAD
         $target = $em->getReference($entityClass['entity'], $id);
+=======
+        $target = $em->find($entityClass['entity'], $id);
+        if (!$target) {
+            return new JsonResponse(['success' => false, 'message' => 'Élément non trouvé'], 404);
+        }
+>>>>>>> testsisi
 
         $favRepo = $em->getRepository($entityClass['favClass']);
         $favField = match($type) {
@@ -167,6 +174,7 @@ class AjaxController extends AbstractController
     }
 
     #[Route('/apply-promo', name: 'ajax_apply_promo', methods: ['POST'])]
+<<<<<<< HEAD
     public function applyPromo(Request $request, EntityManagerInterface $em): JsonResponse
     {
         try {
@@ -213,6 +221,35 @@ class AjaxController extends AbstractController
             $reduction = $promo['value'];
         }
 
+=======
+    public function applyPromo(Request $request): JsonResponse
+    {
+        $code = $request->request->get('code');
+        $originalPrice = (float) $request->request->get('price', 0);
+
+        if (!$code) {
+            return new JsonResponse(['success' => false, 'message' => 'Code promo requis'], 400);
+        }
+
+        $staticPromos = [
+            'SOLDE50'    => ['type' => 'fixed', 'value' => 50, 'maxReduction' => null],
+            'SOLDE20'    => ['type' => 'fixed', 'value' => 20, 'maxReduction' => null],
+            'SOLDE30'    => ['type' => 'fixed', 'value' => 30, 'maxReduction' => null],
+            'BIENVENUE'  => ['type' => 'percentage', 'value' => 10, 'maxReduction' => 100],
+            'PROMO15'    => ['type' => 'percentage', 'value' => 15, 'maxReduction' => 80],
+            'VIP20'      => ['type' => 'percentage', 'value' => 20, 'maxReduction' => 150],
+        ];
+
+        $upperCode = strtoupper(trim($code));
+        if (!isset($staticPromos[$upperCode])) {
+            return new JsonResponse(['success' => false, 'message' => 'Code promo invalide'], 400);
+        }
+
+        $promo = $staticPromos[$upperCode];
+        $reduction = $promo['type'] === 'percentage'
+            ? min($originalPrice * ($promo['value'] / 100), $promo['maxReduction'] ?? PHP_INT_MAX)
+            : $promo['value'];
+>>>>>>> testsisi
         $reduction = min($reduction, $originalPrice);
         $finalPrice = max(0, $originalPrice - $reduction);
 
@@ -223,18 +260,24 @@ class AjaxController extends AbstractController
             'finalPrice' => $finalPrice,
             'promoType' => $promo['type'],
             'promoValue' => $promo['value'],
+<<<<<<< HEAD
             'promoId' => $promo['id'],
             'message' => "Réduction de " . ($promo['type'] === 'percentage' ? $promo['value'] . '%' : number_format($reduction, 2) . ' TND') . " appliquée !",
             ]);
         } catch (\Exception $e) {
             return new JsonResponse(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
+=======
+            'message' => "Réduction de " . ($promo['type'] === 'percentage' ? $promo['value'] . '%' : $promo['value'] . ' TND') . " appliquée !",
+        ]);
+>>>>>>> testsisi
     }
 
     #[Route('/rating/refresh/{type}/{id}', name: 'ajax_refresh_rating', methods: ['GET'])]
     public function refreshRating(string $type, int $id, EntityManagerInterface $em): JsonResponse
     {
         if ($type === 'hebergement') {
+<<<<<<< HEAD
             $result = $em->createQueryBuilder()
                 ->select('AVG(a.note) as avg', 'COUNT(a.id) as count')
                 ->from('App\Entity\Avis', 'a')
@@ -256,12 +299,25 @@ class AjaxController extends AbstractController
             
             $avg = (float) ($result['avg'] ?? 0);
             $count = (int) ($result['count'] ?? 0);
+=======
+            $heb = $em->find('App\Entity\Hebergement', $id);
+            $avg = $heb?->getMoyenneNotes() ?? 0;
+            $count = $heb?->getAvis()->count() ?? 0;
+        } elseif ($type === 'activity') {
+            $act = $em->find('App\Entity\Activity', $id);
+            $avg = $act?->getMoyenneNotes() ?? 0;
+            $count = $act?->getReviews()->count() ?? 0;
+>>>>>>> testsisi
         } else {
             return new JsonResponse(['success' => false], 404);
         }
 
         return new JsonResponse([
+<<<<<<< HEAD
             'success' => true, 'average' => round($avg, 1), 'count' => $count, 'stars' => $this->generateStars(round($avg, 1)),
+=======
+            'success' => true, 'average' => $avg, 'count' => $count, 'stars' => $this->generateStars($avg),
+>>>>>>> testsisi
         ]);
     }
 

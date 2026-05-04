@@ -10,23 +10,39 @@
         <a href="{{ path('admin_hebergements') }}" style="font-size:.85rem;color:var(--muted)"><i class="fa fa-arrow-left"></i> Retour</a>
     </div>
 
+<<<<<<< HEAD
     <form action="{{ hebergement ? path('admin_hebergement_edit', {id: hebergement.id}) : path('admin_hebergement_new') }}" method="POST" enctype="multipart/form-data">
+=======
+    <form action="{{ hebergement ? path('admin_hebergement_edit', {id: hebergement.id}) : path('admin_hebergement_new') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateHebForm()">
+>>>>>>> testsisi
         <div class="form-sec">
             <div class="form-sec__title"><i class="fa fa-info-circle"></i> Informations générales</div>
             <div class="fgrid">
                 <div class="ffield fgrid--full">
                     <label>Nom de l'hébergement <span class="required">*</span></label>
+<<<<<<< HEAD
                     <input type="text" name="nom" id="nom" class="ffield input" value="{{ hebergement ? hebergement.nom : '' }}" placeholder="Ex: Hôtel Sidi Bou Said Palace">
+=======
+                    <input type="text" name="nom" id="nom" class="ffield input" value="{{ hebergement ? hebergement.nom : '' }}" required minlength="3" maxlength="150" placeholder="Ex: Hôtel Sidi Bou Said Palace">
+>>>>>>> testsisi
                     <span class="fhint" id="nomHint">3-150 caractères</span>
                 </div>
                 <div class="ffield">
                     <label>Ville <span class="required">*</span></label>
+<<<<<<< HEAD
                     <input type="text" name="ville" id="ville" value="{{ hebergement ? hebergement.ville : '' }}" placeholder="Ex: Tunis, Djerba...">
+=======
+                    <input type="text" name="ville" id="ville" value="{{ hebergement ? hebergement.ville : '' }}" required minlength="2" maxlength="100" placeholder="Ex: Tunis, Djerba...">
+>>>>>>> testsisi
                     <span class="fhint" id="villeHint">2-100 caractères</span>
                 </div>
                 <div class="ffield">
                     <label>Type <span class="required">*</span></label>
+<<<<<<< HEAD
                     <select name="type" id="type">
+=======
+                    <select name="type" id="type" required>
+>>>>>>> testsisi
                         <option value="">-- Choisir --</option>
                         {% for t in ['Hôtel', 'Appartement', 'Villa', 'Riad', 'Resort', 'Maison d\'hôtes', 'Auberge'] %}
                         <option value="{{ t }}" {{ hebergement and hebergement.type == t ? 'selected' : '' }}>{{ t }}</option>
@@ -35,22 +51,38 @@
                 </div>
                 <div class="ffield">
                     <label>Prix par nuit (TND) <span class="required">*</span></label>
+<<<<<<< HEAD
                     <input type="number" name="prix_par_nuit" id="prixParNuit" step="0.001" value="{{ hebergement ? hebergement.prixParNuit : '' }}" placeholder="150.000">
+=======
+                    <input type="number" name="prix_par_nuit" id="prixParNuit" step="0.001" value="{{ hebergement ? hebergement.prixParNuit : '' }}" required min="0" max="10000" placeholder="150.000">
+>>>>>>> testsisi
                     <span class="fhint">Entre 0 et 10 000 TND</span>
                 </div>
                 <div class="ffield">
                     <label>Capacité (personnes)</label>
+<<<<<<< HEAD
                     <input type="number" name="capacite" id="capacite" value="{{ hebergement ? hebergement.capacite : '' }}" placeholder="2">
+=======
+                    <input type="number" name="capacite" id="capacite" min="1" max="50" value="{{ hebergement ? hebergement.capacite : '' }}" placeholder="2">
+>>>>>>> testsisi
                     <span class="fhint">Entre 1 et 50 personnes</span>
                 </div>
                 <div class="ffield fgrid--full">
                     <label>Adresse complète <span class="required">*</span></label>
+<<<<<<< HEAD
                     <input type="text" name="adresse" id="adresse" value="{{ hebergement ? hebergement.adresse : '' }}" placeholder="Rue, quartier, ville...">
+=======
+                    <input type="text" name="adresse" id="adresse" value="{{ hebergement ? hebergement.adresse : '' }}" required minlength="5" maxlength="200" placeholder="Rue, quartier, ville...">
+>>>>>>> testsisi
                     <span class="fhint">5-200 caractères</span>
                 </div>
                 <div class="ffield fgrid--full">
                     <label>Description</label>
+<<<<<<< HEAD
                     <textarea name="description" id="description" rows="5" placeholder="Décrivez cet hébergement...">{{ hebergement ? hebergement.description : '' }}</textarea>
+=======
+                    <textarea name="description" id="description" rows="5" maxlength="1000" placeholder="Décrivez cet hébergement...">{{ hebergement ? hebergement.description : '' }}</textarea>
+>>>>>>> testsisi
                     <span class="fhint">Maximum 1000 caractères</span>
                 </div>
                 <div class="ffield">
@@ -64,6 +96,7 @@
         </div>
 
         <div class="form-sec">
+<<<<<<< HEAD
             <div class="form-sec__title"><i class="fa fa-image"></i> Image principale</div>
             {% if hebergement and hebergement.image %}
             <div class="img-prev" id="currentImagePreview">
@@ -184,6 +217,17 @@
                     <label>Chambres disponibles</label>
                     <input type="number" name="chambres_disponibles" min="0" value="{{ hebergement ? (hebergement.chambresDisponibles ?: 1) : 1 }}">
                 </div>
+=======
+            <div class="form-sec__title"><i class="fa fa-image"></i> Image <span class="required">*</span></div>
+            {% if hebergement and hebergement.image %}
+            <div class="img-prev"><img src="{{ asset(hebergement.image) }}" alt="{{ hebergement.nom }}"></div>
+            {% endif %}
+            <div class="ffield">
+                <label>Image principale {% if not hebergement %}<span class="required">*</span>{% endif %}</label>
+                <input type="file" name="image" id="imageInput" accept="image/jpeg,image/png,image/webp,image/gif" {{ not hebergement ? 'required' : '' }}>
+                <span class="fhint">JPG, PNG, WebP — Max 5MB</span>
+                <div id="imagePreview" style="margin-top:.5rem;color:var(--red);font-size:.85rem;display:none"></div>
+>>>>>>> testsisi
             </div>
         </div>
 
@@ -195,6 +239,7 @@
 </div>
 
 <script>
+<<<<<<< HEAD
 function updateImagePreview(imagePath) {
     const preview = document.getElementById('currentImagePreview');
     if (imagePath && preview) {
@@ -652,4 +697,103 @@ function update360Input() {
     justify-content: center;
 }
 </style>
+=======
+function validateHebForm() {
+    let valid = true;
+    const errors = [];
+    
+    const nom = document.getElementById('nom');
+    if (nom.value.trim().length < 3) {
+        errors.push('Le nom doit contenir au moins 3 caractères');
+        valid = false;
+    }
+    
+    const ville = document.getElementById('ville');
+    if (ville.value.trim().length < 2) {
+        errors.push('La ville doit contenir au moins 2 caractères');
+        valid = false;
+    }
+    
+    const type = document.getElementById('type');
+    if (!type.value) {
+        errors.push('Le type d\'hébergement est obligatoire');
+        valid = false;
+    }
+    
+    const prix = document.getElementById('prixParNuit');
+    if (parseFloat(prix.value) < 0 || parseFloat(prix.value) > 10000) {
+        errors.push('Le prix doit être entre 0 et 10 000 TND');
+        valid = false;
+    }
+    
+    const capacite = document.getElementById('capacite');
+    if (capacite.value && (parseInt(capacite.value) < 1 || parseInt(capacite.value) > 50)) {
+        errors.push('La capacité doit être entre 1 et 50');
+        valid = false;
+    }
+    
+    const adresse = document.getElementById('adresse');
+    if (adresse.value.trim().length < 5) {
+        errors.push('L\'adresse est obligatoire (minimum 5 caractères)');
+        valid = false;
+    }
+    
+    const fileInput = document.getElementById('imageInput');
+    const preview = document.getElementById('imagePreview');
+    
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        
+        if (!validTypes.includes(file.type)) {
+            errors.push('Type de fichier non valide. Utilisez JPG, PNG, WebP ou GIF.');
+            valid = false;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            errors.push('L\'image est trop grande. Maximum 5MB.');
+            valid = false;
+        }
+    }
+    
+    if (!valid) {
+        alert(errors.join('\n'));
+    }
+    
+    return valid;
+}
+
+document.getElementById('imageInput')?.addEventListener('change', function() {
+    const preview = document.getElementById('imagePreview');
+    if (this.files.length > 0) {
+        const file = this.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+            preview.textContent = 'L\'image est trop grande (max 5MB)';
+            preview.style.display = 'block';
+            this.value = '';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+});
+
+document.getElementById('nom')?.addEventListener('input', function() {
+    const hint = document.getElementById('nomHint');
+    if (this.value.trim().length < 3) {
+        hint.style.color = 'var(--red)';
+    } else {
+        hint.style.color = 'var(--muted)';
+    }
+});
+
+document.getElementById('ville')?.addEventListener('input', function() {
+    const hint = document.getElementById('villeHint');
+    if (this.value.trim().length < 2) {
+        hint.style.color = 'var(--red)';
+    } else {
+        hint.style.color = 'var(--muted)';
+    }
+});
+</script>
+>>>>>>> testsisi
 {% endblock %}

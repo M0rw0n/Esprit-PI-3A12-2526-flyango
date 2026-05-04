@@ -1,5 +1,6 @@
 {% extends 'base/base.html.twig' %}
 {% block title %}Circuits de voyage — Fly&Go{% endblock %}
+<<<<<<< HEAD
 {% block stylesheets %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
 <style>
@@ -24,6 +25,8 @@
 @media (max-width: 600px) { .circuit-grid { grid-template-columns:1fr } }
 </style>
 {% endblock %}
+=======
+>>>>>>> testsisi
 
 {% block body %}
 
@@ -158,7 +161,11 @@ function syncAndSubmit() {
     {# Grid View #}
     <div id="grid-view">
         {% if circuits %}
+<<<<<<< HEAD
         <div id="circuit-grid" class="circuit-grid">
+=======
+        <div id="circuit-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem">
+>>>>>>> testsisi
             {% for c in circuits %}
             <article class="circuit-card" data-id="{{ c.id }}" onclick="window.location='{{ path('circuit_show', {id: c.id}) }}'" style="background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .3s;cursor:pointer">
                 <div style="position:relative;height:180px;overflow:hidden">
@@ -173,9 +180,12 @@ function syncAndSubmit() {
                         {{ c.difficulte }}
                     </span>
                     {% endif %}
+<<<<<<< HEAD
                     <button class="hcard__wish" onclick="event.stopPropagation(); toggleFavorite({{ c.id }}, 'circuit', this)" style="position:absolute;bottom:.5rem;right:.5rem;background:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)">
                         <i class="fa fa-heart" style="color:var(--red)"></i>
                     </button>
+=======
+>>>>>>> testsisi
                 </div>
                 <div style="padding:1rem">
                     <div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--muted);margin-bottom:.5rem">
@@ -239,6 +249,7 @@ function syncAndSubmit() {
 
     {# Calendar View #}
     <div id="calendar-view" style="display:none">
+<<<<<<< HEAD
         <div id="circuit-calendar" class="circuit-calendar"></div>
     </div>
 
@@ -255,6 +266,16 @@ function syncAndSubmit() {
     <div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1B3A6B;color:#fff;padding:12px 24px;border-radius:8px;z-index:10000;display:none;box-shadow:0 4px 12px rgba(0,0,0,.2)"></div>
 </div>
 
+=======
+        <div id="circuit-calendar" style="background:#fff;padding:1.5rem;border-radius:var(--r);box-shadow:0 2px 8px rgba(0,0,0,.08)"></div>
+    </div>
+</div>
+
+{# Scripts #}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+>>>>>>> testsisi
 <script>
 let calendar;
 let userReservationsData = {{ userReservations|json_encode|raw }};
@@ -298,6 +319,7 @@ window.addEventListener('popstate', function(e) {
     }
 });
 
+<<<<<<< HEAD
 window.addEventListener('popstate', function(e) {
     if (e.state?.view === 'calendar') {
         switchView('calendar');
@@ -306,6 +328,8 @@ window.addEventListener('popstate', function(e) {
     }
 });
 
+=======
+>>>>>>> testsisi
 function initCalendar() {
     const circuitEvents = [
         {% for c in circuits %}
@@ -565,9 +589,35 @@ function askDestination() {
 }
 
 </script>
+<<<<<<< HEAD
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+=======
+
+<style>
+.circuit-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.15) !important; }
+#reservationModal { position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center }
+#reservationModal.active { display:flex }
+#reservationModal .modal-content { background:#fff;padding:2rem;border-radius:16px;max-width:400px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.2);position:relative }
+#reservationModal h3 { color:#1B3A6B;margin-bottom:1rem;font-size:1.25rem }
+#reservationModal .close-btn { position:absolute;top:0.5rem;right:0.75rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#64748b;line-height:1 }
+#reservationModal .close-btn:hover { color:#1B3A6B }
+</style>
+
+{# Reservation Modal #}
+<div id="reservationModal" onclick="if(event.target === this) closeModal()" style="cursor:pointer">
+    <div class="modal-content" style="cursor:default" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <h3><i class="fa fa-calendar-check"></i> Réservation du <span id="modalDate"></span></h3>
+        <div id="modalCircuit"></div>
+    </div>
+</div>
+
+{# Toast container for notifications #}
+<div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1B3A6B;color:#fff;padding:12px 24px;border-radius:8px;z-index:10000;display:none;box-shadow:0 4px 12px rgba(0,0,0,.2)"></div>
+
+>>>>>>> testsisi
 {% endblock %}

@@ -28,6 +28,7 @@
                     </div>
                 </div>
                 <div class="booking-card__price"><strong>{{ r.montantTotal|number_format(3, ',', ' ') }}</strong><span>TND</span></div>
+<<<<<<< HEAD
                 <div style="display:flex;gap:.5rem">
                     {% if r.qrCode %}
                     <a href="#" onclick="event.preventDefault(); document.getElementById('qrModal{{ r.id }}').style.display='flex'" class="btn btn-navy btn-sm" title="QR Code"><i class="fa fa-qrcode"></i></a>
@@ -49,6 +50,8 @@
                     <a href="{{ path('reservation_invoice', {id: r.id}) }}" class="btn btn-cyan btn-sm" title="Télécharger PDF"><i class="fa fa-file-pdf-o"></i></a>
                     {% endif %}
                 </div>
+=======
+>>>>>>> testsisi
                 <form action="{{ path('user_hebergement_cancel', {id: r.id}) }}" method="POST">
                     <button class="btn btn-red btn-sm" onclick="return confirm('Annuler cette réservation ?')"><i class="fa fa-times"></i></button>
                 </form>

@@ -16,7 +16,11 @@
                 {% if activity.lieu %}<span style="font-size:.875rem;color:var(--muted)"><i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i> {{ activity.lieu }}</span>{% endif %}
                 {% if activity.duration %}<span class="tag tag--navy"><i class="fa fa-clock"></i> {{ activity.duration }}</span>{% endif %}
                 <span class="tag"><i class="fa fa-users"></i> {{ activity.capacity }} places</span>
+<<<<<<< HEAD
                 {% if reviews|length > 0 %}<span style="color:var(--gold-d);font-size:.875rem"><i class="fa fa-star"></i> {{ activity.noteMoyenne|default(0) }} ({{ reviewCount }} avis)</span>{% endif %}
+=======
+                {% if activity.reviews|length > 0 %}<span style="color:var(--gold-d);font-size:.875rem"><i class="fa fa-star"></i> {{ activity.noteMoyenne|default(0) }} ({{ activity.reviews|length }} avis)</span>{% endif %}
+>>>>>>> testsisi
                 {% if activity.date %}<span class="tag"><i class="fa fa-calendar"></i> {{ activity.date|date('d/m/Y') }}</span>{% endif %}
             </div>
         </div>
@@ -25,11 +29,14 @@
             <span class="price__cur">TND</span>
             <span class="price__per">/pers.</span>
         </div>
+<<<<<<< HEAD
         <div style="display:flex;gap:.75rem">
             <button class="btn btn-outline" onclick="openShareModal('activity', {{ activity.id }}, '{{ activity.title|e('js') }}')">
                 <i class="fa fa-share-alt"></i> Partager
             </button>
         </div>
+=======
+>>>>>>> testsisi
     </div>
     <div class="detail-layout">
         <div>
@@ -39,15 +46,23 @@
             </div>
             <div class="detail-tabs">
                 <button class="detail-tab on" data-tab="desc" onclick="switchTab('desc')">Description</button>
+<<<<<<< HEAD
                 <button class="detail-tab" data-tab="reviews" onclick="switchTab('reviews')">Avis ({{ reviewCount }})</button>
                 <button class="detail-tab" data-tab="tripadvisor" onclick="switchTab('tripadvisor'); loadTripAdvisorReviews()">Avis TripAdvisor</button>
                 <button class="detail-tab" data-tab="recommendations" onclick="switchTab('recommendations'); loadAiRecommendations()">Recommandations</button>
+=======
+                <button class="detail-tab" data-tab="reviews" onclick="switchTab('reviews')">Avis ({{ activity.reviews|length }})</button>
+                <button class="detail-tab" data-tab="tripadvisor" onclick="switchTab('tripadvisor'); loadTripAdvisorReviews()">Avis TripAdvisor</button>
+                <button class="detail-tab" data-tab="recommendations" onclick="switchTab('recommendations'); loadAiRecommendations()">Recommandations</button>
+                <button class="detail-tab" data-tab="nearby" onclick="switchTab('nearby'); loadNearbyActivities()">À proximité</button>
+>>>>>>> testsisi
                 <button class="detail-tab" data-tab="add-review" onclick="switchTab('add-review')">Laisser un avis</button>
             </div>
             <div id="pane-desc" class="tab-pane on">
                 <p style="font-size:.95rem;line-height:1.85;color:var(--text)">{{ activity.description ?: 'Aucune description disponible.' }}</p>
             </div>
             <div id="pane-reviews" class="tab-pane">
+<<<<<<< HEAD
                 {% if reviews|length > 0 %}
                 <div class="sentiment-summary" style="background:linear-gradient(135deg,#f8f9fa,#fff);padding:1rem;border-radius:12px;margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center">
                     <div style="font-weight:600;color:var(--navy)">Analyse IA</div>
@@ -56,6 +71,18 @@
                 </div>
                 {% endif %}
                 {% for r in reviews %}
+=======
+                {% set positive = 0 %}{% set negative = 0 %}{% set neutral = 0 %}
+                {% for r in activity.reviews %}{% if r.sentimentLabel %}{% if r.sentimentLabel in ['excellent','good','positive'] %}{% set positive = positive + 1 %}{% elseif r.sentimentLabel in ['negative','bad'] %}{% set negative = negative + 1 %}{% else %}{% set neutral = neutral + 1 %}{% endif %}{% endif %}{% endfor %}
+                {% if activity.reviews|length > 0 %}
+                <div class="sentiment-summary" style="background:linear-gradient(135deg,#f8f9fa,#fff);padding:1rem;border-radius:12px;margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center">
+                    <div style="font-weight:600;color:var(--navy)">Analyse IA</div>
+                    <div style="display:flex;gap:1rem"><span style="color:#22c55e"><i class="fa fa-thumbs-up"></i> {{ positive }}</span><span style="color:#eab308"><i class="fa fa-minus"></i> {{ neutral }}</span><span style="color:#ef4444"><i class="fa fa-thumbs-down"></i> {{ negative }}</span></div>
+                    {% if positive + negative + neutral > 0 %}<span style="background:var(--navy);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.8rem">{{ ((positive / (positive + negative + neutral)) * 100)|round }}% satisfait</span>{% endif %}
+                </div>
+                {% endif %}
+                {% for r in activity.reviews %}
+>>>>>>> testsisi
                 <div class="review-item">
                     <div class="review-item__head"><span class="review-item__author">{{ r.author }}</span><span class="review-item__date">{{ r.createdAt|date('d/m/Y') }}</span></div>
                     <div class="review-item__stars">{% for i in 1..5 %}<i class="fa fa-star" style="color:{{ i <= r.rating ? '#F59E0B' : 'var(--border)' }}"></i>{% endfor %}
@@ -80,6 +107,14 @@
                     <button class="btn btn-outline" onclick="refreshAiRecommendations()"><i class="fa fa-refresh"></i> Actualiser</button>
                 </div>
             </div>
+<<<<<<< HEAD
+=======
+            <div id="pane-nearby" class="tab-pane">
+                <div id="nearby-activities">
+                    <div style="text-align:center;padding:2rem;color:var(--muted)"><i class="fa fa-spinner fa-spin"></i> Recherche des activités à proximité...</div>
+                </div>
+            </div>
+>>>>>>> testsisi
             <div id="pane-add-review" class="tab-pane">
                 <form action="{{ path('activity_review', {id: activity.id}) }}" method="POST">
                     <div class="fg-group"><label class="fg-label">Votre nom</label><input type="text" name="author" class="fg-input" required placeholder="Votre prénom" value="{{ app.user ? app.user.fullName : '' }}"></div>
@@ -178,6 +213,10 @@ let currentPromoReductionBooking = 0;
 let originalTotalBooking = 0;
 let tripAdvisorLoaded = false;
 let aiLoaded = false;
+<<<<<<< HEAD
+=======
+let nearbyLoaded = false;
+>>>>>>> testsisi
 
 function loadTripAdvisorReviews() {
     if (tripAdvisorLoaded) return;
@@ -235,17 +274,24 @@ function loadAiRecommendations() {
                 data.recommendations.forEach(rec => {
                     const img = rec.image || 'https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=400&q=80';
                     const desc = rec.description ? rec.description.substring(0, 80) + '...' : '';
+<<<<<<< HEAD
                     const url = '/activites/' + rec.id;
                     html += '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s" onclick="window.location=\'' + url + '\'">';
+=======
+                    html += '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s" onclick="window.location=\'/activites/' + rec.id + '\'">';
+>>>>>>> testsisi
                     html += '<div style="height:120px;overflow:hidden"><img src="' + img + '" style="width:100%;height:100%;object-fit:cover" onerror="this.src=\'https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=400&q=80\'"></div>';
                     html += '<div style="padding:1rem">';
                     html += '<div style="font-size:.7rem;color:var(--cyan);font-weight:600;margin-bottom:.25rem">' + (rec.category || 'Activité') + '</div>';
                     html += '<strong style="color:var(--text);display:block;margin-bottom:.5rem;font-size:.95rem">' + rec.title + '</strong>';
+<<<<<<< HEAD
                     if (data.ai_suggestions && rec === data.recommendations[0]) {
                         html += '<div style="background:var(--bg);padding:.5rem;border-radius:8px;font-size:.75rem;color:var(--navy);margin-bottom:.75rem;border-left:3px solid var(--gold)">';
                         html += '<i class="fa fa-magic"></i> ' + data.ai_suggestions.substring(0, 100) + '...';
                         html += '</div>';
                     }
+=======
+>>>>>>> testsisi
                     html += '<div style="color:var(--muted);font-size:.8rem;margin-bottom:.75rem">' + desc + '</div>';
                     html += '<div style="display:flex;justify-content:space-between;align-items:center">';
                     html += '<span style="color:var(--gold);font-weight:700">' + (rec.rating || 0) + ' <i class="fa fa-star"></i></span>';
@@ -269,6 +315,56 @@ function refreshAiRecommendations() {
     loadAiRecommendations();
 }
 
+<<<<<<< HEAD
+=======
+function loadNearbyActivities() {
+    if (nearbyLoaded) return;
+    const container = document.getElementById('nearby-activities');
+    container.innerHTML = '<div style="text-align:center;padding:2rem"><i class="fa fa-spinner fa-spin"></i> Recherche...</div>';
+    
+    const lieu = activityLieu || 'Djerba';
+    const geocodeUrl = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(lieu);
+    
+    fetch(geocodeUrl)
+        .then(res => res.json())
+        .then(data => {
+            let lat = 36.8, lng = 10.2;
+            if (data && data.length > 0) {
+                lat = parseFloat(data[0].lat);
+                lng = parseFloat(data[0].lon);
+            }
+            
+            return fetch('/api/activities/nearby?lat=' + lat + '&lng=' + lng + '&radius=5000');
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.activities && data.activities.length > 0) {
+                let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">';
+                data.activities.slice(0, 6).forEach(act => {
+                    html += '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;transition:all .2s" onclick="window.location=\'/activites/' + act.id + '\'">';
+                    html += '<div style="display:flex;align-items:center;gap:.75rem">';
+                    html += '<div style="width:60px;height:60px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center"><i class="fa fa-map-marker-alt" style="color:var(--navy)"></i></div>';
+                    html += '<div style="flex:1">';
+                    html += '<strong style="color:var(--text);display:block;margin-bottom:.25rem">' + act.name + '</strong>';
+                    html += '<div style="font-size:.85rem;color:var(--muted)">' + (act.address || 'Adresse non disponible') + '</div>';
+                    html += '<div style="color:#F59E0B;font-size:.85rem;margin-top:.25rem">';
+                    for (let i = 0; i < 5; i++) html += i < (act.rating || 4) ? '★' : '☆';
+                    html += ' ' + (act.rating || 4);
+                    html += '</div></div></div></div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Aucune activité proche trouvée</div>';
+            }
+            nearbyLoaded = true;
+        })
+        .catch(err => {
+            container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--red)">Erreur</div>';
+        });
+}
+
+>>>>>>> testsisi
 function calcMontantBooking() {
     const persons = parseInt(document.getElementById('persons').value) || 1;
     originalTotalBooking = prixActivity * persons;

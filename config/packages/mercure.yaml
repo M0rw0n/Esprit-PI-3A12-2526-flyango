@@ -1,8 +1,15 @@
 mercure:
     hubs:
         default:
+<<<<<<< HEAD
             url: '%env(default::APP_MERCURE_URL)%'
             public_url: '%env(default::APP_MERCURE_PUBLIC_URL)%'
             jwt:
                 secret: '%env(APP_MERCURE_JWT_SECRET)%'
+=======
+            url: '%env(default::MERCURE_URL)%'
+            public_url: '%env(default::MERCURE_PUBLIC_URL)%'
+            jwt:
+                secret: '%env(MERCURE_JWT_SECRET)%'
+>>>>>>> testsisi
                 publish: '*'

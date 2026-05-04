@@ -163,9 +163,14 @@ class AppSetupCommand extends Command
         ];
 
         $entities = [];
+<<<<<<< HEAD
         $adminUser = $users['admin@flyandgo.tn'];
         foreach ($rows as $index => $row) {
             $entity = (new Circuit($adminUser))
+=======
+        foreach ($rows as $index => $row) {
+            $entity = (new Circuit())
+>>>>>>> testsisi
                 ->setTitre($row['titre'])
                 ->setDestination($row['destination'])
                 ->setDepart($row['depart'])
@@ -191,7 +196,11 @@ class AppSetupCommand extends Command
             'date_depart' => date('Y-m-d', strtotime('+30 days')),
             'date_retour' => date('Y-m-d', strtotime('+37 days')),
         ]);
+<<<<<<< HEAD
         $circuit1 = (new Circuit($users['client@flyandgo.tn']))
+=======
+        $circuit1 = (new Circuit())
+>>>>>>> testsisi
             ->setTitre($custom1['titre'])
             ->setDescription($custom1['description'])
             ->setDuree($custom1['duree'])
@@ -205,6 +214,10 @@ class AppSetupCommand extends Command
             ->setIsAiGenerated(true)
             ->setSourceType('custom')
             ->setGeneratedContext($custom1['generated_context'])
+<<<<<<< HEAD
+=======
+            ->setCreator($users['client@flyandgo.tn'])
+>>>>>>> testsisi
             ->setCreatedAt(new \DateTimeImmutable('-2 days'));
         $this->em->persist($circuit1);
         $entities[] = $circuit1;
@@ -219,7 +232,11 @@ class AppSetupCommand extends Command
             'date_depart' => date('Y-m-d', strtotime('+18 days')),
             'date_retour' => date('Y-m-d', strtotime('+22 days')),
         ]);
+<<<<<<< HEAD
         $circuit2 = (new Circuit($users['nour@flyandgo.tn']))
+=======
+        $circuit2 = (new Circuit())
+>>>>>>> testsisi
             ->setTitre($custom2['titre'])
             ->setDescription($custom2['description'])
             ->setDuree($custom2['duree'])
@@ -233,6 +250,10 @@ class AppSetupCommand extends Command
             ->setIsAiGenerated(true)
             ->setSourceType('custom')
             ->setGeneratedContext($custom2['generated_context'])
+<<<<<<< HEAD
+=======
+            ->setCreator($users['nour@flyandgo.tn'])
+>>>>>>> testsisi
             ->setCreatedAt(new \DateTimeImmutable('-1 day'));
         $this->em->persist($circuit2);
         $entities[] = $circuit2;

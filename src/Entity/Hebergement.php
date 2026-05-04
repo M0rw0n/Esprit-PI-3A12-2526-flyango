@@ -6,7 +6,10 @@ use App\Repository\HebergementRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use Symfony\Component\Validator\Constraints as Assert;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: HebergementRepository::class)]
 #[ORM\Table(name: 'hebergement')]
@@ -17,6 +20,7 @@ class Hebergement
     #[ORM\Column(name: 'id_hebergement', type: 'integer')]
     private ?int $id = null;
 
+<<<<<<< HEAD
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
     private ?User $user = null;
@@ -53,6 +57,32 @@ class Hebergement
     private ?string $adresse = null;
 
     #[Assert\Range(min: 1, max: 50, notInRangeMessage: 'La capacité doit être entre {{ min }} et {{ max }}')]
+=======
+    #[ORM\Column(name: 'user_id', type: 'integer', nullable: true)]
+    private ?int $userId = null;
+
+    #[ORM\Column(length: 100)]
+    private string $nom = '';
+
+    #[ORM\Column(length: 50)]
+    private string $ville = '';
+
+    #[ORM\Column(length: 50)]
+    private string $type = '';
+
+    #[ORM\Column(name: 'prix_par_nuit', type: 'float')]
+    private float $prixParNuit = 0;
+
+    #[ORM\Column(name: 'image_path', length: 500, nullable: true)]
+    private ?string $image = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $adresse = null;
+
+>>>>>>> testsisi
     #[ORM\Column(name: 'nombre_chambres', type: 'integer', nullable: true)]
     private ?int $capacite = null;
 
@@ -60,14 +90,19 @@ class Hebergement
     private bool $disponible = true;
 
     #[ORM\Column(name: 'created_at', type: 'datetime')]
+<<<<<<< HEAD
     private ?\DateTimeInterface $createdAt = null;
 
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
+=======
+    private \DateTimeInterface $createdAt;
+>>>>>>> testsisi
 
     #[ORM\OneToMany(mappedBy: 'hebergement', targetEntity: Reservation::class, cascade: ['remove'])]
     private Collection $reservations;
 
+<<<<<<< HEAD
     // onDelete CASCADE needed in DB for Reservation->hebergement relation
 
     #[ORM\Column(type: 'json', nullable: true)]
@@ -103,6 +138,8 @@ class Hebergement
     #[ORM\Column(name: 'amadeus_id', type: 'string', length: 50, nullable: true)]
     private ?string $amadeusId = null;
 
+=======
+>>>>>>> testsisi
     #[ORM\OneToMany(mappedBy: 'hebergement', targetEntity: Avis::class, cascade: ['remove'])]
     private Collection $avis;
 
@@ -110,6 +147,7 @@ class Hebergement
     {
         $this->reservations = new ArrayCollection();
         $this->avis = new ArrayCollection();
+<<<<<<< HEAD
         $this->galeriePhotos = [];
         $this->equipements = [];
     }
@@ -117,6 +155,14 @@ class Hebergement
     public function getId(): ?int { return $this->id; }
     public function getUser(): ?User { return $this->user; }
     public function setUser(?User $user): static { $this->user = $user; return $this; }
+=======
+        $this->createdAt = new \DateTime();
+    }
+
+    public function getId(): ?int { return $this->id; }
+    public function getUserId(): ?int { return $this->userId; }
+    public function setUserId(?int $id): static { $this->userId = $id; return $this; }
+>>>>>>> testsisi
     public function getNom(): string { return $this->nom; }
     public function setNom(string $n): static { $this->nom = $n; return $this; }
     public function getVille(): string { return $this->ville; }
@@ -135,6 +181,7 @@ class Hebergement
     public function setCapacite(?int $c): static { $this->capacite = $c; return $this; }
     public function isDisponible(): bool { return $this->disponible; }
     public function setDisponible(bool $d): static { $this->disponible = $d; return $this; }
+<<<<<<< HEAD
     public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
@@ -189,6 +236,12 @@ class Hebergement
         }
         return $this;
     }
+=======
+    public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+    public function getReservations(): Collection { return $this->reservations; }
+    public function getAvis(): Collection { return $this->avis; }
+>>>>>>> testsisi
 
     public function getMoyenneNotes(): float
     {
@@ -197,6 +250,7 @@ class Hebergement
         foreach ($this->avis as $a) { $total += $a->getNote(); }
         return round($total / $this->avis->count(), 1);
     }
+<<<<<<< HEAD
 
     public function getCapaciteRestante(): int
     {
@@ -211,4 +265,6 @@ class Hebergement
         $total = $this->capacite ?? 0;
         return max(0, $total - $used);
     }
+=======
+>>>>>>> testsisi
 }

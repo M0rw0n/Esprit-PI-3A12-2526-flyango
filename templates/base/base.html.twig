@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <meta property="og:site_name" content="Fly&Go">
     {% block ogmeta %}{% endblock %}
+=======
+>>>>>>> testsisi
     <title>{% block title %}Fly&Go — Agence de Voyage{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -33,11 +36,15 @@
             <li><a href="{{ path('activity_index') }}" class="{{ app.request.attributes.get('_route') starts with 'activity' ? 'on' : '' }}"><i class="fa fa-hiking"></i> Activités</a></li>
             <li><a href="{{ path('transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'transport' ? 'on' : '' }}"><i class="fa fa-plane"></i> Transport</a></li>
             <li><a href="{{ path('forum_index') }}" class="{{ app.request.attributes.get('_route') starts with 'forum' ? 'on' : '' }}"><i class="fa fa-comments"></i> Forum</a></li>
+<<<<<<< HEAD
             <li><a href="{{ path('games_index') }}" class="{{ app.request.attributes.get('_route') starts with 'games' ? 'on' : '' }}"><i class="fa fa-gamepad"></i> Jeux</a></li>
+=======
+>>>>>>> testsisi
         </ul>
 
         <div class="fg-nav__right">
             {% if app.user %}
+<<<<<<< HEAD
                 {% set navAvatarUrl = app.user.avatar ? (app.user.avatar starts with 'http' ? app.user.avatar : asset(app.user.avatar)) : null %}
                 <div class="fg-user-menu">
                     <button class="fg-user-btn" id="fgUserBtn">
@@ -47,6 +54,12 @@
                             {% else %}
                                 {{ app.user.prenom|slice(0,1)|upper }}
                             {% endif %}
+=======
+                <div class="fg-user-menu">
+                    <button class="fg-user-btn" id="fgUserBtn">
+                        <div class="fg-user-avatar">
+                            {{ app.user.prenom|slice(0,1)|upper }}
+>>>>>>> testsisi
                         </div>
                         <span class="fg-user-name">{{ app.user.prenom }}</span>
                         <i class="fa fa-chevron-down fg-user-arrow"></i>
@@ -165,6 +178,7 @@
 </footer>
 
 <div class="toast-box" id="toastBox"></div>
+<<<<<<< HEAD
 
 {# Share Modal #}
 <div id="shareModal" class="fg-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:3000;align-items:center;justify-content:center">
@@ -217,6 +231,9 @@
 
 <script src="{{ asset('js/flyandgo.js') }}"></script>
 <script src="{{ asset('js/share-system.js') }}?v=2"></script>
+=======
+<script src="{{ asset('js/flyandgo.js') }}"></script>
+>>>>>>> testsisi
 {% block javascripts %}{% endblock %}
 </body>
 </html>

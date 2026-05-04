@@ -6,6 +6,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+<<<<<<< HEAD
 /* Body Flexbox for footer */
 body {
     display: flex;
@@ -16,6 +17,8 @@ body > footer {
     margin-top: auto;
 }
 
+=======
+>>>>>>> testsisi
 :root {
   --navy:      #1B3A6B;
   --navy-d:    #122850;

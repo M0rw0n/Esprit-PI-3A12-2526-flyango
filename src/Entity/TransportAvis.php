@@ -4,14 +4,20 @@ namespace App\Entity;
 
 use App\Repository\TransportAvisRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: TransportAvisRepository::class)]
 #[ORM\Table(name: 'avis_transport')]
 class TransportAvis
 {
+<<<<<<< HEAD
     use BlameableTrait;
 
+=======
+>>>>>>> testsisi
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_avis_transport')]
@@ -37,9 +43,12 @@ class TransportAvis
     #[ORM\Column(name: 'created_at', type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -57,5 +66,9 @@ class TransportAvis
     public function getComment(): ?string { return $this->comment; }
     public function setComment(?string $c): static { $this->comment = $c; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
+=======
+    public function setCreatedAt(\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+>>>>>>> testsisi
 }

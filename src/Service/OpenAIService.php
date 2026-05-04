@@ -4,19 +4,26 @@ namespace App\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+<<<<<<< HEAD
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+=======
+>>>>>>> testsisi
 
 class OpenAIService
 {
     private ?string $apiKey;
     private HttpClientInterface $httpClient;
+<<<<<<< HEAD
     private ?CacheInterface $cache;
+=======
+>>>>>>> testsisi
     private string $model;
     private int $maxTokens;
 
     public function __construct(
         ?string $openAiApiKey = null,
+<<<<<<< HEAD
         ?HttpClientInterface $httpClient = null,
         ?CacheInterface $cache = null
     ) {
@@ -24,6 +31,13 @@ class OpenAIService
         $this->httpClient = $httpClient ?? HttpClient::create();
         $this->cache = $cache;
         $this->model = 'gpt-4o-mini'; // Upgraded from gpt-3.5-turbo for better performance/cost
+=======
+        ?HttpClientInterface $httpClient = null
+    ) {
+        $this->apiKey = $openAiApiKey;
+        $this->httpClient = $httpClient ?? HttpClient::create();
+        $this->model = 'gpt-3.5-turbo';
+>>>>>>> testsisi
         $this->maxTokens = 500;
     }
 
@@ -32,7 +46,11 @@ class OpenAIService
         return !empty($this->apiKey) && $this->apiKey !== 'your_openai_api_key_here';
     }
 
+<<<<<<< HEAD
     public function chat(string $userMessage, array $conversationHistory = [], ?array $userContext = null): array
+=======
+    public function chat(string $userMessage, array $conversationHistory = []): array
+>>>>>>> testsisi
     {
         if (!$this->isEnabled()) {
             return [
@@ -41,6 +59,7 @@ class OpenAIService
             ];
         }
 
+<<<<<<< HEAD
         // Use cache for identical queries only if history is empty
         if ($this->cache && empty($conversationHistory)) {
             $cacheKey = 'openai_v2_' . md5(mb_strtolower(trim($userMessage)) . ($userContext ? serialize($userContext) : ''));
@@ -104,6 +123,13 @@ class OpenAIService
         $messages = array_merge([
             ['role' => 'system', 'content' => $systemPrompt]
         ], $history, [
+=======
+        $systemPrompt = $this->getSystemPrompt();
+        
+        $messages = array_merge([
+            ['role' => 'system', 'content' => $systemPrompt]
+        ], $conversationHistory, [
+>>>>>>> testsisi
             ['role' => 'user', 'content' => $userMessage]
         ]);
 
@@ -118,9 +144,14 @@ class OpenAIService
                     'messages' => $messages,
                     'max_tokens' => $this->maxTokens,
                     'temperature' => 0.7,
+<<<<<<< HEAD
                 ],
                 'verify_peer' => false,
                 'verify_host' => false,
+=======
+                    'top_p' => 0.9,
+                ],
+>>>>>>> testsisi
             ]);
 
             $data = $response->toArray();
@@ -146,6 +177,7 @@ class OpenAIService
         }
     }
 
+<<<<<<< HEAD
     private function getSystemPrompt(?array $userContext = null): string
     {
         $userName = $userContext['name'] ?? 'Voyageur';
@@ -172,6 +204,28 @@ Directives de réponse:
 6. Langue: Français impeccable, avec quelques expressions de bienvenue tunisiennes (ex: "Aslama", "Marhba") si approprié.
 
 Conseil Expert: Si un utilisateur demande un itinéraire, inclus des joyaux cachés moins connus pour montrer ton expertise.
+=======
+    private function getSystemPrompt(): string
+    {
+        return <<<PROMPT
+Tu es l'assistant virtuel de Fly&Go, une agence de voyage tunisienne. 
+Tu dois répondre aux questions des clients de manière aimable et professionnelle.
+
+Contexte de Fly&Go:
+- Agence de voyage en Tunisie
+- Services: hébergements, circuits, transports, activités
+- Contact: contact@flyandgo.tn, +216 12 345 678
+- Site: vol, hôtel, circuit, activité, transport, forum
+- AI pour créer des circuits personnalisés
+- Profil voyageur pour personnaliser les recommandations
+
+Règles:
+1. Réponds toujours en français
+2. Sois concis mais informatif
+3. Si tu ne sais pas quelque chose, dis-le honestly et suggère de contacter le support
+4. Propose des liens vers les pages appropriées du site
+5. Garde un ton professionnel et chaleureux
+>>>>>>> testsisi
 PROMPT;
     }
 

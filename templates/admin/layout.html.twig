@@ -8,8 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<<<<<<< HEAD
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+=======
+>>>>>>> testsisi
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="{{ asset('css/flyandgo.css') }}">
 </head>
@@ -27,9 +30,12 @@
         <a href="{{ path('admin_dashboard') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'on' : '' }}">
             <i class="fa fa-chart-line"></i> Tableau de bord
         </a>
+<<<<<<< HEAD
         <a href="{{ path('admin_calendar') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_calendar' ? 'on' : '' }}">
             <i class="fa fa-calendar-alt"></i> Calendrier
         </a>
+=======
+>>>>>>> testsisi
 
         <div class="admin__section">Hébergements</div>
         <a href="{{ path('admin_hebergements') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_hebergement' ? 'on' : '' }}">
@@ -38,10 +44,13 @@
         <a href="{{ path('admin_reservations') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_reservations' ? 'on' : '' }}">
             <i class="fa fa-calendar-check"></i> Réservations
         </a>
+<<<<<<< HEAD
         <a href="{{ path('app_admin_promos') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'app_admin_promo' ? 'on' : '' }}">
             <i class="fa fa-tags"></i> Codes Promo
         </a>
         
+=======
+>>>>>>> testsisi
         <a href="{{ path('admin_avis') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_avis' ? 'on' : '' }}">
             <i class="fa fa-star"></i> Avis hébergements
         </a>
@@ -80,9 +89,12 @@
         </a>
 
         <div class="admin__section">Communauté</div>
+<<<<<<< HEAD
         <a href="{{ path('admin_faq') }}" class="admin__link {{ app.request.attributes.get('_route') starts with 'admin_faq' ? 'on' : '' }}">
             <i class="fa fa-robot"></i> FAQ Chatbot
         </a>
+=======
+>>>>>>> testsisi
         <a href="{{ path('admin_forum') }}" class="admin__link {{ app.request.attributes.get('_route') == 'admin_forum' ? 'on' : '' }}">
             <i class="fa fa-comments"></i> Forum
         </a>
@@ -286,6 +298,7 @@ document.querySelectorAll('.toast').forEach(function(t) {
 });
 </script>
 {% block javascripts %}{% endblock %}
+<<<<<<< HEAD
 {% block stylesheets %}{% endblock %}
 <style>
 .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 1.25rem; display: flex; align-items: center; gap: 1rem; transition: all var(--t); }
@@ -294,5 +307,7 @@ document.querySelectorAll('.toast').forEach(function(t) {
 .stat-card__val { font-size: 1.5rem; font-weight: 900; color: var(--text); line-height: 1; }
 .stat-card__label { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
 </style>
+=======
+>>>>>>> testsisi
 </body>
 </html>

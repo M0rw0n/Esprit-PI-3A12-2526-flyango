@@ -20,8 +20,13 @@ class Activity
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+<<<<<<< HEAD
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     private string $price = '0';
+=======
+    #[ORM\Column(type: 'float')]
+    private float $price = 0;
+>>>>>>> testsisi
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $duration = null;
@@ -44,6 +49,7 @@ class Activity
     #[ORM\Column(type: 'boolean')]
     private bool $actif = true;
 
+<<<<<<< HEAD
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $latitude = null;
 
@@ -63,6 +69,15 @@ class Activity
     private Collection $bookings;
 
     #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Review::class, cascade: ['persist', 'remove'])]
+=======
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $createdAt;
+
+    #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Booking::class, cascade: ['remove'])]
+    private Collection $bookings;
+
+    #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Review::class, cascade: ['remove'])]
+>>>>>>> testsisi
     private Collection $reviews;
 
     public function __construct()
@@ -77,8 +92,13 @@ class Activity
     public function setTitle(string $t): static { $this->title = $t; return $this; }
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $d): static { $this->description = $d; return $this; }
+<<<<<<< HEAD
     public function getPrice(): string { return $this->price; }
     public function setPrice(string $p): static { $this->price = $p; return $this; }
+=======
+    public function getPrice(): float { return $this->price; }
+    public function setPrice(float $p): static { $this->price = $p; return $this; }
+>>>>>>> testsisi
     public function getDuration(): ?string { return $this->duration; }
     public function setDuration(?string $d): static { $this->duration = $d; return $this; }
     public function getDate(): ?\DateTimeInterface { return $this->date; }
@@ -93,6 +113,7 @@ class Activity
     public function setCategory(?string $c): static { $this->category = $c; return $this; }
     public function isActif(): bool { return $this->actif; }
     public function setActif(bool $a): static { $this->actif = $a; return $this; }
+<<<<<<< HEAD
     public function getLatitude(): ?float { return $this->latitude; }
     public function setLatitude(?float $latitude): static { $this->latitude = $latitude; return $this; }
     public function getLongitude(): ?float { return $this->longitude; }
@@ -105,6 +126,9 @@ class Activity
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
     public function getBookings(): Collection { return $this->bookings; }
+=======
+    public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+>>>>>>> testsisi
     public function getReviews(): Collection { return $this->reviews; }
     public function getNoteMoyenne(): float {
         if ($this->reviews->isEmpty()) return 0;

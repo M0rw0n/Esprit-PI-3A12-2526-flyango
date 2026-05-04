@@ -104,7 +104,11 @@
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 1rem;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">
                         <div style="display:flex;gap:1rem">
                             <span><i class="fa fa-thumbs-up"></i> {{ p.vues ?: 0 }}</span>
+<<<<<<< HEAD
                             <span><i class="fa fa-comment"></i> {{ postCommentCounts[p.id]|default(0) }}</span>
+=======
+                            <span><i class="fa fa-comment"></i> {{ p.comments|length }}</span>
+>>>>>>> testsisi
                         </div>
                         <span>{{ p.vues ?: 0 }} vues</span>
                     </div>
@@ -246,7 +250,11 @@ function showIndexTranslation(postId) {
     });
 }
 </script>
+<<<<<<< HEAD
 <script src="{{ asset('js/share-system.js') }}?v=2"></script>
+=======
+<script src="{{ asset('js/share-system.js') }}"></script>
+>>>>>>> testsisi
 <style>
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }

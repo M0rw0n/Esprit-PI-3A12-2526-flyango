@@ -4,14 +4,20 @@ namespace App\Entity;
 
 use App\Repository\LikeDislikeRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: LikeDislikeRepository::class)]
 #[ORM\Table(name: 'like_dislike')]
 #[ORM\UniqueConstraint(name: 'user_target_unique', columns: ['user_id', 'target_type', 'target_id'])]
 class LikeDislike
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     public const TYPE_POST = 'post';
     public const TYPE_ACTIVITY = 'activity';
     public const TYPE_COMMENT = 'comment';
@@ -37,9 +43,12 @@ class LikeDislike
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -57,7 +66,10 @@ class LikeDislike
     public function isLike(): bool { return $this->vote === self::LIKE; }
     public function isDislike(): bool { return $this->vote === self::DISLIKE; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
+=======
+>>>>>>> testsisi
 }

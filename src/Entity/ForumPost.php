@@ -41,7 +41,11 @@ class ForumPost
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $image = null;
 
+<<<<<<< HEAD
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: ForumComment::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+=======
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: ForumComment::class, cascade: ['remove'])]
+>>>>>>> testsisi
     #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private Collection $comments;
 
@@ -63,6 +67,10 @@ class ForumPost
     public function getCategorie(): ?string { return $this->categorie; }
     public function setCategorie(?string $c): static { $this->categorie = $c; return $this; }
     public function getCreatedAt() { return $this->createdAt; }
+<<<<<<< HEAD
+=======
+    public function setCreatedAt($d): static { $this->createdAt = $d; return $this; }
+>>>>>>> testsisi
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $s): static { $this->status = $s; return $this; }
     public function getVues(): int { return $this->vues; }

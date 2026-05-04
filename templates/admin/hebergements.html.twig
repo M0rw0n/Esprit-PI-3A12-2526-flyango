@@ -11,6 +11,7 @@
         <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:.2rem">Gestion des hébergements</h2>
         <p style="color:var(--muted);font-size:.85rem">{{ hebergements.totalItemCount }} hébergements</p>
     </div>
+<<<<<<< HEAD
     <div style="display:flex;gap:.5rem">
         <button type="button" class="btn btn-success" onclick="showImportModal()"><i class="fa fa-download"></i> Importer</button>
         <a href="{{ path('admin_hebergement_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Nouvel hébergement</a>
@@ -135,6 +136,11 @@ function searchAndImport() {
 }
 </script>
 
+=======
+    <a href="{{ path('admin_hebergement_new') }}" class="btn btn-navy"><i class="fa fa-plus"></i> Nouvel hébergement</a>
+</div>
+
+>>>>>>> testsisi
 <div class="admin-toolbar">
     <form method="GET" action="{{ path('admin_hebergements') }}" id="filterForm">
         <div class="admin-toolbar__row">

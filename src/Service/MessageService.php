@@ -17,14 +17,18 @@ use Symfony\Component\Mercure\Update;
 
 class MessageService
 {
+<<<<<<< HEAD
     private ?HubInterface $hub = null;
 
+=======
+>>>>>>> testsisi
     public function __construct(
         private EntityManagerInterface $em,
         private ConversationRepository $conversationRepo,
         private MessageRepository $messageRepo,
         private ConversationParticipantRepository $participantRepo,
         private UserRepository $userRepo,
+<<<<<<< HEAD
     ) {}
 
     public function setMercureHub(?HubInterface $hub): void
@@ -32,6 +36,11 @@ class MessageService
         $this->hub = $hub;
     }
 
+=======
+        private ?HubInterface $hub = null,
+    ) {}
+
+>>>>>>> testsisi
     public function getUserConversations(User $user): array
     {
         return $this->conversationRepo->findByUser($user);
@@ -133,7 +142,11 @@ class MessageService
         }
     }
 
+<<<<<<< HEAD
     public function sendMessage(Conversation $conversation, User $sender, string $content, ?string $image = null, ?string $audio = null, ?Message $replyTo = null): Message
+=======
+    public function sendMessage(Conversation $conversation, User $sender, string $content, ?string $image = null, ?string $audio = null, ?Message $replyTo = null, ?string $video = null): Message
+>>>>>>> testsisi
     {
         $message = new Message();
         $message->setConversation($conversation);
@@ -143,6 +156,10 @@ class MessageService
         $message->setCreatedAt(new \DateTime());
         $message->setImage($image);
         $message->setAudio($audio);
+<<<<<<< HEAD
+=======
+        $message->setVideo($video);
+>>>>>>> testsisi
         $message->setReplyTo($replyTo);
         
         $this->em->persist($message);
@@ -164,6 +181,7 @@ class MessageService
             $sender = $message->getSender();
             $topic = 'conversation/' . $conversation->getId();
             
+<<<<<<< HEAD
             $replyToData = null;
             $replyTo = $message->getReplyTo();
             if ($replyTo) {
@@ -175,6 +193,8 @@ class MessageService
                 ];
             }
 
+=======
+>>>>>>> testsisi
             $messageData = [
                 'type' => 'new_message',
                 'message' => [
@@ -189,7 +209,10 @@ class MessageService
                         'name' => $sender->getPrenom() . ' ' . $sender->getNom(),
                         'avatar' => $sender->getAvatar(),
                     ] : null,
+<<<<<<< HEAD
                     'replyTo' => $replyToData,
+=======
+>>>>>>> testsisi
                 ],
                 'conversationId' => $conversation->getId(),
             ];
@@ -224,6 +247,7 @@ class MessageService
             $senderId = isset($row['sender_id']) ? (int)$row['sender_id'] : null;
             $isMe = $senderId == $currentUser->getId();
             
+<<<<<<< HEAD
             $messageType = $row['type'] ?? 'text';
             $metadata = null;
             
@@ -250,6 +274,16 @@ class MessageService
                 'createdAt' => $row['created_at'] ?? null,
                 'metadata' => $metadata,
                 'replyTo' => $replyTo,
+=======
+            $result[] = [
+                'id' => (int)($row['id'] ?? 0),
+                'content' => $row['content'] ?? '',
+                'image' => $row['image'] ?? null,
+                'video' => $row['video'] ?? null,
+                'audio' => $row['audio'] ?? null,
+                'status' => $row['status'] ?? 'sent',
+                'createdAt' => $row['created_at'] ?? null,
+>>>>>>> testsisi
                 'sender' => $senderId ? [
                     'id' => $senderId,
                     'name' => trim(($row['prenom'] ?? '') . ' ' . ($row['nom'] ?? '')),
@@ -306,6 +340,7 @@ class MessageService
     public function getConversationForApi(Conversation $conversation, User $user): array
     {
         $otherUser = null;
+<<<<<<< HEAD
         $nickname = null;
         try {
             $otherUser = $this->getOtherParticipant($conversation, $user);
@@ -318,6 +353,10 @@ class MessageService
                 )->fetchOne();
                 $nickname = $nicknameData ?: null;
             }
+=======
+        try {
+            $otherUser = $this->getOtherParticipant($conversation, $user);
+>>>>>>> testsisi
         } catch (\Throwable $e) {
             // If we can't get the other participant, continue without it
         }
@@ -343,6 +382,7 @@ class MessageService
         $unreadCount = 0;
         try {
             $conn = $this->em->getConnection();
+<<<<<<< HEAD
             $unreadCountData = $conn->executeQuery(
                 'SELECT unread_count FROM conversation_participant WHERE conversation_id = :convId AND user_id = :userId',
                 ['convId' => $conversation->getId(), 'userId' => $user->getId()]
@@ -350,6 +390,14 @@ class MessageService
             $unreadCount = (int) ($unreadCountData ?: 0);
         } catch (\Throwable $e) {
             error_log('getConversationForApi unreadCount error: ' . $e->getMessage());
+=======
+            $unreadCount = (int) $conn->executeQuery(
+                'SELECT unread_count FROM conversation_participant WHERE conversation_id = ? AND user_id = ?',
+                [$conversation->getId(), $user->getId()]
+            )->fetchOne() ?: 0;
+        } catch (\Throwable $e) {
+            // Can't get unread count
+>>>>>>> testsisi
         }
         
         return [
@@ -357,11 +405,18 @@ class MessageService
             'type' => $conversation->getType(),
             'name' => $conversation->getType() === 'group' ? $conversation->getName() : null,
             'image' => $conversation->getImage(),
+<<<<<<< HEAD
             'nickname' => $nickname,
+=======
+>>>>>>> testsisi
             'otherUser' => $otherUser ? [
                 'id' => $otherUser->getId(),
                 'name' => $otherUser->getPrenom() . ' ' . $otherUser->getNom(),
                 'avatar' => $otherUser->getAvatar(),
+<<<<<<< HEAD
+=======
+                'isOnline' => $otherUser->isOnline(),
+>>>>>>> testsisi
             ] : null,
             'lastMessage' => $lastMsgContent !== null ? [
                 'content' => $lastMsgContent,

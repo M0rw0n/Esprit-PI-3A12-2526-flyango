@@ -71,10 +71,13 @@ function initDashboardCharts(revenusData,villesData){
 }
 
 /* ═══════ AJAX FAVORITES (ALL MODULES) ═══════ */
+<<<<<<< HEAD
 function toggleFavori(id, btn) {
     return toggleFavorite(id, 'hebergement', btn);
 }
 
+=======
+>>>>>>> testsisi
 function toggleFavorite(id, type, btn) {
     if (!btn) btn = document.querySelector(`[data-id="${id}"] .favorite-btn`);
     fetch(`/ajax/favorite/${type}/${id}`, { method: 'POST' })

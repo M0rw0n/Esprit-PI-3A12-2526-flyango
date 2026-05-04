@@ -6,7 +6,10 @@ use App\Repository\TransportOfferRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Enum\TransportTypeEnum;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: TransportOfferRepository::class)]
 #[ORM\Table(name: 'transport_details')]
@@ -20,8 +23,13 @@ class TransportOffer
     #[ORM\Column(name: 'offer_id')]
     private int $offerId = 0;
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'transport_type', type: 'transport_type_enum', length: 50, nullable: true)]
     private ?TransportTypeEnum $transportType = null;
+=======
+    #[ORM\Column(name: 'transport_type', length: 50, nullable: true)]
+    private ?string $transportType = null;
+>>>>>>> testsisi
 
     #[ORM\Column(name: 'company_name', length: 150, nullable: true)]
     private ?string $companyName = null;
@@ -65,9 +73,12 @@ class TransportOffer
     #[ORM\Column(name: 'created_at', type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     #[ORM\OneToMany(mappedBy: 'transportOffer', targetEntity: TransportBooking::class, cascade: ['remove'])]
     private Collection $bookings;
 
@@ -86,8 +97,13 @@ class TransportOffer
     public function getId(): ?int { return $this->id; }
     public function getOfferId(): int { return $this->offerId; }
     public function setOfferId(int $id): static { $this->offerId = $id; return $this; }
+<<<<<<< HEAD
     public function getTransportType(): ?TransportTypeEnum { return $this->transportType; }
     public function setTransportType(?TransportTypeEnum $t): static { $this->transportType = $t; return $this; }
+=======
+    public function getTransportType(): ?string { return $this->transportType; }
+    public function setTransportType(?string $t): static { $this->transportType = $t; return $this; }
+>>>>>>> testsisi
     public function getCompanyName(): ?string { return $this->companyName; }
     public function setCompanyName(?string $n): static { $this->companyName = $n; return $this; }
     public function getDepartureCity(): ?string { return $this->departureCity; }
@@ -95,7 +111,13 @@ class TransportOffer
     public function getArrivalCity(): ?string { return $this->arrivalCity; }
     public function setArrivalCity(?string $c): static { $this->arrivalCity = $c; return $this; }
     public function getDepartureDatetime(): \DateTimeInterface { return $this->departureDatetime; }
+<<<<<<< HEAD
     public function getArrivalDatetime(): \DateTimeInterface { return $this->arrivalDatetime; }
+=======
+    public function setDepartureDatetime(\DateTimeInterface $d): static { $this->departureDatetime = $d; return $this; }
+    public function getArrivalDatetime(): \DateTimeInterface { return $this->arrivalDatetime; }
+    public function setArrivalDatetime(\DateTimeInterface $a): static { $this->arrivalDatetime = $a; return $this; }
+>>>>>>> testsisi
     public function getAvailableSeats(): ?int { return $this->availableSeats; }
     public function setAvailableSeats(?int $s): static { $this->availableSeats = $s; return $this; }
     public function getPrice(): float { return $this->price !== null ? (float) $this->price : 0.0; }
@@ -113,9 +135,13 @@ class TransportOffer
     public function isActive(): bool { return $this->isActive; }
     public function setIsActive(bool $a): static { $this->isActive = $a; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
+=======
+    public function setCreatedAt(\DateTimeInterface $c): static { $this->createdAt = $c; return $this; }
+>>>>>>> testsisi
     public function getBookings(): Collection { return $this->bookings; }
     public function getAvis(): Collection { return $this->avis; }
 
@@ -127,10 +153,17 @@ class TransportOffer
     public function getTransportIcon(): string
     {
         return match($this->transportType) {
+<<<<<<< HEAD
             TransportTypeEnum::FLIGHT, TransportTypeEnum::AVION => 'fa-plane',
             TransportTypeEnum::TRAIN, TransportTypeEnum::TRAIN_FR => 'fa-train',
             TransportTypeEnum::BUS, TransportTypeEnum::BUS_FR => 'fa-bus',
             TransportTypeEnum::CAR, TransportTypeEnum::TAXI, TransportTypeEnum::TAXI_FR => 'fa-car',
+=======
+            'FLIGHT' => 'fa-plane',
+            'TRAIN' => 'fa-train',
+            'BUS' => 'fa-bus',
+            'CAR' => 'fa-car',
+>>>>>>> testsisi
             default => 'fa-ship',
         };
     }

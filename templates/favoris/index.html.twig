@@ -20,7 +20,10 @@
         <a href="{{ path('favoris_activities') }}" class="tab"><i class="fa fa-hiking"></i> Activités <span class="tab-count">{{ activities.totalItemCount|default(activities|length) }}</span></a>
         <a href="{{ path('favoris_transports') }}" class="tab"><i class="fa fa-plane"></i> Transport <span class="tab-count">{{ transports.totalItemCount|default(transports|length) }}</span></a>
         <a href="{{ path('favoris_posts') }}" class="tab"><i class="fa fa-comments"></i> Posts <span class="tab-count">{{ posts.totalItemCount|default(posts|length) }}</span></a>
+<<<<<<< HEAD
         <a href="{{ path('chatbot_index') }}" class="tab" style="border-color:var(--gold);color:var(--gold)"><i class="fa fa-suitcase"></i> Conseils</a>
+=======
+>>>>>>> testsisi
     </div>
 
     {% if hebergements is empty and circuits is empty and activities is empty and transports is empty and posts is empty %}

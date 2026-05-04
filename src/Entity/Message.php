@@ -6,13 +6,19 @@ use App\Repository\MessageRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: 'message')]
 class Message
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     const STATUS_SENT = 'sent';
     const STATUS_DELIVERED = 'delivered';
     const STATUS_READ = 'read';
@@ -21,11 +27,19 @@ class Message
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Conversation::class, inversedBy: 'messages')]
+<<<<<<< HEAD
     #[ORM\JoinColumn(name: 'conversation_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Conversation $conversation = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'sender_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+=======
+    #[ORM\JoinColumn(name: 'conversation_id', nullable: false)]
+    private ?Conversation $conversation = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'sender_id', nullable: false)]
+>>>>>>> testsisi
     private ?User $sender = null;
 
     #[ORM\Column(type: 'text')]
@@ -37,15 +51,19 @@ class Message
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $readAt = null;
 
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $image = null;
 
+<<<<<<< HEAD
     #[ORM\OneToMany(mappedBy: 'message', targetEntity: MessageReaction::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private Collection $reactions;
 
@@ -61,6 +79,20 @@ class Message
 
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = null;
+=======
+    #[ORM\OneToMany(mappedBy: 'message', targetEntity: MessageReaction::class, cascade: ['remove'])]
+    private Collection $reactions;
+
+    #[ORM\ManyToOne(targetEntity: Message::class)]
+    #[ORM\JoinColumn(name: 'reply_to', nullable: true)]
+    private ?Message $replyTo = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $audio = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $video = null;
+>>>>>>> testsisi
 
     public function __construct()
     {
@@ -79,10 +111,16 @@ class Message
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $s): static { $this->status = $s; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
     public function getReadAt(): ?\DateTimeInterface { return $this->readAt; }
+=======
+    public function setCreatedAt(\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+    public function getReadAt(): ?\DateTimeInterface { return $this->readAt; }
+    public function setReadAt(?\DateTimeInterface $d): static { $this->readAt = $d; return $this; }
+>>>>>>> testsisi
     public function getImage(): ?string { return $this->image; }
     public function setImage(?string $i): static { $this->image = $i; return $this; }
     public function getReactions(): Collection { return $this->reactions; }
@@ -90,8 +128,14 @@ class Message
     public function setReplyTo(?Message $m): static { $this->replyTo = $m; return $this; }
     public function getAudio(): ?string { return $this->audio; }
     public function setAudio(?string $a): static { $this->audio = $a; return $this; }
+<<<<<<< HEAD
     public function getType(): string { return $this->type; }
     public function setType(string $t): static { $this->type = $t; return $this; }
     public function getMetadata(): ?array { return $this->metadata; }
     public function setMetadata(?array $m): static { $this->metadata = $m; return $this; }
 }
+=======
+    public function getVideo(): ?string { return $this->video; }
+    public function setVideo(?string $v): static { $this->video = $v; return $this; }
+}
+>>>>>>> testsisi

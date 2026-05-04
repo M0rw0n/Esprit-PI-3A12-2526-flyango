@@ -2,10 +2,13 @@
 
 use App\Kernel;
 
+<<<<<<< HEAD
 // Increase execution time and memory for slow class loading on Windows
 ini_set('max_execution_time', 120);
 ini_set('memory_limit', '512M');
 
+=======
+>>>>>>> testsisi
 require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
 return function (array $context) {

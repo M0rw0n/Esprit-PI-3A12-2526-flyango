@@ -8,11 +8,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 {% if google_client_id %}
+<<<<<<< HEAD
 <script src="https://accounts.google.com/gsi/client" async defer referrerpolicy="no-referrer-when-downgrade"></script>
 {% endif %}
 {% if recaptcha_site_key %}
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 {% endif %}
+=======
+<script src="https://accounts.google.com/gsi/client?client_id={{ google_client_id }}" async></script>
+{% endif %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+>>>>>>> testsisi
     <style>
         body { 
             background: 
@@ -135,6 +141,10 @@
         .social-btn:hover { border-color: #1B3A6B; background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(27,58,107,0.1); }
         .social-btn.google i { color: #ea4335; }
         .social-btn.facebook i { color: #1877f2; }
+<<<<<<< HEAD
+=======
+        .g-recaptcha { margin: 1rem 0; display: flex; justify-content: center; }
+>>>>>>> testsisi
     </style>
 </head>
 <body>
@@ -186,6 +196,7 @@
                     <a href="{{ path('app_forgot_password_request') }}" class="forgot-link">Mot de passe oublié ?</a>
                 </div>
 
+<<<<<<< HEAD
                 {% if recaptcha_site_key %}
                 <div class="fg-group">
                     <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
@@ -193,6 +204,10 @@
                 {% endif %}
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+=======
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+>>>>>>> testsisi
                 <button type="submit" class="btn-navy" id="submitBtn">
                     <i class="fas fa-sign-in-alt"></i>
                     Se connecter
@@ -253,8 +268,13 @@ document.getElementById('emailInput').addEventListener('blur', function() {
     }
 });
 
+<<<<<<< HEAD
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     var btn = document.getElementById('submitBtn');
+=======
+document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+>>>>>>> testsisi
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion en cours...';
 });
@@ -262,6 +282,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 
 {% if google_client_id %}
 <script>
+<<<<<<< HEAD
 var googleClientId = '{{ google_client_id }}';
 var googleApiLoaded = false;
 
@@ -327,6 +348,18 @@ function checkHttps() {
         return false;
     }
     return true;
+=======
+function loginWithGoogle() {
+    if (typeof google === 'undefined' || !google.accounts) {
+        google.accounts.id.renderButton(document.getElementById('googleBtn'), {
+            theme: 'outline',
+            size: 'large',
+            callback: handleGoogleResponse
+        });
+        return;
+    }
+    google.accounts.id.prompt();
+>>>>>>> testsisi
 }
 
 function handleGoogleResponse(response) {
@@ -347,6 +380,7 @@ function handleGoogleResponse(response) {
         });
     }
 }
+<<<<<<< HEAD
 
 var checkGoogleReady = setInterval(function() {
     try {
@@ -360,11 +394,14 @@ var checkGoogleReady = setInterval(function() {
 setTimeout(function() {
     clearInterval(checkGoogleReady);
 }, 5000);
+=======
+>>>>>>> testsisi
 </script>
 {% endif %}
 
 {% if facebook_app_id %}
 <div id="fb-root"></div>
+<<<<<<< HEAD
 <script>
 
 function checkHttps() {
@@ -380,12 +417,18 @@ function checkHttps() {
 var fbApiLoaded = false;
 
 function initFacebookSDK() {
+=======
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/fr_FR/sdk.js#{{ facebook_app_id }}"></script>
+<script>
+window.fbAsyncInit = function() {
+>>>>>>> testsisi
     FB.init({
         appId: '{{ facebook_app_id }}',
         cookie: true,
         xfbml: true,
         version: 'v18.0'
     });
+<<<<<<< HEAD
     fbApiLoaded = true;
     console.log('FB SDK initialized');
 }
@@ -427,6 +470,20 @@ function loginWithFacebook() {
         '&state=fb_login';
     
     window.location.href = authUrl;
+=======
+};
+
+function loginWithFacebook() {
+    FB.getLoginStatus(function(response) {
+        if (response.status === 'connected') {
+            fbApiLogin(response.authResponse);
+        } else {
+            FB.login(function(response) {
+                if (response.authResponse) fbApiLogin(response.authResponse);
+            }, {scope: 'email,public_profile'});
+        }
+    });
+>>>>>>> testsisi
 }
 
 function fbApiLogin(authResponse) {
@@ -450,6 +507,52 @@ function fbApiLogin(authResponse) {
 </script>
 {% endif %}
 
+<<<<<<< HEAD
 
+=======
+{% if facebook_app_id %}
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/fr_FR/sdk.js#{{ facebook_app_id }}"></script>
+<script>
+function loginWithFacebook() {
+    FB.init({
+        appId: '{{ facebook_app_id }}',
+        cookie: true,
+        xfbml: true,
+        version: 'v18.0'
+    });
+
+    FB.getLoginStatus(function(response) {
+        if (response.status === 'connected') {
+            fbApiLogin(response.authResponse);
+        } else {
+            FB.login(function(response) {
+                if (response.authResponse) fbApiLogin(response.authResponse);
+            }, {scope: 'email,public_profile'});
+        }
+    });
+}
+
+function fbApiLogin(authResponse) {
+    FB.api('/me?fields=id,name,email,picture', function(userData) {
+        fetch('{{ path('api_auth_facebook') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                facebook_token: authResponse.accessToken,
+                facebook_id: userData.id,
+                email: userData.email || userData.id + '@facebook.local',
+                name: userData.name,
+                avatar: userData.picture?.data?.url
+            })
+        }).then(r => r.json()).then(data => {
+            if (data.success) window.location.href = data.redirect || '{{ path('user_dashboard') }}';
+            else alert(data.error || 'Erreur Facebook');
+        });
+    });
+}
+</script>
+{% endif %}
+>>>>>>> testsisi
 </body>
 </html>

@@ -22,6 +22,7 @@ class CallController extends AbstractController
 
     private function getCurrentUser(): ?User
     {
+<<<<<<< HEAD
         try {
             $token = $this->tokenStorage->getToken();
             $user = $token?->getUser();
@@ -29,11 +30,16 @@ class CallController extends AbstractController
         } catch (\Throwable $e) {
             return null;
         }
+=======
+        $token = $this->tokenStorage->getToken();
+        return $token?->getUser() instanceof User ? $token->getUser() : null;
+>>>>>>> testsisi
     }
 
     #[Route('/initiate', name: 'api_calls_initiate', methods: ['POST'])]
     public function initiateCall(Request $request): JsonResponse
     {
+<<<<<<< HEAD
         try {
             $user = $this->getCurrentUser();
             if (!$user) return new JsonResponse(['error' => 'Unauthorized'], 401);
@@ -49,11 +55,38 @@ class CallController extends AbstractController
         } catch (\Throwable $e) {
             return new JsonResponse(['error' => $e->getMessage()], 500);
         }
+=======
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $calleeId = (int) $request->request->get('callee_id');
+        $conversationId = (int) $request->request->get('conversation_id');
+        $type = $request->request->get('type', 'video');
+
+        if (!$calleeId || !$conversationId) {
+            return new JsonResponse(['error' => 'Missing parameters'], 400);
+        }
+
+        $callee = $this->em->getRepository(User::class)->find($calleeId);
+        if (!$callee) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        $result = $this->callService->initiateCall($user->getId(), $calleeId, $conversationId, $type);
+
+        return new JsonResponse([
+            'success' => true,
+            'call' => $result,
+        ]);
+>>>>>>> testsisi
     }
 
     #[Route('/accept', name: 'api_calls_accept', methods: ['POST'])]
     public function acceptCall(Request $request): JsonResponse
     {
+<<<<<<< HEAD
         try {
             $user = $this->getCurrentUser();
             if (!$user) return new JsonResponse(['error' => 'Unauthorized'], 401);
@@ -63,11 +96,24 @@ class CallController extends AbstractController
         } catch (\Throwable $e) {
             return new JsonResponse(['error' => $e->getMessage()], 500);
         }
+=======
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $callId = $request->request->get('call_id');
+        
+        $result = $this->callService->acceptCall($callId, $user->getId());
+
+        return new JsonResponse($result);
+>>>>>>> testsisi
     }
 
     #[Route('/reject', name: 'api_calls_reject', methods: ['POST'])]
     public function rejectCall(Request $request): JsonResponse
     {
+<<<<<<< HEAD
         try {
             $user = $this->getCurrentUser();
             if (!$user) return new JsonResponse(['error' => 'Unauthorized'], 401);
@@ -77,11 +123,24 @@ class CallController extends AbstractController
         } catch (\Throwable $e) {
             return new JsonResponse(['error' => $e->getMessage()], 500);
         }
+=======
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $callId = $request->request->get('call_id');
+        
+        $result = $this->callService->rejectCall($callId, $user->getId());
+
+        return new JsonResponse($result);
+>>>>>>> testsisi
     }
 
     #[Route('/end', name: 'api_calls_end', methods: ['POST'])]
     public function endCall(Request $request): JsonResponse
     {
+<<<<<<< HEAD
         try {
             $user = $this->getCurrentUser();
             if (!$user) return new JsonResponse(['error' => 'Unauthorized'], 401);
@@ -91,11 +150,24 @@ class CallController extends AbstractController
         } catch (\Throwable $e) {
             return new JsonResponse(['error' => $e->getMessage()], 500);
         }
+=======
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $callId = $request->request->get('call_id');
+        
+        $result = $this->callService->endCall($callId, $user->getId());
+
+        return new JsonResponse($result);
+>>>>>>> testsisi
     }
 
     #[Route('/status', name: 'api_calls_status', methods: ['GET'])]
     public function getCallStatus(): JsonResponse
     {
+<<<<<<< HEAD
         try {
             $user = $this->getCurrentUser();
             if (!$user) return new JsonResponse(['error' => 'Unauthorized'], 401);
@@ -107,3 +179,18 @@ class CallController extends AbstractController
         }
     }
 }
+=======
+        $user = $this->getCurrentUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $activeCall = $this->callService->getActiveCallForUser($user->getId());
+
+        return new JsonResponse([
+            'hasActiveCall' => $activeCall !== null,
+            'call' => $activeCall,
+        ]);
+    }
+}
+>>>>>>> testsisi

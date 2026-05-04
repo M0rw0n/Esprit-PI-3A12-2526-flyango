@@ -13,10 +13,17 @@
         </div>
     </div>
 
+<<<<<<< HEAD
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem">
         {% for c in circuits %}
         <div class="ccard" style="font-size:.85rem">
             <div class="ccard__body" style="padding:.75rem">
+=======
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.5rem">
+        {% for c in circuits %}
+        <div class="ccard">
+            <div class="ccard__body">
+>>>>>>> testsisi
                 <div style="display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:.6rem">
                     <span class="tag tag--navy">Personnalisé</span>
                 </div>
@@ -44,6 +51,16 @@
         {% endfor %}
     </div>
 
+<<<<<<< HEAD
     
+=======
+    {% if circuits.totalItemCount > circuits.itemNumberPerPage %}
+    <div style="padding:2rem;text-align:center">
+        {% for page in 1..circuits.pageCount %}
+            <a href="{{ path('user_circuits', {page: page}) }}" class="btn {{ page == circuits.currentPageNumber ? 'btn-navy' : 'btn-outline' }} btn-sm" style="margin:0 .2rem">{{ page }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+>>>>>>> testsisi
 </div>
 {% endblock %}

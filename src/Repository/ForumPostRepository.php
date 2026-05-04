@@ -13,23 +13,40 @@ class ForumPostRepository extends ServiceEntityRepository
         return $this->findBy(['status' => $statut], ['createdAt' => 'DESC']);
     }
 
+<<<<<<< HEAD
     public function search(?string $q, ?string $categorie, int $limit = 50): array
+=======
+    public function search(?string $q, ?string $categorie): array
+>>>>>>> testsisi
     {
         $qb = $this->createQueryBuilder('p')
             ->andWhere('p.status = :status')
             ->setParameter('status', 'APPROVED');
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> testsisi
         if ($q) {
             $qb->andWhere('p.title LIKE :q OR p.content LIKE :q OR p.author LIKE :q')
                ->setParameter('q', '%' . $q . '%');
         }
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> testsisi
         if ($categorie) {
             $qb->andWhere('p.categorie = :categorie')
                ->setParameter('categorie', $categorie);
         }
+<<<<<<< HEAD
 
         return $qb->orderBy('p.createdAt', 'DESC')->setMaxResults($limit)->getQuery()->getResult();
+=======
+        
+        return $qb->orderBy('p.createdAt', 'DESC')->getQuery()->getResult();
+>>>>>>> testsisi
     }
 
     public function searchPaginated(?string $q, ?string $categorie, int $page = 1, int $limit = 10): array
@@ -73,6 +90,7 @@ class ForumPostRepository extends ServiceEntityRepository
         
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
+<<<<<<< HEAD
 
     public function findCommentCountsByPostIds(array $ids): array
     {
@@ -93,4 +111,6 @@ class ForumPostRepository extends ServiceEntityRepository
         }
         return $counts;
     }
+=======
+>>>>>>> testsisi
 }

@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+<<<<<<< HEAD
 use App\Repository\FAQRepository;
 use App\Repository\CircuitRepository;
 use App\Service\HuggingFaceService;
@@ -9,10 +10,13 @@ use App\Service\LocalEmbeddingService;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
+=======
+>>>>>>> testsisi
 class ChatbotService
 {
     private ?OpenAIService $openAIService;
     private ?NLPService $nlpService;
+<<<<<<< HEAD
     private ?FAQRepository $faqRepository;
     private ?CircuitRepository $circuitRepository;
     private ?HuggingFaceService $hfService;
@@ -28,15 +32,26 @@ class ChatbotService
         ?CircuitRepository $circuitRepository = null,
         ?HuggingFaceService $hfService = null,
         ?CacheInterface $cache = null
+=======
+    private array $faq = [];
+    private string $fallbackMessage = "Je n'ai pas trouvé de réponse précise à votre question. Vous pouvez nous contacter directement via le forum ou le support. Nous serions ravis de vous aider!";
+
+    public function __construct(
+        ?OpenAIService $openAIService = null,
+        ?NLPService $nlpService = null
+>>>>>>> testsisi
     )
     {
         $this->openAIService = $openAIService;
         $this->nlpService = $nlpService;
+<<<<<<< HEAD
         $this->faqRepository = $faqRepository;
         $this->circuitRepository = $circuitRepository;
         $this->hfService = $hfService;
         $this->localEmbeddingService = new LocalEmbeddingService();
         $this->cache = $cache;
+=======
+>>>>>>> testsisi
         $this->initFaq();
     }
 
@@ -515,11 +530,16 @@ class ChatbotService
             ],
             'confirmation_email' => [
                 'keywords' => ['email confirm', 'recu email', 'confirmation'],
+<<<<<<< HEAD
                 'response' => "Vous allez recevoir un e-mail de confirmation contenant tous les détails de votre réservation."
+=======
+                'response' => "Vous recevoir un email de confirmation."
+>>>>>>> testsisi
             ]
         ];
     }
 
+<<<<<<< HEAD
     private function normalizeText(string $text): string
     {
         $text = mb_strtolower(trim($text));
@@ -561,10 +581,24 @@ class ChatbotService
         ];
 
         if (empty($normalizedMessage)) {
+=======
+    public function processMessage(string $message, array $conversationHistory = []): array
+    {
+        $message = mb_strtolower(trim($message));
+
+        $result = [
+            'response' => '',
+            'action' => null,
+            'filters' => []
+        ];
+
+        if (empty($message)) {
+>>>>>>> testsisi
             $result['response'] = "Bonjour! Je suis votre assistant Fly&Go. Comment puis-je vous aider aujourd'hui?";
             return $result;
         }
 
+<<<<<<< HEAD
         // 1. Check Database FAQ (Hybrid Search: Semantic + Keywords)
         if ($this->faqRepository) {
             $startSearch = microtime(true);
@@ -690,6 +724,8 @@ class ChatbotService
         }
 
         // 2. Check NLP Service
+=======
+>>>>>>> testsisi
         if ($this->nlpService) {
             $nlpResponse = $this->nlpService->getResponse($message);
             if ($nlpResponse) {
@@ -698,13 +734,18 @@ class ChatbotService
             }
         }
 
+<<<<<<< HEAD
         // 3. Check Hardcoded FAQ (Fallback/Static)
         $matches = [];
         $words = explode(' ', $message);
+=======
+        $matches = [];
+>>>>>>> testsisi
         
         foreach ($this->faq as $category => $data) {
             foreach ($data['keywords'] as $keyword) {
                 $keywordLower = mb_strtolower($keyword);
+<<<<<<< HEAD
                 
                 if (mb_strpos($message, $keywordLower) !== false) {
                     $score = mb_strlen($keyword) * 2;
@@ -724,12 +765,24 @@ class ChatbotService
                             $matches[] = ['score' => mb_strlen($keywordLower), 'response' => $data['response'], 'category' => $category];
                         }
                     }
+=======
+                if (mb_strpos($message, $keywordLower) !== false) {
+                    $score = mb_strlen($keyword);
+                    $matches[] = ['score' => $score, 'response' => $data['response'], 'category' => $category];
+>>>>>>> testsisi
                 }
             }
         }
 
         if (!empty($matches)) {
+<<<<<<< HEAD
             usort($matches, fn($a, $b) => $b['score'] - $a['score']);
+=======
+            usort($matches, function($a, $b) {
+                return $b['score'] - $a['score'];
+            });
+
+>>>>>>> testsisi
             $response = $matches[0]['response'] ?? '';
 
             if ($response === '__SEARCH__' || $response === '__FILTER__') {
@@ -758,7 +811,11 @@ class ChatbotService
             }
 
             if (count($matches) >= 2) {
+<<<<<<< HEAD
                 if (isset($matches[0]['category'], $matches[1]['category'])) {
+=======
+                if (isset($matches[0]['category']) && isset($matches[1]['category'])) {
+>>>>>>> testsisi
                     if (in_array($matches[0]['category'], ['paris_hotel', 'paris_advice']) || 
                         in_array($matches[1]['category'], ['paris_hotel', 'paris_advice'])) {
                         foreach ($matches as $m) {
@@ -771,15 +828,19 @@ class ChatbotService
                 }
             }
             
+<<<<<<< HEAD
             // If the best match is too generic and we have OpenAI, let's try OpenAI instead
             if ($matches[0]['score'] < 10 && $this->openAIService && $this->openAIService->isEnabled()) {
                 return $this->processWithAI($message, $conversationHistory, $result, $userContext);
             }
 
+=======
+>>>>>>> testsisi
             $result['response'] = $response;
             return $result;
         }
 
+<<<<<<< HEAD
         // 4. OpenAI Fallback
         if ($this->openAIService && $this->openAIService->isEnabled()) {
             return $this->processWithAI($message, $conversationHistory, $result, $userContext);
@@ -807,6 +868,30 @@ class ChatbotService
             return $result;
         }
 
+=======
+        if (mb_strlen($message) < 4) {
+            $result['response'] = "Tapez un mot-clé plus long pour une réponse précise (ex: 'réservation', 'hôtel', 'vol', 'circuit', 'contact')";
+            return $result;
+        }
+
+        if ($this->openAIService && $this->openAIService->isEnabled()) {
+            $historyForAI = [];
+            foreach ($conversationHistory as $msg) {
+                $historyForAI[] = [
+                    'role' => $msg['isUser'] ? 'user' : 'assistant',
+                    'content' => $msg['content']
+                ];
+            }
+            
+            $response = $this->openAIService->chat($message, $historyForAI);
+            
+            if ($response['success']) {
+                $result['response'] = $response['response'];
+                return $result;
+            }
+        }
+
+>>>>>>> testsisi
         $result['response'] = $this->fallbackMessage;
         return $result;
     }
@@ -816,6 +901,7 @@ class ChatbotService
         $destinations = [
             'paris' => 'Paris', 'londres' => 'Londres', 'new york' => 'New York', 'new-york' => 'New York',
             'marrakech' => 'Marrakech', 'fes' => 'Fès', 'tunis' => 'Tunis', 'djerba' => 'Djerba',
+<<<<<<< HEAD
             'jerba' => 'Djerba', 'houmt souk' => 'Djerba', 'guellala' => 'Djerba', 'midoun' => 'Djerba',
             'hammamet' => 'Hammamet', 'roma' => 'Rome', 'barcelone' => 'Barcelone', 'madrid' => 'Madrid',
             'berlin' => 'Berlin', 'amsterdam' => 'Amsterdam', 'istanbul' => 'Istanbul', 'dubai' => 'Dubaï',
@@ -826,6 +912,10 @@ class ChatbotService
             'zaghouan' => 'Zaghouan', 'beja' => 'Béja', 'jendouba' => 'Jendouba', 'le kef' => 'Le Kef',
             'siliana' => 'Siliana', 'gafsa' => 'Gafsa', 'gabes' => 'Gabès', 'medenine' => 'Médenine',
             'kebili' => 'Kébili', 'tataouine' => 'Tataouine', 'sidi bouzid' => 'Sidi Bouzid', 'kasserine' => 'Kasserine'
+=======
+            'hammamet' => 'Hammamet', 'roma' => 'Rome', 'barcelone' => 'Barcelone', 'madrid' => 'Madrid',
+            'berlin' => 'Berlin', 'amsterdam' => 'Amsterdam', 'istanbul' => 'Istanbul', 'dubai' => 'Dubaï'
+>>>>>>> testsisi
         ];
 
         foreach ($destinations as $key => $name) {
@@ -843,8 +933,12 @@ class ChatbotService
             'france' => 'France', 'tunisie' => 'Tunisie', 'maroc' => 'Maroc', 'egypte' => 'Égypte',
             'espagne' => 'Espagne', 'italie' => 'Italie', 'turquie' => 'Turquie', 'grece' => 'Grèce',
             'algerie' => 'Algérie', 'angleterre' => 'Angleterre', 'allemagne' => 'Allemagne',
+<<<<<<< HEAD
             'pays-bas' => 'Pays-Bas', 'emirats' => 'Émirats arabes unis', 'belgique' => 'Belgique',
             'suisse' => 'Suisse', 'canada' => 'Canada', 'usa' => 'États-Unis', 'portugal' => 'Portugal'
+=======
+            'pays-bas' => 'Pays-Bas', 'emirats' => 'Émirats arabes unis'
+>>>>>>> testsisi
         ];
 
         foreach ($countries as $key => $name) {

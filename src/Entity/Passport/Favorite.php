@@ -35,4 +35,8 @@ class Favorite
     public function getPuzzle(): ?Puzzle { return $this->puzzle; }
     public function setPuzzle(?Puzzle $puzzle): static { $this->puzzle = $puzzle; return $this; }
     public function getAddedAt(): \DateTimeInterface { return $this->addedAt; }
+<<<<<<< HEAD
+=======
+    public function setAddedAt(\DateTimeInterface $addedAt): static { $this->addedAt = $addedAt; return $this; }
+>>>>>>> testsisi
 }

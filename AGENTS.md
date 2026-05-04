@@ -24,12 +24,19 @@
 - Stored in `conversation_theme` table
 
 ### 5. Reply to Message
+<<<<<<< HEAD
 - Right-click → "Répondre" or click ↩️ button
 - Shows sender name and content preview in chat bubble
 - Active reply bar appears above input with cancel button
 - Backend: `POST /api/messages/conversation/{id}/messages` with `replyTo` in body
 - Messages with replies show preview above them with styled border
 - Mercure real-time updates include replyTo data
+=======
+- Right-click → "Répondre"
+- Shows sender name and content preview
+- Backend saves `reply_to` in message table
+- Messages with replies show preview above them
+>>>>>>> testsisi
 
 ### 6. Call History
 - Shown in conversation info sidebar
@@ -42,6 +49,7 @@
    - Try: Clear browser cache + hard refresh (Ctrl+Shift+R)
    - Or: Delete var/cache/* manually
 
+<<<<<<< HEAD
 2. **GIF URLs** - Tenor URLs expire frequently, fallback shows placeholder
 
 ## Files Modified
@@ -53,17 +61,37 @@
 - `src/Repository/MessageRepository.php` - SQL joins for reply_to data
 - `src/Entity/Message.php` - Fixed reply_to column name mapping
 - `public/js/messenger.js` - Reply send, preview, active bar, clear
+=======
+2. **Reply feature** - May need testing to verify
+
+3. **GIF URLs** - Tenor URLs expire frequently, fallback shows placeholder
+
+## Files Modified
+
+- `templates/messenger/index.html.twig` - UI, JS, CSS
+- `src/Controller/MessageController.php` - Delete, React, Theme API
+- `src/Controller/FriendController.php` - Nickname API
+- `src/Service/MessageService.php` - Reply support
+>>>>>>> testsisi
 - Database: `friend_nickname`, `conversation_theme` tables created
 
 ## Testing Checklist
 
+<<<<<<< HEAD
 - [x] Right-click message → Reply shows preview
 - [x] Send reply → Shows in chat with preview
 - [x] Reply preview rendered in message bubble
 - [x] Active reply bar appears above input
 - [x] Cancel reply clears selection
+=======
+>>>>>>> testsisi
 - [ ] Right-click message → Delete works
 - [ ] Right-click message → Reaction works
 - [ ] Click ⋮ → Change nickname works
 - [ ] Click ⋮ → Change theme works  
+<<<<<<< HEAD
+=======
+- [ ] Right-click → Reply shows preview
+- [ ] Send reply → Shows in chat with preview
+>>>>>>> testsisi
 - [ ] Call history shows after calls

@@ -7,27 +7,40 @@
         "php": ">=8.1",
         "ext-ctype": "*",
         "ext-iconv": "*",
+<<<<<<< HEAD
         "ahmed-bhs/doctrine-doctor": "1.0",
+=======
+>>>>>>> testsisi
         "api-platform/core": "3.0",
         "babdev/pagerfanta-bundle": "^3.7",
         "doctrine/doctrine-bundle": "^2.10",
         "doctrine/doctrine-migrations-bundle": "3.3",
+<<<<<<< HEAD
         "doctrine/instantiator": "2.0",
         "doctrine/orm": "^2.16",
         "easycorp/easyadmin-bundle": "*",
         "endroid/qr-code-bundle": "*",
+=======
+        "doctrine/orm": "^2.16",
+        "easycorp/easyadmin-bundle": "*",
+>>>>>>> testsisi
         "exercise/htmlpurifier-bundle": "^5.0",
         "friendsofsymfony/elastica-bundle": "*",
         "friendsofsymfony/rest-bundle": "^3.6",
         "knplabs/knp-gaufrette-bundle": "^0.9",
         "knplabs/knp-paginator-bundle": "^6.3",
+<<<<<<< HEAD
         "knplabs/knp-snappy-bundle": "*",
+=======
+        "knplabs/knp-snappy-bundle": "^1.10",
+>>>>>>> testsisi
         "knpuniversity/oauth2-client-bundle": "*",
         "league/oauth2-facebook": "^2.2",
         "league/oauth2-google": "^5.0",
         "liip/imagine-bundle": "^2.12",
         "mopa/bootstrap-bundle": "*",
         "nelmio/cors-bundle": "^2.4",
+<<<<<<< HEAD
         "omines/datatables-bundle": "*",
         "oneup/flysystem-bundle": "^4.0",
         "phpoffice/phpword": "^1.2",
@@ -35,6 +48,12 @@
         "sonata-project/admin-bundle": "*",
         "sonata-project/doctrine-orm-admin-bundle": "*",
         "stof/doctrine-extensions-bundle": "*",
+=======
+        "oneup/flysystem-bundle": "^4.0",
+        "phpoffice/phpword": "^1.2",
+        "snc/redis-bundle": "^3.0",
+        "stof/doctrine-extensions-bundle": "^1.10",
+>>>>>>> testsisi
         "swarrot/swarrot-bundle": "^2.0",
         "symfony/asset": "6.4.*",
         "symfony/console": "6.4.*",
@@ -57,6 +76,7 @@
         "tecnickcom/tcpdf": "^6.7",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0",
+<<<<<<< HEAD
         "vich/uploader-bundle": "*",
         "webmozart/assert": "1.11"
     },
@@ -68,6 +88,13 @@
         "symfony/debug-bundle": "6.4.*",
         "symfony/maker-bundle": "^1.0",
         "symfony/phpunit-bridge": "^8.0",
+=======
+        "vich/uploader-bundle": "^2.3"
+    },
+    "require-dev": {
+        "symfony/maker-bundle": "^1.0",
+        "symfony/debug-bundle": "6.4.*",
+>>>>>>> testsisi
         "symfony/web-profiler-bundle": "6.4.*"
     },
     "config": {

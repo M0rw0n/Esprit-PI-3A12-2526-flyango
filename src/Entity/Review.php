@@ -4,20 +4,30 @@ namespace App\Entity;
 
 use App\Repository\ReviewRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: ReviewRepository::class)]
 #[ORM\Table(name: 'review')]
 class Review
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Activity::class, inversedBy: 'reviews')]
+<<<<<<< HEAD
     #[ORM\JoinColumn(name: 'activity_id', onDelete: 'CASCADE')]
+=======
+    #[ORM\JoinColumn(name: 'activity_id')]
+>>>>>>> testsisi
     private ?Activity $activity = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
@@ -36,9 +46,12 @@ class Review
     #[ORM\Column(name: 'created_at', type: 'date')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $sentimentScore = null;
 
@@ -71,9 +84,13 @@ class Review
     public function getComment(): ?string { return $this->comment; }
     public function setComment(?string $c): static { $this->comment = $c; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
+=======
+    public function setCreatedAt(\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+>>>>>>> testsisi
     public function getSentimentScore(): ?float { return $this->sentimentScore; }
     public function setSentimentScore(?float $s): static { $this->sentimentScore = $s; return $this; }
     public function getSentimentLabel(): ?string { return $this->sentimentLabel; }

@@ -5,14 +5,20 @@ namespace App\Entity;
 use App\Repository\ProfilVoyageurRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: ProfilVoyageurRepository::class)]
 #[ORM\Table(name: 'profil_voyageur')]
 #[ORM\HasLifecycleCallbacks]
 class ProfilVoyageur
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     public const TYPE_ADVENTURE = 'Adventure';
     public const TYPE_RELAXATION = 'Relaxation';
     public const TYPE_CULTURAL = 'Cultural';
@@ -63,7 +69,11 @@ class ProfilVoyageur
     #[ORM\Column(name: 'created_at', type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface Transient, not mapped */
+=======
+    #[ORM\Column(name: 'updated_at', type: 'datetime')]
+>>>>>>> testsisi
     private \DateTimeInterface $updatedAt;
 
     public function __construct()
@@ -88,9 +98,15 @@ class ProfilVoyageur
     public function getBudget(): float { return (float) ($this->budget ?? 0); }
     public function setBudget(float|int|string|null $b): static { $this->budget = (string) $b; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): \DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
+=======
+    public function setCreatedAt(\DateTimeInterface $c): static { $this->createdAt = $c; return $this; }
+    public function getUpdatedAt(): \DateTimeInterface { return $this->updatedAt; }
+    public function setUpdatedAt(\DateTimeInterface $u): static { $this->updatedAt = $u; return $this; }
+>>>>>>> testsisi
 
     public function getTypeVoyageLabel(): string
     {

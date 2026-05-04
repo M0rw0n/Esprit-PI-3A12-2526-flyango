@@ -57,17 +57,25 @@ class ForumController extends AbstractController
         }
 
         $posts = $paginator->paginate($qb->getQuery(), $request->query->getInt('page', 1), 10, ['sort' => '']);
+<<<<<<< HEAD
         
         $postIds = array_map(fn($p) => $p->getId(), $posts->getItems());
         $postCommentCounts = $repo->findCommentCountsByPostIds($postIds);
+=======
+>>>>>>> testsisi
 
         if ($request->isXmlHttpRequest()) {
             return new JsonResponse([
                 'html' => $this->renderView('forum/_posts_list.html.twig', [
                     'posts' => $posts,
                 ]),
+<<<<<<< HEAD
                 'page' => $posts->getCurrentPageNumber(),
                 'totalPages' => (int) ceil($posts->getTotalItemCount() / $posts->getItemNumberPerPage()),
+=======
+                'page' => $posts->currentPageNumber,
+                'totalPages' => $posts->pageCount,
+>>>>>>> testsisi
             ]);
         }
 
@@ -76,7 +84,10 @@ class ForumController extends AbstractController
             'q' => $q,
             'categorie' => $categorie,
             'tri' => $tri,
+<<<<<<< HEAD
             'postCommentCounts' => $postCommentCounts,
+=======
+>>>>>>> testsisi
         ]);
     }
 
@@ -159,10 +170,15 @@ class ForumController extends AbstractController
         $totalComments = $commentRepo->countRootComments($post);
 
         if ($this->getUser()) {
+<<<<<<< HEAD
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $isFavorited = $favRepo->isFavorited($user, $post);
             $userVote = $likeRepo->getUserVote($user, LikeDislike::TYPE_POST, $id) ?? 0;
+=======
+            $isFavorited = $favRepo->isFavorited($this->getUser(), $post);
+            $userVote = $likeRepo->getUserVote($this->getUser(), LikeDislike::TYPE_POST, $id) ?? 0;
+>>>>>>> testsisi
         }
 
         return $this->render('forum/show.html.twig', [
@@ -181,7 +197,11 @@ class ForumController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+<<<<<<< HEAD
         $comment = $em->getReference(ForumComment::class, $id);
+=======
+        $comment = $em->find(ForumComment::class, $id);
+>>>>>>> testsisi
         if (!$comment) {
             return new JsonResponse(['success' => false, 'message' => 'Commentaire non trouvé'], 404);
         }

@@ -13,7 +13,11 @@ class ConversationParticipant
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Conversation::class, inversedBy: 'participants')]
+<<<<<<< HEAD
     #[ORM\JoinColumn(name: 'conversation_id', nullable: false, onDelete: 'CASCADE')]
+=======
+    #[ORM\JoinColumn(name: 'conversation_id', nullable: false)]
+>>>>>>> testsisi
     private ?Conversation $conversation = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
@@ -50,10 +54,21 @@ class ConversationParticipant
     public function getLastReadAt(): ?\DateTimeInterface { return $this->lastReadAt; }
     public function setLastReadAt(?\DateTimeInterface $d): static { $this->lastReadAt = $d; return $this; }
     public function getJoinedAt(): \DateTimeInterface { return $this->joinedAt; }
+<<<<<<< HEAD
     public function isMuted(): bool { return $this->isMuted; }
     public function setIsMuted(bool $v): static { $this->isMuted = $v; return $this; }
     public function isArchived(): bool { return $this->isArchived; }
     public function setIsArchived(bool $v): static { $this->isArchived = $v; return $this; }
     public function incrementUnread(): static { $this->unreadCount++; return $this; }
     public function resetUnread(): static { $this->unreadCount = 0; return $this; }
+=======
+    public function setJoinedAt(\DateTimeInterface $d): static { $this->joinedAt = $d; return $this; }
+    public function incrementUnread(): static { $this->unreadCount++; return $this; }
+    public function resetUnread(): static { $this->unreadCount = 0; return $this; }
+
+    public function isMuted(): bool { return $this->isMuted; }
+    public function setIsMuted(bool $isMuted): static { $this->isMuted = $isMuted; return $this; }
+    public function isArchived(): bool { return $this->isArchived; }
+    public function setIsArchived(bool $isArchived): static { $this->isArchived = $isArchived; return $this; }
+>>>>>>> testsisi
 }

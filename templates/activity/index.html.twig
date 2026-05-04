@@ -1,6 +1,7 @@
 {% extends 'base/base.html.twig' %}
 {% block title %}Activités & Excursions — Fly&Go{% endblock %}
 
+<<<<<<< HEAD
 {% block stylesheets %}
 <style>
 .circuit-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.15) !important; }
@@ -14,6 +15,11 @@
 {% endblock %}
 
 {% block body %}
+=======
+{% block body %}
+
+{# Hero Section #}
+>>>>>>> testsisi
 <section class="circuit-hero" style="background:linear-gradient(135deg,rgba(27,58,107,0.9),rgba(0,180,216,0.8)),url('https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=1920&q=80');background-size:cover;background-position:center;padding:3rem 0">
     <div class="container">
         <div style="display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff">
@@ -132,6 +138,7 @@ function syncAndSubmit() {
             <h2 style="font-size:1.25rem;font-weight:700;color:var(--text)">{{ activities.totalItemCount|default(activities|length) }} activité{{ activities.totalItemCount|default(activities|length)>1?'s':'' }}</h2>
             <p style="font-size:.85rem;color:var(--muted)">Réservation instantanée · Activités certifiées</p>
         </div>
+<<<<<<< HEAD
         <div style="display:flex;align-items:center;gap:.75rem">
             <a href="{{ path('activity_discovery') }}" style="background:linear-gradient(135deg,var(--gold),#f59e0b);color:#fff;padding:.5rem 1rem;border-radius:25px;text-decoration:none;font-size:.85rem;font-weight:700;box-shadow:0 4px 12px rgba(245,158,11,0.2)">
                 <i class="fa fa-search"></i> Découverte Réelle
@@ -139,12 +146,16 @@ function syncAndSubmit() {
             <a href="{{ path('activity_nearby_map') }}" style="background:linear-gradient(135deg,var(--navy),var(--cyan));color:#fff;padding:.5rem 1rem;border-radius:25px;text-decoration:none;font-size:.85rem;font-weight:600">
                 <i class="fa fa-map-marker-alt"></i> Autour de moi
             </a>
+=======
+        <div style="display:flex;gap:.5rem">
+>>>>>>> testsisi
             <span style="display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border-radius:100px;background:var(--bg);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--muted)">
                 <i class="fa fa-shield-alt" style="color:var(--cyan)"></i> Réservation sécurisée
             </span>
         </div>
     </div>
 
+<<<<<<< HEAD
     {% if activities|length > 0 %}
     <div id="activity-grid" class="activity-grid">
         {% for a in activities %}
@@ -203,6 +214,50 @@ function syncAndSubmit() {
                         <a href="{{ path('activity_show', {id: a.id}) }}" class="btn btn-navy" style="padding:.6rem 1.2rem;border-radius:14px;font-size:.85rem;font-weight:700;text-decoration:none;display:flex;align-items:center;gap:0.5rem">
                             Réserver <i class="fa fa-chevron-right" style="font-size:0.7rem"></i>
                         </a>
+=======
+    {% if activities %}
+    <div id="activity-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem">
+        {% for a in activities %}
+        <article class="activity-card" data-id="{{ a.id }}" onclick="window.location='{{ path('activity_show', {id: a.id}) }}'" style="background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);transition:all .3s;cursor:pointer">
+            <div style="position:relative;height:180px;overflow:hidden">
+                {% if a.image %}
+                <img src="{{ asset(a.image) }}" style="width:100%;height:100%;object-fit:cover" alt="{{ a.title }}" onerror="this.src='https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=600&q=80'">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1527856263669-12c3a0af2aa6?w=600&q=80" style="width:100%;height:100%;object-fit:cover" alt="{{ a.title }}">
+                {% endif %}
+                {% if loop.index <= 2 %}
+                <span style="position:absolute;top:.5rem;right:.5rem;background:var(--gold);color:var(--navy-dd);padding:.25rem .5rem;border-radius:15px;font-size:.7rem;font-weight:800">
+                    <i class="fa fa-fire"></i> Populaire
+                </span>
+                {% endif %}
+                <button class="hcard__wish" onclick="event.stopPropagation(); toggleFavorite({{ a.id }}, 'activity', this)" style="position:absolute;bottom:.5rem;right:.5rem;background:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)">
+                    <i class="fa fa-heart" style="color:var(--red)"></i>
+                </button>
+                {% if a.reviews|length > 0 %}
+                <div style="position:absolute;bottom:.5rem;left:.5rem;background:rgba(0,0,0,.7);color:#fff;padding:.25rem .5rem;border-radius:15px;font-size:.7rem">
+                    <i class="fa fa-star" style="color:var(--gold)"></i> {{ a.noteMoyenne|default(0)|number_format(1) }} ({{ a.reviews|length }})
+                </div>
+                {% endif %}
+            </div>
+            <div style="padding:1rem">
+                <div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--muted);margin-bottom:.5rem">
+                    <i class="fa fa-map-marker-alt" style="color:var(--cyan)"></i>
+                    {{ a.lieu ?: 'Tunisie' }}
+                </div>
+                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:.5rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.title }}</h3>
+                <div style="display:flex;gap:1rem;font-size:.8rem;color:var(--muted);margin-bottom:1rem">
+                    {% if a.duration %}<span><i class="fa fa-clock"></i> {{ a.duration }}</span>{% endif %}
+                    <span><i class="fa fa-users"></i> {{ a.capacity }} places</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <span style="font-size:1.5rem;font-weight:800;color:var(--navy)">{{ a.price|number_format(0,'','') }}</span>
+                        <span style="color:var(--muted);font-size:.85rem">TND</span>
+                    </div>
+                    <div style="display:flex;gap:.5rem" onclick="event.stopPropagation()">
+                        <a href="{{ path('activity_show', {id: a.id}) }}" style="padding:.4rem .75rem;border:1px solid var(--navy);border-radius:20px;font-size:.8rem;color:var(--navy);text-decoration:none">Détails</a>
+                        <a href="{{ path('activity_show', {id: a.id}) }}" style="padding:.4rem .75rem;background:var(--navy);border-radius:20px;font-size:.8rem;color:#fff;text-decoration:none">Réserver</a>
+>>>>>>> testsisi
                     </div>
                 </div>
             </div>
@@ -312,4 +367,12 @@ function startActivityVoiceSearch() {
     activityAiRecognition.start();
 }
 </script>
+<<<<<<< HEAD
+=======
+
+<style>
+.circuit-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.15) !important; }
+.hcard__wish.on i { color: var(--red) !important; }
+</style>
+>>>>>>> testsisi
 {% endblock %}

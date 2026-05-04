@@ -3,12 +3,18 @@
 namespace App\Service;
 
 use App\Entity\Reservation;
+<<<<<<< HEAD
+=======
+use Dompdf\Dompdf;
+use Dompdf\Options;
+>>>>>>> testsisi
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class PdfInvoiceService extends AbstractController
 {
     public function generateReservationPdf(Reservation $reservation): string
     {
+<<<<<<< HEAD
         $h = $reservation->getHebergement();
         $ref = 'FG-' . $reservation->getId();
         $date = $reservation->getCreatedAt()->format('d/m/Y');
@@ -115,10 +121,32 @@ class PdfInvoiceService extends AbstractController
 HTML;
 
         return $html;
+=======
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Helvetica');
+
+        $dompdf = new Dompdf($options);
+
+        $html = $this->renderView('pdf/reservation_invoice.html.twig', [
+            'reservation' => $reservation,
+            'hebergement' => $reservation->getHebergement(),
+            'user' => $reservation->getUser(),
+            'date' => new \DateTime(),
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return $dompdf->output();
+>>>>>>> testsisi
     }
 
     public function generateAndDownload(Reservation $reservation): \Symfony\Component\HttpFoundation\Response
     {
+<<<<<<< HEAD
         $html = $this->generateReservationPdf($reservation);
         
         $filename = 'facture_' . $reservation->getId() . '.html';
@@ -129,12 +157,26 @@ HTML;
             [
                 'Content-Type' => 'text/html',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+=======
+        $pdfContent = $this->generateReservationPdf($reservation);
+
+        $filename = 'facture_' . $reservation->getId() . '_' . date('Ymd') . '.pdf';
+
+        return new \Symfony\Component\HttpFoundation\Response(
+            $pdfContent,
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'private, max-age=0, must-revalidate',
+>>>>>>> testsisi
             ]
         );
     }
 
     public function generateAndStream(Reservation $reservation): \Symfony\Component\HttpFoundation\Response
     {
+<<<<<<< HEAD
         $html = $this->generateReservationPdf($reservation);
 
         return new \Symfony\Component\HttpFoundation\Response(
@@ -146,3 +188,20 @@ HTML;
         );
     }
 }
+=======
+        $pdfContent = $this->generateReservationPdf($reservation);
+
+        $filename = 'facture_' . $reservation->getId() . '_' . date('Ymd') . '.pdf';
+
+        return new \Symfony\Component\HttpFoundation\Response(
+            $pdfContent,
+            200,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $filename . '"',
+                'Cache-Control' => 'private, max-age=0, must-revalidate',
+            ]
+        );
+    }
+}
+>>>>>>> testsisi

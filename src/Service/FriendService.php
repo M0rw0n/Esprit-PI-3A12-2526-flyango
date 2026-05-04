@@ -192,6 +192,7 @@ class FriendService
         ];
     }
 
+<<<<<<< HEAD
     public function blockUser(User $user, User $other): void
     {
         $this->removeFriend($user, $other);
@@ -209,6 +210,8 @@ class FriendService
         );
     }
 
+=======
+>>>>>>> testsisi
     public function getFriendForApi(FriendRequest $friendship, User $currentUser): array
     {
         $friend = $friendship->getSender()->getId() === $currentUser->getId()

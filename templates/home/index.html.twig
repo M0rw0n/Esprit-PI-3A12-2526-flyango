@@ -42,6 +42,7 @@
     </div>
 </section>
 
+<<<<<<< HEAD
 {# Stories Section #}
 <section class="stories-section" style="padding: 2rem 0; background: #fff; border-bottom: 1px solid var(--border); overflow: hidden;">
     <div style="max-width:1380px;margin:0 auto;padding:0 2rem; display: flex; align-items: center; gap: 1.5rem; overflow-x: auto; scrollbar-width: none;">
@@ -135,6 +136,8 @@
 </script>
 <script src="{{ asset('js/stories.js') }}"></script>
 
+=======
+>>>>>>> testsisi
 <section class="band"><div class="band__inner">
     <a class="cat on" href="{{ path('hebergement_index') }}"><i class="fa fa-hotel"></i><span>Hébergements</span></a>
     <a class="cat" href="{{ path('circuit_index') }}"><i class="fa fa-route"></i><span>Circuits</span></a>
@@ -169,7 +172,11 @@
                     <div class="hcard__meta">
                         <span><i class="fa fa-tag"></i> {{ h.type }}</span>
                         {% if h.capacite %}<span><i class="fa fa-users"></i> {{ h.capacite }} pers.</span>{% endif %}
+<<<<<<< HEAD
                         {% if avisCounts[h.id]|default(0) > 0 %}<span><i class="fa fa-star" style="color:var(--gold)"></i> {{ h.note|default(0)|number_format(1) }}</span>{% endif %}
+=======
+                        {% if h.avis|length > 0 %}<span><i class="fa fa-star" style="color:var(--gold)"></i> {{ attribute(h, 'noteMoyenne')|default(h.moyenneNotes)|default(0) }}</span>{% endif %}
+>>>>>>> testsisi
                     </div>
                     <div class="hcard__foot">
                         <div class="price price--sm">
@@ -230,6 +237,7 @@
     </div>
 </section>
 
+<<<<<<< HEAD
 {% if topCircuits %}
 <section class="sec" id="top-circuits" style="background:var(--bg)">
     <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
@@ -271,6 +279,8 @@
 </section>
 {% endif %}
 
+=======
+>>>>>>> testsisi
 <section class="sec" id="activities">
     <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
         <div class="sec__head" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem">
@@ -314,6 +324,7 @@
     </div>
 </section>
 
+<<<<<<< HEAD
 {% if topActivities %}
 <section class="sec" id="top-activities" style="background:var(--bg2)">
     <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
@@ -356,6 +367,8 @@
 </section>
 {% endif %}
 
+=======
+>>>>>>> testsisi
 {% if posts %}
 <section class="sec" style="background:var(--navy-dd)">
     <div class="sec__inner" style="max-width:1380px;margin:0 auto;padding:0 2rem">
@@ -375,7 +388,11 @@
                 <div class="fpost__foot">
                     <div class="fpost__meta">
                         <span><i class="fa fa-user"></i> {{ p.author }}</span>
+<<<<<<< HEAD
                         <span><i class="fa fa-comment"></i> {{ postCommentCounts[p.id]|default(0) }}</span>
+=======
+                        <span><i class="fa fa-comment"></i> {{ p.comments|length }}</span>
+>>>>>>> testsisi
                         <span><i class="fa fa-eye"></i> {{ p.vues }}</span>
                     </div>
                     <span style="font-size:.73rem;color:var(--muted)">{{ p.createdAt|date('d/m/Y') }}</span>

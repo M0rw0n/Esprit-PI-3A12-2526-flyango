@@ -4,14 +4,20 @@ namespace App\Entity;
 
 use App\Repository\FavoriteHebergementRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: FavoriteHebergementRepository::class)]
 #[ORM\Table(name: 'favorite_hebergement')]
 #[ORM\UniqueConstraint(name: 'user_hebergement_unique', columns: ['user_id', 'hebergement_id'])]
 class FavoriteHebergement
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
     private ?int $id = null;
 
@@ -26,9 +32,12 @@ class FavoriteHebergement
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     public function __construct()
     {
         $this->createdAt = new \DateTime();
@@ -40,7 +49,10 @@ class FavoriteHebergement
     public function getHebergement(): ?Hebergement { return $this->hebergement; }
     public function setHebergement(?Hebergement $h): static { $this->hebergement = $h; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
+=======
+>>>>>>> testsisi
 }

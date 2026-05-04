@@ -1,6 +1,7 @@
 when@dev:
     web_profiler:
         toolbar: true
+<<<<<<< HEAD
         intercept_redirects: false
     
     framework:
@@ -11,3 +12,13 @@ when@test:
     framework:
         profiler:
             enabled: false
+=======
+
+    framework:
+        profiler:
+            collect_serializer_data: true
+
+when@test:
+    framework:
+        profiler: { collect: false }
+>>>>>>> testsisi

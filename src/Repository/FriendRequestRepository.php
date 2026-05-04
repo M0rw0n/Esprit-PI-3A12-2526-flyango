@@ -33,7 +33,11 @@ class FriendRequestRepository extends ServiceEntityRepository
         }
     }
 
+<<<<<<< HEAD
     public function findPendingRequestsForUser(User $user, int $limit = 50): array
+=======
+    public function findPendingRequestsForUser(User $user): array
+>>>>>>> testsisi
     {
         return $this->createQueryBuilder('fr')
             ->andWhere('fr.receiver = :user')
@@ -41,12 +45,19 @@ class FriendRequestRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('status', FriendRequest::STATUS_PENDING)
             ->orderBy('fr.createdAt', 'DESC')
+<<<<<<< HEAD
             ->setMaxResults($limit)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
 
+<<<<<<< HEAD
     public function findSentRequestsByUser(User $user, int $limit = 50): array
+=======
+    public function findSentRequestsByUser(User $user): array
+>>>>>>> testsisi
     {
         return $this->createQueryBuilder('fr')
             ->andWhere('fr.sender = :user')
@@ -54,12 +65,19 @@ class FriendRequestRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('status', FriendRequest::STATUS_PENDING)
             ->orderBy('fr.createdAt', 'DESC')
+<<<<<<< HEAD
             ->setMaxResults($limit)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
 
+<<<<<<< HEAD
     public function findFriendshipsForUser(User $user, int $limit = 50): array
+=======
+    public function findFriendshipsForUser(User $user): array
+>>>>>>> testsisi
     {
         return $this->createQueryBuilder('fr')
             ->andWhere('(fr.sender = :user OR fr.receiver = :user)')
@@ -67,7 +85,10 @@ class FriendRequestRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('status', FriendRequest::STATUS_ACCEPTED)
             ->orderBy('fr.respondedAt', 'DESC')
+<<<<<<< HEAD
             ->setMaxResults($limit)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }

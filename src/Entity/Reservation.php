@@ -4,8 +4,11 @@ namespace App\Entity;
 
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Enum\PaymentMethodEnum;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 #[ORM\Table(name: 'reservation_hebergement')]
@@ -17,14 +20,19 @@ class Reservation
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Hebergement::class, inversedBy: 'reservations')]
+<<<<<<< HEAD
     #[ORM\JoinColumn(name: 'hebergement_id', referencedColumnName: 'id_hebergement', onDelete: 'CASCADE')]
     #[Assert\NotNull(message: 'Hébergement obligatoire')]
+=======
+    #[ORM\JoinColumn(name: 'id_hebergement', referencedColumnName: 'id_hebergement')]
+>>>>>>> testsisi
     private ?Hebergement $hebergement = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
 
+<<<<<<< HEAD
     #[Assert\NotBlank(message: 'Le nom est obligatoire')]
     #[Assert\Length(min: 2, max: 100)]
     #[ORM\Column(name: 'nom_client', length: 100)]
@@ -103,12 +111,50 @@ private string $emailClient = '';
     const STATUT_CONFIRMEE = 'CONFIRMEE';
     const STATUT_ANNULEE = 'ANNULEE';
     const STATUT_TERMINEE = 'TERMINEE';
+=======
+    #[ORM\Column(name: 'nom_client', length: 100)]
+    private string $nomClient = '';
+
+    #[ORM\Column(name: 'email_client', length: 100)]
+    private string $emailClient = '';
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $telephone = null;
+
+    #[ORM\Column(name: 'telephone_client', length: 20, nullable: true)]
+    private ?string $telephoneClient = null;
+
+    #[ORM\Column(name: 'nombre_personnes', type: 'integer')]
+    private int $nombrePersonnes = 1;
+
+    #[ORM\Column(name: 'date_debut', type: 'date')]
+    private \DateTimeInterface $dateDebut;
+
+    #[ORM\Column(name: 'date_fin', type: 'date')]
+    private \DateTimeInterface $dateFin;
+
+    #[ORM\Column(name: 'nombre_nuits', type: 'integer')]
+    private int $nombreNuits = 1;
+
+    #[ORM\Column(name: 'montant_total', type: 'float')]
+    private float $montantTotal = 0;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $statut = 'En attente';
+
+    #[ORM\Column(name: 'date_creation', type: 'datetime')]
+    private \DateTimeInterface $createdAt;
+>>>>>>> testsisi
 
     public function __construct()
     {
         $this->createdAt = new \DateTime();
         $this->dateDebut = new \DateTime();
+<<<<<<< HEAD
         $this->dateFin = new \DateTime();
+=======
+        $this->dateFin = new \DateTime('+1 day');
+>>>>>>> testsisi
     }
 
     public function getId(): ?int { return $this->id; }
@@ -126,14 +172,18 @@ private string $emailClient = '';
     public function setTelephoneClient(?string $t): static { $this->telephoneClient = $t; return $this; }
     public function getNombrePersonnes(): int { return $this->nombrePersonnes; }
     public function setNombrePersonnes(int $n): static { $this->nombrePersonnes = max(1, $n); return $this; }
+<<<<<<< HEAD
     public function getNombreChambres(): int { return $this->nombreChambres; }
     public function setNombreChambres(int $n): static { $this->nombreChambres = max(1, $n); return $this; }
+=======
+>>>>>>> testsisi
     public function getDateDebut(): \DateTimeInterface { return $this->dateDebut; }
     public function setDateDebut(\DateTimeInterface $d): static { $this->dateDebut = $d; return $this; }
     public function getDateFin(): \DateTimeInterface { return $this->dateFin; }
     public function setDateFin(\DateTimeInterface $d): static { $this->dateFin = $d; return $this; }
     public function getNombreNuits(): int { return $this->nombreNuits; }
     public function setNombreNuits(int $n): static { $this->nombreNuits = max(1, $n); return $this; }
+<<<<<<< HEAD
     public function getMontantTotal(): string { return $this->montantTotal; }
     public function setMontantTotal(string $m): static { $this->montantTotal = $m; return $this; }
     public function getStatut(): ?string { return $this->statut; }
@@ -152,4 +202,12 @@ private string $emailClient = '';
     public function setFacturePdf(?string $f): static { $this->facturePdf = $f; return $this; }
     public function getQrCode(): ?string { return $this->qrCode; }
     public function setQrCode(?string $q): static { $this->qrCode = $q; return $this; }
+=======
+    public function getMontantTotal(): float { return $this->montantTotal; }
+    public function setMontantTotal(float $m): static { $this->montantTotal = $m; return $this; }
+    public function getStatut(): ?string { return $this->statut; }
+    public function setStatut(?string $s): static { $this->statut = $s; return $this; }
+    public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+>>>>>>> testsisi
 }

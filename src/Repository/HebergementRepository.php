@@ -15,22 +15,36 @@ class HebergementRepository extends ServiceEntityRepository
         parent::__construct($registry, Hebergement::class);
     }
 
+<<<<<<< HEAD
     public function findByVille(string $ville, int $limit = 50): array
+=======
+    public function findByVille(string $ville): array
+>>>>>>> testsisi
     {
         return $this->createQueryBuilder('h')
             ->andWhere('h.ville = :ville')
             ->setParameter('ville', $ville)
+<<<<<<< HEAD
             ->setMaxResults($limit)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
 
+<<<<<<< HEAD
     public function findByType(string $type, int $limit = 50): array
+=======
+    public function findByType(string $type): array
+>>>>>>> testsisi
     {
         return $this->createQueryBuilder('h')
             ->andWhere('h.type = :type')
             ->setParameter('type', $type)
+<<<<<<< HEAD
             ->setMaxResults($limit)
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getResult();
     }
@@ -69,11 +83,16 @@ class HebergementRepository extends ServiceEntityRepository
             default => $qb->orderBy('h.createdAt', 'DESC'),
         };
 
+<<<<<<< HEAD
         return $qb->setMaxResults(50)->getQuery()->getResult();
+=======
+        return $qb->getQuery()->getResult();
+>>>>>>> testsisi
     }
 
     public function getRevenusParMois(): array
     {
+<<<<<<< HEAD
         return $this->createQueryBuilder('h')
             ->select('SUBSTRING(r.createdAt, 1, 7) as periode')
             ->addSelect('SUM(r.montantTotal) as total')
@@ -82,6 +101,21 @@ class HebergementRepository extends ServiceEntityRepository
             ->orderBy('periode', 'ASC')
             ->getQuery()
             ->getScalarResult();
+=======
+        $totals = [];
+        foreach ($this->findAll() as $hebergement) {
+            foreach ($hebergement->getReservations() as $reservation) {
+                $key = $reservation->getCreatedAt()->format('Y-m');
+                if (!isset($totals[$key])) {
+                    $totals[$key] = ['mois' => (int) $reservation->getCreatedAt()->format('m'), 'annee' => (int) $reservation->getCreatedAt()->format('Y'), 'total' => 0.0];
+                }
+                $totals[$key]['total'] += $reservation->getMontantTotal();
+            }
+        }
+        ksort($totals);
+
+        return array_values($totals);
+>>>>>>> testsisi
     }
 
     public function getDistinctVilles(): array
@@ -91,6 +125,7 @@ class HebergementRepository extends ServiceEntityRepository
             ->andWhere('h.disponible = :disponible')
             ->setParameter('disponible', true)
             ->orderBy('h.ville', 'ASC')
+<<<<<<< HEAD
             ->setMaxResults(50)
             ->getQuery()
             ->getArrayResult();
@@ -109,6 +144,8 @@ class HebergementRepository extends ServiceEntityRepository
             ->andWhere('h.id IN (:ids)')
             ->setParameter('ids', $hebergementIds)
             ->groupBy('h.id')
+=======
+>>>>>>> testsisi
             ->getQuery()
             ->getScalarResult();
     }

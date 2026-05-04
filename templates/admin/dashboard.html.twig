@@ -274,7 +274,14 @@
         <div class="dash-header__meta-item">
             <i class="fa fa-calendar-check"></i>
             <span>{{ "now"|date("d/m/Y") }}</span>
+<<<<<<< HEAD
             <a href="{{ path('admin_calendar') }}" style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,183,0,0.15);padding:.35rem .75rem;border-radius:20px;text-decoration:none;color:inherit;transition:all .2s" title="Accéder au calendrier complet" onmouseover="this.style.background='rgba(255,183,0,0.25)'" onmouseout="this.style.background='rgba(255,183,0,0.15)'"><i class="fa fa-calendar-alt"></i><span style="font-weight:600;font-size:.85rem">Ouvrir le Calendrier</span></a>
+=======
+        </div>
+        <div class="dash-header__meta-item">
+            <i class="fa fa-coins"></i>
+            <span>Revenus: <strong style="color:var(--gold)">{{ revenus|number_format(0, '', ' ') }} TND</strong></span>
+>>>>>>> testsisi
         </div>
         <div class="dash-header__meta-item">
             <i class="fa fa-clock"></i>
@@ -290,7 +297,11 @@
     </div>
 </div>
 
+<<<<<<< HEAD
 <div class="kpis" style="margin-bottom:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+=======
+<div class="kpis" style="margin-bottom:0">
+>>>>>>> testsisi
     <div class="kpi-card">
         <div class="kpi-card__header">
             <div class="kpi-card__icon kpi-card__icon--navy"><i class="fa fa-hotel"></i></div>
@@ -353,6 +364,7 @@
     </div>
     <div class="kpi-card">
         <div class="kpi-card__header">
+<<<<<<< HEAD
             <div class="kpi-card__icon" style="background:rgba(249,115,22,0.1);color:#f97316"><i class="fa fa-bus"></i></div>
         </div>
         <div class="kpi-card__value">{{ totalTransports|default(0) }}</div>
@@ -362,6 +374,8 @@
     </div>
     <div class="kpi-card">
         <div class="kpi-card__header">
+=======
+>>>>>>> testsisi
             <div class="kpi-card__icon kpi-card__icon--green"><i class="fa fa-users"></i></div>
         </div>
         <div class="kpi-card__value">{{ totalUsers }}</div>
@@ -402,7 +416,12 @@
 <div class="admin-grid" style="margin-bottom:2rem">
     <div class="admin-chart-card">
         <div class="admin-chart-card__header">
+<<<<<<< HEAD
             <span class="admin-chart-card__title"><i class="fa fa-chart-line"></i> Réservations mensuelles</span>
+=======
+            <span class="admin-chart-card__title"><i class="fa fa-chart-line"></i> Revenus mensuels</span>
+            <span class="tag tag--navy">Hébergements</span>
+>>>>>>> testsisi
         </div>
         <div class="admin-chart-card__body">
             <canvas id="chartRevenus" height="100"></canvas>
@@ -410,14 +429,22 @@
     </div>
     <div class="admin-chart-card">
         <div class="admin-chart-card__header">
+<<<<<<< HEAD
             <span class="admin-chart-card__title"><i class="fa fa-chart-bar"></i> Revenus par mois (TND)</span>
         </div>
         <div class="admin-chart-card__body">
             <canvas id="chartRevenusTND" height="100"></canvas>
+=======
+            <span class="admin-chart-card__title"><i class="fa fa-chart-pie"></i> Réservations par ville</span>
+        </div>
+        <div class="admin-chart-card__body">
+            <canvas id="chartVilles" height="200"></canvas>
+>>>>>>> testsisi
         </div>
     </div>
 </div>
 
+<<<<<<< HEAD
 <div class="section-divider"><span>🗂️ Statistiques Circuits</span></div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:2rem">
     <div style="background:#fff;padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center">
@@ -519,6 +546,8 @@
 </div>
 {% endif %}
 
+=======
+>>>>>>> testsisi
 <div class="admin-grid">
     <div class="admin-chart-card">
         <div class="admin-chart-card__header">
@@ -833,6 +862,7 @@
     </div>
 </div>
 
+<<<<<<< HEAD
 {# Circuits par difficulté #}
 <div class="section-divider"><span>⛰️ Circuits par difficulté</span></div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem">
@@ -1104,6 +1134,8 @@
     </div>
 </div>
 
+=======
+>>>>>>> testsisi
 {# Destinations tendances #}
 <div class="section-divider"><span>🗺️ Destinations tendances</span></div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem">
@@ -1126,6 +1158,7 @@
     {% endfor %}
 </div>
 
+<<<<<<< HEAD
 {# Circuits par destination #}
 <div class="section-divider"><span>🗺️ Circuits par Destination</span></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem">
@@ -1246,6 +1279,8 @@
     </div>
 </div>
 
+=======
+>>>>>>> testsisi
 {# Revenue Forecasting #}
 <div class="section-divider"><span>📈 Prévision revenus (6 mois)</span></div>
 <div style="background:#fff;padding:1.5rem;border-radius:12px;border:1px solid var(--border);margin-bottom:2rem">
@@ -1268,6 +1303,7 @@
         {% endfor %}
     </div>
 </div>
+<<<<<<< HEAD
     </div>
 </div>
 
@@ -1291,12 +1327,15 @@
 </div>
 <div id="pendingCorrection" style="display:none"></div>
 
+=======
+>>>>>>> testsisi
 {% endblock %}
 
 {% block javascripts %}
 <script>
 // Charts data from backend
 const revenusData = {
+<<<<<<< HEAD
     labels: [{% for r in revenusParMois|default([]) %}'{{ ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"][r.mois - 1] }}'{{ not loop.last ? ',' }}{% endfor %}],
     values: [{% for r in revenusParMois|default([]) %}{{ r.total|default(0) }}{{ not loop.last ? ',' }}{% endfor %}]
 };
@@ -1570,5 +1609,28 @@ document.addEventListener('DOMContentLoaded', () => {
 } catch(e) { console.error('Price chart error:', e); }
     }
 });
+=======
+    labels: [{% for r in revenusParMois %}'{{ ["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"][r.mois - 1] }} {{ r.annee }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for r in revenusParMois %}{{ r.total|default(0) }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+const villesData = {
+    labels: [{% for v in occParVille %}'{{ v.ville }}'{{ not loop.last ? ',' }}{% endfor %}],
+    values: [{% for v in occParVille %}{{ v.total }}{{ not loop.last ? ',' }}{% endfor %}]
+};
+document.addEventListener('DOMContentLoaded', () => initDashboardCharts(revenusData, villesData));
+
+function changeStatutRes(id, statut) {
+    if (!confirm('Changer le statut ?')) return;
+    $.post('{{ path("admin_reservation_statut", {"id": "__ID__"}) }}'.replace('__ID__', id), {statut: statut})
+     .done(() => { showToast('✅ Statut mis à jour !'); setTimeout(() => location.reload(), 1000); })
+     .fail(() => showToast('Erreur', 'error'));
+}
+function moderatePost(id, status) {
+    if (!confirm('Modérer ce post ?')) return;
+    $.post('{{ path("admin_forum_moderate", {"id": "__ID__"}) }}'.replace('__ID__', id), {status: status})
+     .done(() => { showToast('✅ Post modéré !'); setTimeout(() => location.reload(), 1000); })
+     .fail(() => showToast('Erreur', 'error'));
+}
+>>>>>>> testsisi
 </script>
 {% endblock %}

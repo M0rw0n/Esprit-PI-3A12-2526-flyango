@@ -1,0 +1,9 @@
+swarrot:
+    provider: pecl
+    connections:
+        default:
+            host: '%env(RABBITMQ_HOST)%'
+            port: '%env(int:RABBITMQ_PORT)%'
+            login: '%env(RABBITMQ_USER)%'
+            password: '%env(RABBITMQ_PASSWORD)%'
+            vhost: '%env(RABBITMQ_VHOST)%'

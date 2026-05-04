@@ -21,6 +21,7 @@ class MessageRepository extends ServiceEntityRepository
             $limit = (int)$limit;
             $offset = (int)$offset;
             
+<<<<<<< HEAD
             $sql = 'SELECT m.id, m.conversation_id, m.sender_id, m.content, m.status, m.created_at, m.read_at, m.image, m.audio, m.type, m.metadata, m.reply_to_id,
                            u.prenom, u.nom, u.profile_picture_path as sender_avatar,
                            rm.id as reply_to_id, rm.content as reply_to_content, rm.sender_id as reply_to_sender_id,
@@ -44,6 +45,19 @@ class MessageRepository extends ServiceEntityRepository
                 'limit' => \PDO::PARAM_INT,
                 'offset' => \PDO::PARAM_INT,
             ])->fetchAllAssociative();
+=======
+            $sql = "SELECT m.id, m.conversation_id, m.sender_id, m.content, m.status, m.created_at, m.read_at, m.image,
+                           u.prenom, u.nom, u.profile_picture_path as sender_avatar
+                    FROM message m
+                    LEFT JOIN user u ON m.sender_id = u.id
+                    WHERE m.conversation_id = " . $conn->quote($conversationId, \PDO::PARAM_INT) . "
+                    ORDER BY m.created_at ASC
+                    LIMIT " . $conn->quote($limit, \PDO::PARAM_INT) . " OFFSET " . $conn->quote($offset, \PDO::PARAM_INT);
+            
+            error_log('MessageRepository SQL: ' . $sql);
+            
+            $result = $conn->executeQuery($sql)->fetchAllAssociative();
+>>>>>>> testsisi
             
             error_log('MessageRepository: found ' . count($result) . ' rows for convId=' . $conversationId);
             

@@ -149,11 +149,17 @@ class ForumApiController extends AbstractController
     #[Route('/comment/{id}/translate', name: 'forum_api_comment_translate', methods: ['POST'])]
     public function translateComment(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
+<<<<<<< HEAD
         $comment = $em->getReference(ForumComment::class, $id);
         
         try {
             $content = $comment->getContent();
         } catch (\Exception $e) {
+=======
+        $comment = $em->getRepository(ForumComment::class)->find($id);
+        
+        if (!$comment) {
+>>>>>>> testsisi
             return new JsonResponse(['success' => false, 'message' => 'Comment not found'], 404);
         }
 

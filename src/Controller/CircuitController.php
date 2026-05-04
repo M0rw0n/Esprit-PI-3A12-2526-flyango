@@ -12,14 +12,20 @@ use App\Entity\User;
 use App\Repository\CircuitRepository;
 use App\Service\CircuitAiPlanner;
 use App\Service\SentimentService;
+<<<<<<< HEAD
 use App\Service\Api\SherpaService;
+=======
+>>>>>>> testsisi
 use App\Service\Api\WeatherApiService;
 use App\Service\Api\MapboxService;
 use App\Service\Api\MailerService;
 use App\Service\Api\PaymentService;
 use App\Service\ReceiptService;
 use App\Service\CircuitPdfService;
+<<<<<<< HEAD
 use App\Service\ContentModerationService;
+=======
+>>>>>>> testsisi
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,11 +41,17 @@ class CircuitController extends AbstractController
         private readonly ReceiptService $receiptService,
         private readonly WeatherApiService $weatherService,
         private readonly MapboxService $mapboxService,
+<<<<<<< HEAD
         private readonly SherpaService $sherpaService,
         private readonly ?MailerService $mailerService = null,
         private readonly ?CircuitPdfService $circuitPdfService = null,
         private readonly ?SentimentService $sentimentService = null,
         private ?ContentModerationService $moderationService = null,
+=======
+        private readonly ?MailerService $mailerService = null,
+        private readonly ?CircuitPdfService $circuitPdfService = null,
+        private readonly ?SentimentService $sentimentService = null,
+>>>>>>> testsisi
     ) {}
 
     #[Route('', name: 'circuit_index', methods: ['GET'])]
@@ -80,7 +92,11 @@ class CircuitController extends AbstractController
                     $userReservations[] = [
                         'date' => $res->getDateReservation()->format('Y-m-d'),
                         'circuit' => $res->getCircuit()?->getTitre() ?: 'Circuit',
+<<<<<<< HEAD
                         'status' => $res->getStatut() ?: 'ConfirmÃ©'
+=======
+                        'status' => $res->getStatut() ?: 'Confirmé'
+>>>>>>> testsisi
                     ];
                 }
             }
@@ -130,20 +146,31 @@ class CircuitController extends AbstractController
             $payload = [
                 'destination' => $request->request->get('destination'),
                 'depart' => $request->request->get('depart', 'Tunis'),
+<<<<<<< HEAD
                 'style' => $request->request->get('style', 'DÃ©couverte'),
+=======
+                'style' => $request->request->get('style', 'Découverte'),
+>>>>>>> testsisi
                 'budget' => $request->request->get('budget', 'Moyen'),
                 'participants' => $request->request->get('participants', 2),
                 'jours' => $request->request->get('jours', 3),
                 'date_depart' => $request->request->get('date_depart'),
                 'date_retour' => $request->request->get('date_retour'),
+<<<<<<< HEAD
                 'stops' => $request->request->get('stops', '[]'),
                 'hebergement' => $request->request->get('hebergement', 'HÃ´tel'),
                 'transport' => $request->request->get('transport', 'Voiture'),
+=======
+>>>>>>> testsisi
             ];
 
             $result = $planner->generate($payload);
 
+<<<<<<< HEAD
             $circuit = (new Circuit($user))
+=======
+            $circuit = (new Circuit())
+>>>>>>> testsisi
                 ->setTitre($result['titre'] ?? '')
                 ->setDescription($result['description'] ?? null)
                 ->setDuree((int) ($result['duree'] ?? 1))
@@ -157,15 +184,23 @@ class CircuitController extends AbstractController
                 ->setIsAiGenerated(true)
                 ->setSourceType('custom')
                 ->setGeneratedContext($result['generated_context'])
+<<<<<<< HEAD
                 ->setLatitude($result['latitude'] ?? null)
                 ->setLongitude($result['longitude'] ?? null)
                 ->setStops($result['stops'] ?? [])
                 ->setTotalDistance($result['distance'] ?? null);
+=======
+                ->setCreator($user);
+>>>>>>> testsisi
 
             $em->persist($circuit);
             $em->flush();
 
+<<<<<<< HEAD
             $this->addFlash('success', 'ðŸ§  Circuit sur mesure gÃ©nÃ©rÃ© avec succÃ¨s !');
+=======
+            $this->addFlash('success', '🧠 Circuit sur mesure généré avec succès.');
+>>>>>>> testsisi
             return $this->redirectToRoute('circuit_show', ['id' => $circuit->getId()]);
         }
 
@@ -202,10 +237,13 @@ class CircuitController extends AbstractController
         }
 
         $mapData = null;
+<<<<<<< HEAD
         $staticMapUrl = null;
         $storytellingConfig = null;
         $segmentRequirements = [];
 
+=======
+>>>>>>> testsisi
         if ($c->getDestination()) {
             $geo = $this->mapboxService->geocode($c->getDestination());
             if ($geo['success'] ?? false) {
@@ -216,6 +254,7 @@ class CircuitController extends AbstractController
                     'depart' => $c->getDepart(),
                     'publicToken' => $this->mapboxService->getPublicToken(),
                 ];
+<<<<<<< HEAD
 
                 // Generate static map with route if stops exist
                 if (!empty($c->getStops())) {
@@ -226,6 +265,8 @@ class CircuitController extends AbstractController
                     $waypoints = array_merge([$c->getDepart()], $c->getStops(), [$c->getDestination()]);
                     $segmentRequirements = $this->sherpaService->getCircuitRequirements($waypoints);
                 }
+=======
+>>>>>>> testsisi
             }
         }
 
@@ -236,9 +277,12 @@ class CircuitController extends AbstractController
             'weather' => $weather,
             'forecast' => $forecast,
             'mapData' => $mapData,
+<<<<<<< HEAD
             'staticMapUrl' => $staticMapUrl,
             'storytellingConfig' => $storytellingConfig,
             'segmentRequirements' => $segmentRequirements,
+=======
+>>>>>>> testsisi
         ]);
     }
 
@@ -296,7 +340,11 @@ class CircuitController extends AbstractController
         $result = $this->processPayment($bookingData, $paymentMethod, $user);
 
         if (!$result['success']) {
+<<<<<<< HEAD
             $this->addFlash('error', 'Paiement Ã©chouÃ©: ' . ($result['error'] ?? 'Erreur inconnue'));
+=======
+            $this->addFlash('error', 'Paiement échoué: ' . ($result['error'] ?? 'Erreur inconnue'));
+>>>>>>> testsisi
             return $this->redirectToRoute('circuit_show', ['id' => $id]);
         }
 
@@ -308,7 +356,11 @@ class CircuitController extends AbstractController
             ->setTelephone($user->getTelephone())
             ->setDateReservation(new \DateTimeImmutable($dateDepart ?: 'now'))
             ->setNbPersonnes($nbPersonnes)
+<<<<<<< HEAD
             ->setMontantTotal((string)$montant)
+=======
+            ->setMontantTotal($montant)
+>>>>>>> testsisi
             ->setStatut('CONFIRME');
 
         $em->persist($res);
@@ -326,7 +378,11 @@ class CircuitController extends AbstractController
             );
         }
 
+<<<<<<< HEAD
         $this->addFlash('success', 'âœ… Circuit reservÃ© et payÃ© avec succÃ¨s!');
+=======
+        $this->addFlash('success', '✅ Circuit reservé et payé avec succès!');
+>>>>>>> testsisi
         return $this->redirectToRoute('payment_confirmation', ['bookingId' => $result['booking_id']]);
     }
 
@@ -342,7 +398,11 @@ class CircuitController extends AbstractController
             
             $captureResult = $this->paymentService->capturePaypalOrder($orderResult['order_id'] ?? '');
             if (!$captureResult['success']) {
+<<<<<<< HEAD
                 return ['success' => false, 'error' => 'Ã‰chec de la capture PayPal'];
+=======
+                return ['success' => false, 'error' => 'Échec de la capture PayPal'];
+>>>>>>> testsisi
             }
             
             $bookingData['payment_method'] = 'paypal';
@@ -368,11 +428,22 @@ class CircuitController extends AbstractController
     }
 
     #[Route('/{id}/avis', name: 'circuit_review', methods: ['POST'], requirements: ['id' => '\d+'])]
+<<<<<<< HEAD
     public function addReview(int $id, Request $request, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $circuit = $em->getReference(Circuit::class, $id);
+=======
+    public function addReview(int $id, Request $request, CircuitRepository $repo, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $circuit = $repo->find($id);
+        if (!$circuit) {
+            throw $this->createNotFoundException();
+        }
+>>>>>>> testsisi
 
         /** @var User $user */
         $user = $this->getUser();
@@ -382,6 +453,7 @@ class CircuitController extends AbstractController
             return $this->redirectToRoute('circuit_show', ['id' => $id]);
         }
 
+<<<<<<< HEAD
         /** @var User $user */
         $user = $this->getUser();
         $existingReview = $em->getRepository(CircuitAvis::class)->findOneBy(['circuit' => $circuit, 'user' => $user]);
@@ -402,6 +474,9 @@ class CircuitController extends AbstractController
             
             $comment = $this->moderationService->maskWords($comment);
         }
+=======
+        $comment = (string) $request->request->get('comment', '');
+>>>>>>> testsisi
 
         $review = new CircuitAvis();
         $review->setCircuit($circuit)
@@ -418,7 +493,12 @@ class CircuitController extends AbstractController
         $em->persist($review);
         $em->flush();
 
+<<<<<<< HEAD
         $this->addFlash('success', 'â­ Votre avis a bien Ã©tÃ© enregistrÃ©.');
         return $this->redirectToRoute('circuit_show', ['id' => $id]);
+=======
+        $this->addFlash('success', '⭐ Votre avis circuit a bien été enregistré.');
+        return $this->redirectToRoute('user_avis');
+>>>>>>> testsisi
     }
 }

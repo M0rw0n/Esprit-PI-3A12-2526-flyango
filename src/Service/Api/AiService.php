@@ -23,7 +23,11 @@ class AiService
         return $this->client;
     }
 
+<<<<<<< HEAD
     public function generateResponse(string $prompt, string $model = 'gpt-4o-mini'): array
+=======
+    public function generateResponse(string $prompt, string $model = 'gpt-3.5-turbo'): array
+>>>>>>> testsisi
     {
         if (empty($this->openAiApiKey)) {
             return $this->getMockAiResponse($prompt);
@@ -38,6 +42,7 @@ class AiService
                 'json' => [
                     'model' => $model,
                     'messages' => [
+<<<<<<< HEAD
                         [
                             'role' => 'system', 
                             'content' => 'Tu es un expert en planification de voyages pour Fly&Go. Réponds de manière concise, précise et utilise un ton professionnel et engageant.'
@@ -46,6 +51,13 @@ class AiService
                     ],
                     'temperature' => 0.7,
                     'max_tokens' => 800
+=======
+                        ['role' => 'system', 'content' => 'You are a helpful travel assistant.'],
+                        ['role' => 'user', 'content' => $prompt]
+                    ],
+                    'temperature' => 0.7,
+                    'max_tokens' => 500
+>>>>>>> testsisi
                 ]
             ]);
 

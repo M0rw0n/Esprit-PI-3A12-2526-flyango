@@ -40,6 +40,7 @@ class TransportBookingRepository extends ServiceEntityRepository
 
     public function getRevenusParMois(): array
     {
+<<<<<<< HEAD
         $conn = $this->getEntityManager()->getConnection();
         $sql = 'SELECT MONTH(b.booking_date) as mois, YEAR(b.booking_date) as annee, SUM(b.total_price) as total 
                 FROM transport_booking b 
@@ -48,5 +49,23 @@ class TransportBookingRepository extends ServiceEntityRepository
                 ORDER BY annee ASC, mois ASC';
         
         return $conn->executeQuery($sql, ['cancelled' => 'CANCELLED'])->fetchAllAssociative();
+=======
+        $totals = [];
+        foreach ($this->findAll() as $booking) {
+            if ($booking->getStatus() !== 'CANCELLED') {
+                $key = $booking->getBookingDate()->format('Y-m');
+                if (!isset($totals[$key])) {
+                    $totals[$key] = [
+                        'mois' => (int) $booking->getBookingDate()->format('m'),
+                        'annee' => (int) $booking->getBookingDate()->format('Y'),
+                        'total' => 0.0,
+                    ];
+                }
+                $totals[$key]['total'] += $booking->getTotalPrice();
+            }
+        }
+        ksort($totals);
+        return array_values($totals);
+>>>>>>> testsisi
     }
 }

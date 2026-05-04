@@ -26,7 +26,10 @@ final class Version20260415120000 extends AbstractMigration
             user_id INT UNSIGNED NOT NULL,
             is_muted TINYINT(1) DEFAULT 0,
             is_archived TINYINT(1) DEFAULT 0,
+<<<<<<< HEAD
             is_deleted TINYINT(1) DEFAULT 0,
+=======
+>>>>>>> testsisi
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE KEY unique_conv_user (conversation_id, user_id)
         )');
@@ -57,6 +60,7 @@ final class Version20260415120000 extends AbstractMigration
             conversation_id INT UNSIGNED PRIMARY KEY,
             theme VARCHAR(50) DEFAULT "#0084FF"
         )');
+<<<<<<< HEAD
         
         $this->addSql('CREATE TABLE IF NOT EXISTS friend_nickname (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -65,6 +69,8 @@ final class Version20260415120000 extends AbstractMigration
             nickname VARCHAR(100) DEFAULT NULL,
             UNIQUE KEY unique_user_friend (user_id, friend_id)
         )');
+=======
+>>>>>>> testsisi
     }
 
     public function down(Schema $schema): void

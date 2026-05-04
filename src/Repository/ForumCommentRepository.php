@@ -56,6 +56,7 @@ class ForumCommentRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+<<<<<<< HEAD
     public function getAllCommentsForPost(ForumPost $post, int $limit = 50): array
     {
         return $this->createQueryBuilder('c')
@@ -78,6 +79,26 @@ class ForumCommentRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getArrayResult();
+=======
+    public function getAllCommentsForPost(ForumPost $post): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.post = :post')
+            ->setParameter('post', $post)
+            ->orderBy('c.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getReplies(int $parentId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.parentId = :parentId')
+            ->setParameter('parentId', $parentId)
+            ->orderBy('c.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+>>>>>>> testsisi
     }
 
     public function buildCommentTree(array $comments): array
@@ -86,7 +107,11 @@ class ForumCommentRepository extends ServiceEntityRepository
         $tree = [];
 
         foreach ($comments as $comment) {
+<<<<<<< HEAD
             $id = $comment['id'] ?? $comment->getId();
+=======
+            $id = $comment->getId();
+>>>>>>> testsisi
             $lookup[$id] = [
                 'id' => $id,
                 'comment' => $comment,
@@ -95,11 +120,19 @@ class ForumCommentRepository extends ServiceEntityRepository
         }
 
         foreach ($comments as $comment) {
+<<<<<<< HEAD
             $parentId = $comment['parentId'] ?? $comment->getParentId();
             if ($parentId !== null && isset($lookup[$parentId])) {
                 $lookup[$parentId]['replies'][] = $lookup[$id = $comment['id'] ?? $comment->getId()];
             } else {
                 $tree[] = $lookup[$comment['id'] ?? $comment->getId()];
+=======
+            $parentId = $comment->getParentId();
+            if ($parentId !== null && isset($lookup[$parentId])) {
+                $lookup[$parentId]['replies'][] = $lookup[$comment->getId()];
+            } else {
+                $tree[] = $lookup[$comment->getId()];
+>>>>>>> testsisi
             }
         }
 

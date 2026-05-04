@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+<<<<<<< HEAD
 use App\Service\Api\YelpService;
 use App\Service\Api\UnsplashService;
 use App\Service\Api\WikipediaService;
+=======
+>>>>>>> testsisi
 use App\Entity\Activity;
 use App\Entity\Booking;
 use App\Entity\Review;
@@ -13,17 +16,26 @@ use App\Entity\Conversation;
 use App\Entity\Message;
 use App\Repository\ActivityRepository;
 use App\Repository\BookingRepository;
+<<<<<<< HEAD
 use App\Repository\ReviewRepository;
 use App\Enum\BookingStatusEnum;
 use App\Enum\PaymentMethodEnum;
+=======
+>>>>>>> testsisi
 use App\Service\Api\PaymentService;
 use App\Service\SentimentService;
 use App\Service\Api\MailerService;
 use App\Service\ReceiptService;
 use App\Service\RecommendationService;
+<<<<<<< HEAD
 use App\Service\ActivityShareService;
 use App\Service\GamificationService;
 use App\Service\ContentModerationService;
+=======
+use App\Service\NearbyService;
+use App\Service\ActivityShareService;
+use App\Service\GamificationService;
+>>>>>>> testsisi
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,6 +50,7 @@ class ActivityController extends AbstractController
     public function __construct(
         private readonly PaymentService $paymentService,
         private readonly ReceiptService $receiptService,
+<<<<<<< HEAD
         private readonly YelpService $yelpService,
         private readonly UnsplashService $unsplashService,
         private readonly WikipediaService $wikipediaService,
@@ -114,6 +127,13 @@ class ActivityController extends AbstractController
             'lieu' => $lieu,
             'type' => $type
         ]);
+=======
+        private readonly ?MailerService $mailerService = null,
+        private readonly ?SentimentService $sentimentService = null,
+        private ?EntityManagerInterface $em = null,
+    ) {
+        // Allow manual injection or auto wiring
+>>>>>>> testsisi
     }
     #[Route('', name: 'activity_index', methods: ['GET'])]
     public function index(Request $request, ActivityRepository $repo, PaginatorInterface $paginator): Response
@@ -179,6 +199,7 @@ class ActivityController extends AbstractController
         ]);
     }
 
+<<<<<<< HEAD
     #[Route('/autour-de-moi', name: 'activity_nearby_map', methods: ['GET'])]
     public function nearbyMap(): Response
     {
@@ -217,6 +238,22 @@ class ActivityController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $a = $em->getReference(Activity::class, $id);
+=======
+    #[Route('/{id}', name: 'activity_show', methods: ['GET'], requirements: ['id' => '\\d+'])]
+    public function show(int $id, ActivityRepository $repo): Response
+    {
+        $a = $repo->find($id);
+        if (!$a) throw $this->createNotFoundException();
+        return $this->render('activity/show.html.twig', ['activity' => $a]);
+    }
+
+    #[Route('/{id}/reserver', name: 'activity_book', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function book(int $id, Request $request, ActivityRepository $repo, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $a = $repo->find($id);
+>>>>>>> testsisi
         if (!$a) throw $this->createNotFoundException();
 
         /** @var User $user */
@@ -225,7 +262,11 @@ class ActivityController extends AbstractController
         $bookingDate = $request->request->get('booking_date');
         $paymentMethod = $request->request->get('payment_method', 'stripe');
 
+<<<<<<< HEAD
         $totalPrice = $persons * (float)$a->getPrice();
+=======
+        $totalPrice = $persons * $a->getPrice();
+>>>>>>> testsisi
         $serviceName = $a->getTitle();
         $serviceDate = $bookingDate ?: date('Y-m-d');
 
@@ -259,17 +300,28 @@ class ActivityController extends AbstractController
                 ->setClientPhone($user->getTelephone())
                 ->setPersons($persons)
                 ->setTotalPrice($totalPrice)
+<<<<<<< HEAD
                 ->setStatus(BookingStatusEnum::PAID)
                 ->setPaymentIntentId($result['transaction_id'] ?? '')
                 ->setPaymentMethod(PaymentMethodEnum::tryFrom($paymentMethod) ?? PaymentMethodEnum::STRIPE)
+=======
+                ->setStatus('PAID')
+                ->setPaymentIntentId($result['transaction_id'] ?? '')
+                ->setPaymentMethod($paymentMethod)
+>>>>>>> testsisi
                 ->setBookingReference($result['booking_id']);
 
         if ($bookingDate) {
             $booking->setBookingDate(new \DateTime($bookingDate));
         }
 
+<<<<<<< HEAD
         $this->em->persist($booking);
         $this->em->flush();
+=======
+        $em->persist($booking);
+        $em->flush();
+>>>>>>> testsisi
 
         if ($this->mailerService) {
             $this->mailerService->sendReservationConfirmation(
@@ -325,11 +377,19 @@ class ActivityController extends AbstractController
     }
 
     #[Route('/{id}/avis', name: 'activity_review', methods: ['POST'], requirements: ['id' => '\d+'])]
+<<<<<<< HEAD
     public function addReview(int $id, Request $request, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         $a = $em->getReference(Activity::class, $id);
+=======
+    public function addReview(int $id, Request $request, ActivityRepository $repo, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $a = $repo->find($id);
+>>>>>>> testsisi
         if (!$a) throw $this->createNotFoundException();
 
         /** @var User $user */
@@ -341,6 +401,7 @@ class ActivityController extends AbstractController
         }
 
         $comment = (string)$request->request->get('comment', '');
+<<<<<<< HEAD
         
         if ($this->moderationService) {
             $moderationResult = $this->moderationService->analyzeContent($comment);
@@ -352,6 +413,8 @@ class ActivityController extends AbstractController
             
             $comment = $this->moderationService->maskWords($comment);
         }
+=======
+>>>>>>> testsisi
 
         $review = new Review();
         $review->setActivity($a)
@@ -380,9 +443,16 @@ class ActivityController extends AbstractController
             return new JsonResponse(['error' => 'Not authenticated'], 401);
         }
 
+<<<<<<< HEAD
         $activities = $this->em->getRepository(Activity::class)->findBy(['actif' => true]);
         
         $bookings = $this->em->getRepository(Booking::class)->findBy(['user' => $user]);
+=======
+        $em = $this->em;
+        $activities = $em->getRepository(Activity::class)->findBy(['actif' => true]);
+        
+        $bookings = $em->getRepository(Booking::class)->findBy(['user' => $user]);
+>>>>>>> testsisi
         $userCategories = [];
         foreach ($bookings as $booking) {
             $activity = $booking->getActivity();
@@ -397,7 +467,11 @@ class ActivityController extends AbstractController
             if ($activity->getCategory() && in_array($activity->getCategory(), $userCategories)) {
                 $score += 3;
             }
+<<<<<<< HEAD
             $bookingCount = $activity->getBookings()->count();
+=======
+            $bookingCount = $activity->getBookings() ? $activity->getBookings()->count() : 0;
+>>>>>>> testsisi
             if ($bookingCount > 3) $score += 1;
             if ($score > 0) {
                 $scored[] = ['activity' => $activity, 'score' => $score];
@@ -422,12 +496,21 @@ class ActivityController extends AbstractController
     #[Route('/api/trending', name: 'activity_trending', methods: ['GET'])]
     public function getTrending(): JsonResponse
     {
+<<<<<<< HEAD
         $activities = $this->em->getRepository(Activity::class)->findBy(['actif' => true], ['createdAt' => 'DESC']);
 
         usort($activities, function($a, $b) {
             $countA = $a->getBookings()->count();
             $countB = $b->getBookings()->count();
             return $countB - $countA;
+=======
+        $em = $this->em;
+        $activities = $em->getRepository(Activity::class)->findBy(['actif' => true]);
+
+        // Sort by popularity
+        usort($activities, function($a, $b) {
+            return 0; // Keep original order for now
+>>>>>>> testsisi
         });
 
         return new JsonResponse([
@@ -463,14 +546,21 @@ class ActivityController extends AbstractController
         if (!$user) {
             return new JsonResponse(['error' => 'Not authenticated'], 401);
         }
+<<<<<<< HEAD
         /** @var \App\Entity\User $user */
+=======
+>>>>>>> testsisi
 
         $conversationId = $request->request->get('conversation_id');
         if (!$conversationId) {
             return new JsonResponse(['error' => 'Conversation ID required'], 400);
         }
 
+<<<<<<< HEAD
         $conversation = $this->em->getRepository(Conversation::class)->find($conversationId);
+=======
+        $conversation = $em->getRepository(Conversation::class)->find($conversationId);
+>>>>>>> testsisi
         if (!$conversation) {
             return new JsonResponse(['error' => 'Conversation not found'], 404);
         }
@@ -488,8 +578,13 @@ class ActivityController extends AbstractController
         ]));
         $message->setCreatedAt(new \DateTime());
 
+<<<<<<< HEAD
         $this->em->persist($message);
         $this->em->flush();
+=======
+        $em->persist($message);
+        $em->flush();
+>>>>>>> testsisi
 
         return new JsonResponse(['success' => true, 'message_id' => $message->getId()]);
     }

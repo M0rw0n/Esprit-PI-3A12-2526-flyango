@@ -49,6 +49,10 @@ class UserProgress
     public function getScore(): int { return $this->score; }
     public function setScore(int $score): static { $this->score = $score; return $this; }
     public function getCompletedAt(): ?\DateTimeInterface { return $this->completedAt; }
+<<<<<<< HEAD
+=======
+    public function setCompletedAt(?\DateTimeInterface $completedAt): static { $this->completedAt = $completedAt; return $this; }
+>>>>>>> testsisi
     public function getTimeSpent(): ?int { return $this->timeSpent; }
     public function setTimeSpent(?int $timeSpent): static { $this->timeSpent = $timeSpent; return $this; }
 }

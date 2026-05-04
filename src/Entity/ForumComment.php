@@ -58,6 +58,10 @@ class ForumComment
     public function getContent(): string { return $this->content; }
     public function setContent(string $c): static { $this->content = $c; return $this; }
     public function getCreatedAt() { return $this->createdAt; }
+<<<<<<< HEAD
+=======
+    public function setCreatedAt($d): static { $this->createdAt = $d; return $this; }
+>>>>>>> testsisi
 
     public function getScore(): int { return $this->score; }
     public function setScore(int $s): static { $this->score = $s; return $this; }

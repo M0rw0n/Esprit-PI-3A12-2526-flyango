@@ -4,7 +4,10 @@ namespace App\Entity;
 
 use App\Repository\FriendRequestRepository;
 use Doctrine\ORM\Mapping as ORM;
+<<<<<<< HEAD
 use App\Entity\Trait\BlameableTrait;
+=======
+>>>>>>> testsisi
 
 #[ORM\Entity(repositoryClass: FriendRequestRepository::class)]
 #[ORM\Table(name: 'friend_request')]
@@ -13,7 +16,10 @@ use App\Entity\Trait\BlameableTrait;
 #[ORM\Index(columns: ['status'], name: 'idx_friend_status')]
 class FriendRequest
 {
+<<<<<<< HEAD
     use BlameableTrait;
+=======
+>>>>>>> testsisi
     const STATUS_PENDING = 'pending';
     const STATUS_ACCEPTED = 'accepted';
     const STATUS_REJECTED = 'rejected';
@@ -35,9 +41,12 @@ class FriendRequest
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+<<<<<<< HEAD
     /** @var \DateTimeInterface|null Transient, not mapped */
     private ?\DateTimeInterface $updatedAt = null;
 
+=======
+>>>>>>> testsisi
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $respondedAt = null;
 
@@ -55,10 +64,16 @@ class FriendRequest
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $s): static { $this->status = $s; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
     public function getCreatedBy(): ?User { return $this->createdBy; }
     public function getUpdatedBy(): ?User { return $this->updatedBy; }
     public function getRespondedAt(): ?\DateTimeInterface { return $this->respondedAt; }
+=======
+    public function setCreatedAt(\DateTimeInterface $d): static { $this->createdAt = $d; return $this; }
+    public function getRespondedAt(): ?\DateTimeInterface { return $this->respondedAt; }
+    public function setRespondedAt(?\DateTimeInterface $d): static { $this->respondedAt = $d; return $this; }
+>>>>>>> testsisi
 
     public function accept(): void
     {
